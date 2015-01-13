@@ -29,8 +29,7 @@ public class Flo {
 	}
 
 	public static void unpack(Archive a) {
-		// Buffer b = new Buffer(a.get("flo.dat", null));
-		Buffer b = new Buffer(Signlink.loadFile("flo.dat"));
+		Buffer b = new Buffer(a.get("flo.dat", null));
 		count = b.readUShort();
 
 		if (instances == null) {
