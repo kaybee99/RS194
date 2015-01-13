@@ -1,6 +1,7 @@
 package com.runescape;
 
-final class ObjLoc {
+public final class ObjLoc {
+
 	int sceneY;
 	int sceneX;
 	int sceneZ;

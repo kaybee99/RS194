@@ -607,10 +607,12 @@ public class Canvas3D extends Canvas2D {
 				}
 			}
 		} else if (y3 < Canvas2D.bottom) {
-			if (y1 > Canvas2D.bottom)
+			if (y1 > Canvas2D.bottom) {
 				y1 = Canvas2D.bottom;
-			if (y2 > Canvas2D.bottom)
+			}
+			if (y2 > Canvas2D.bottom) {
 				y2 = Canvas2D.bottom;
+			}
 			if (y1 < y2) {
 				x2 = x3 <<= 16;
 				hsl2 = hsl3 <<= 15;
@@ -1092,10 +1094,12 @@ public class Canvas3D extends Canvas2D {
 				}
 			}
 		} else if (y2 < Canvas2D.bottom) {
-			if (y0 > Canvas2D.bottom)
+			if (y0 > Canvas2D.bottom) {
 				y0 = Canvas2D.bottom;
-			if (y1 > Canvas2D.bottom)
+			}
+			if (y1 > Canvas2D.bottom) {
 				y1 = Canvas2D.bottom;
+			}
 			if (y0 < y1) {
 				x1 = x2 <<= 16;
 				if (y2 < 0) {
@@ -2396,10 +2400,11 @@ public class Canvas3D extends Canvas2D {
 				if (i_152_ != 0) {
 					i = i_141_ / i_152_;
 					i_135_ = i_142_ / i_152_;
-					if (i < 0)
+					if (i < 0) {
 						i = 0;
-					else if (i > 4032)
+					} else if (i > 4032) {
 						i = 4032;
+					}
 				}
 				i_141_ += i_144_;
 				i_142_ += i_145_;
@@ -2408,10 +2413,11 @@ public class Canvas3D extends Canvas2D {
 				if (i_152_ != 0) {
 					i_149_ = i_141_ / i_152_;
 					i_150_ = i_142_ / i_152_;
-					if (i_149_ < 7)
+					if (i_149_ < 7) {
 						i_149_ = 7;
-					else if (i_149_ > 4032)
+					} else if (i_149_ > 4032) {
 						i_149_ = 4032;
+					}
 				}
 				int i_153_ = i_149_ - i >> 3;
 				int i_154_ = i_150_ - i_135_ >> 3;
@@ -2450,10 +2456,11 @@ public class Canvas3D extends Canvas2D {
 						if (i_152_ != 0) {
 							i_149_ = i_141_ / i_152_;
 							i_150_ = i_142_ / i_152_;
-							if (i_149_ < 7)
+							if (i_149_ < 7) {
 								i_149_ = 7;
-							else if (i_149_ > 4032)
+							} else if (i_149_ > 4032) {
 								i_149_ = 4032;
+							}
 						}
 						i_153_ = i_149_ - i >> 3;
 						i_154_ = i_150_ - i_135_ >> 3;
@@ -2470,43 +2477,51 @@ public class Canvas3D extends Canvas2D {
 				} else {
 					while (length-- > 0) {
 						int i_156_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_156_;
+						}
 						off++;
 						i = i_149_;
 						i_135_ = i_150_;
@@ -2517,10 +2532,11 @@ public class Canvas3D extends Canvas2D {
 						if (i_152_ != 0) {
 							i_149_ = i_141_ / i_152_;
 							i_150_ = i_142_ / i_152_;
-							if (i_149_ < 7)
+							if (i_149_ < 7) {
 								i_149_ = 7;
-							else if (i_149_ > 4032)
+							} else if (i_149_ > 4032) {
 								i_149_ = 4032;
+							}
 						}
 						i_153_ = i_149_ - i >> 3;
 						i_154_ = i_150_ - i_135_ >> 3;
@@ -2531,8 +2547,9 @@ public class Canvas3D extends Canvas2D {
 					length = x1 - x0 & 0x7;
 					while (length-- > 0) {
 						int i_157_;
-						if ((i_157_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0)
+						if ((i_157_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
 							dst[off] = i_157_;
+						}
 						off++;
 						i += i_153_;
 						i_135_ += i_154_;
@@ -2549,10 +2566,11 @@ public class Canvas3D extends Canvas2D {
 				if (i_161_ != 0) {
 					i = i_141_ / i_161_;
 					i_135_ = i_142_ / i_161_;
-					if (i < 0)
+					if (i < 0) {
 						i = 0;
-					else if (i > 16256)
+					} else if (i > 16256) {
 						i = 16256;
+					}
 				}
 				i_141_ += i_144_;
 				i_142_ += i_145_;
@@ -2561,10 +2579,11 @@ public class Canvas3D extends Canvas2D {
 				if (i_161_ != 0) {
 					i_158_ = i_141_ / i_161_;
 					i_159_ = i_142_ / i_161_;
-					if (i_158_ < 7)
+					if (i_158_ < 7) {
 						i_158_ = 7;
-					else if (i_158_ > 16256)
+					} else if (i_158_ > 16256) {
 						i_158_ = 16256;
+					}
 				}
 				int i_162_ = i_158_ - i >> 3;
 				int i_163_ = i_159_ - i_135_ >> 3;
@@ -2603,10 +2622,11 @@ public class Canvas3D extends Canvas2D {
 						if (i_161_ != 0) {
 							i_158_ = i_141_ / i_161_;
 							i_159_ = i_142_ / i_161_;
-							if (i_158_ < 7)
+							if (i_158_ < 7) {
 								i_158_ = 7;
-							else if (i_158_ > 16256)
+							} else if (i_158_ > 16256) {
 								i_158_ = 16256;
+							}
 						}
 						i_162_ = i_158_ - i >> 3;
 						i_163_ = i_159_ - i_135_ >> 3;
@@ -2623,43 +2643,51 @@ public class Canvas3D extends Canvas2D {
 				} else {
 					while (length-- > 0) {
 						int i_165_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i += i_162_;
 						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0)
+						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
 							dst[off] = i_165_;
+						}
 						off++;
 						i = i_158_;
 						i_135_ = i_159_;
@@ -2670,10 +2698,11 @@ public class Canvas3D extends Canvas2D {
 						if (i_161_ != 0) {
 							i_158_ = i_141_ / i_161_;
 							i_159_ = i_142_ / i_161_;
-							if (i_158_ < 7)
+							if (i_158_ < 7) {
 								i_158_ = 7;
-							else if (i_158_ > 16256)
+							} else if (i_158_ > 16256) {
 								i_158_ = 16256;
+							}
 						}
 						i_162_ = i_158_ - i >> 3;
 						i_163_ = i_159_ - i_135_ >> 3;

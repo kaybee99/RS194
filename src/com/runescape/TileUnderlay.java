@@ -1,6 +1,7 @@
 package com.runescape;
 
 public final class TileUnderlay {
+
 	public int southwestColor;
 	public int southeastColor;
 	public int northeastColor;

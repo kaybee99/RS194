@@ -3,8 +3,8 @@ package com.runescape;
 /* Class30 - Decompiled by JODE
  * Visit http://jode.sourceforge.net/
  */
-
 class BZip2Context {
+
 	final int anInt439 = 4096;
 	final int anInt440 = 16;
 	final int anInt441 = 258;

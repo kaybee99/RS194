@@ -7,9 +7,9 @@ import java.net.Socket;
 
 public class Stream implements Runnable {
 
-	private InputStream in;
-	private OutputStream out;
-	private Socket socket;
+	private final InputStream in;
+	private final OutputStream out;
+	private final Socket socket;
 	private boolean closed = false;
 	private byte[] buffer;
 	private int bufLen;
@@ -111,6 +111,7 @@ public class Stream implements Runnable {
 		}
 	}
 
+	@Override
 	public void run() {
 		System.out.println("clientstream writer starting");
 		while (writing == true) {

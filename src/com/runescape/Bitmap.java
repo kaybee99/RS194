@@ -91,8 +91,9 @@ public class Bitmap extends Canvas2D {
 		pixels = new int[len];
 
 		if (type == 0) {
-			for (int i = 0; i < len; i++)
+			for (int i = 0; i < len; i++) {
 				pixels[i] = palette[dat.read()];
+			}
 		} else if (type == 1) {
 			for (int x = 0; x < width; x++) {
 				for (int y = 0; y < height; y++) {
@@ -330,8 +331,9 @@ public class Bitmap extends Canvas2D {
 				if (rgb != 0) {
 					int dstRGB = dst[dstOff];
 					dst[dstOff++] = ((((rgb & 0xff00ff) * alpha + (dstRGB & 0xff00ff) * opacity) & ~0xff00ff) + (((rgb & 0xff00) * alpha + (dstRGB & 0xff00) * opacity) & 0xff0000)) >> 8;
-				} else
+				} else {
 					dstOff++;
+				}
 			}
 			dstOff += dstStep;
 			srcOff += srcStep;
@@ -420,8 +422,9 @@ public class Bitmap extends Canvas2D {
 			i_103_ += i_108_ * i_105_;
 			i_102_ += i_108_ * Canvas2D.dstW;
 		}
-		if (y + i_104_ > Canvas2D.bottom)
+		if (y + i_104_ > Canvas2D.bottom) {
 			i_104_ -= y + i_104_ - Canvas2D.bottom;
+		}
 		if (x < Canvas2D.left) {
 			int i_109_ = Canvas2D.left - x;
 			i_105_ -= i_109_;
@@ -437,8 +440,9 @@ public class Bitmap extends Canvas2D {
 			i_107_ += i_110_;
 			i_106_ += i_110_;
 		}
-		if (i_105_ > 0 && i_104_ > 0)
+		if (i_105_ > 0 && i_104_ > 0) {
 			copyImage(Canvas2D.dst, i_103_, 0, i_104_, false, i_107_, i_102_, i_106_, pixels, mask.data, i_105_);
+		}
 	}
 
 	private void copyImage(int[] is, int i, int i_111_, int i_112_, boolean bool, int i_113_, int i_114_, int i_115_, int[] is_116_, byte[] is_117_, int i_118_) {
@@ -447,32 +451,37 @@ public class Bitmap extends Canvas2D {
 		for (int i_120_ = -i_112_; i_120_ < 0; i_120_++) {
 			for (int i_121_ = i_119_; i_121_ < 0; i_121_++) {
 				i_111_ = is_116_[i++];
-				if (i_111_ != 0 && is_117_[i_114_] == 0)
+				if (i_111_ != 0 && is_117_[i_114_] == 0) {
 					is[i_114_++] = i_111_;
-				else
+				} else {
 					i_114_++;
+				}
 				i_111_ = is_116_[i++];
-				if (i_111_ != 0 && is_117_[i_114_] == 0)
+				if (i_111_ != 0 && is_117_[i_114_] == 0) {
 					is[i_114_++] = i_111_;
-				else
+				} else {
 					i_114_++;
+				}
 				i_111_ = is_116_[i++];
-				if (i_111_ != 0 && is_117_[i_114_] == 0)
+				if (i_111_ != 0 && is_117_[i_114_] == 0) {
 					is[i_114_++] = i_111_;
-				else
+				} else {
 					i_114_++;
+				}
 				i_111_ = is_116_[i++];
-				if (i_111_ != 0 && is_117_[i_114_] == 0)
+				if (i_111_ != 0 && is_117_[i_114_] == 0) {
 					is[i_114_++] = i_111_;
-				else
+				} else {
 					i_114_++;
+				}
 			}
 			for (int i_122_ = i_118_; i_122_ < 0; i_122_++) {
 				i_111_ = is_116_[i++];
-				if (i_111_ != 0 && is_117_[i_114_] == 0)
+				if (i_111_ != 0 && is_117_[i_114_] == 0) {
 					is[i_114_++] = i_111_;
-				else
+				} else {
 					i_114_++;
+				}
 			}
 			i_114_ += i_115_;
 			i += i_113_;

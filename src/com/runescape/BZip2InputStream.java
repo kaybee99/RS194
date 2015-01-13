@@ -1,12 +1,8 @@
 package com.runescape;
 
-/* Class28 - Decompiled by JODE
- * Visit http://jode.sourceforge.net/
- */
-
 public final class BZip2InputStream {
+
 	public static int read(byte[] dst, int dstLen, byte[] src, int srcLen, int srcOff) {
-		// ead(dst, unpackedSize, src, packedSize, 6);
 		BZip2Context c = new BZip2Context();
 		c.src = src;
 		c.srcOff = srcOff;
@@ -38,13 +34,16 @@ public final class BZip2InputStream {
 		int i_9_ = c.dstLen;
 		int i_10_ = i_9_;
 		int i_11_ = c.anInt486 + 1;
-		while_4_: for (;;) {
+		while_4_:
+		for (;;) {
 			if (i_3_ > 0) {
 				for (;;) {
-					if (i_9_ == 0)
+					if (i_9_ == 0) {
 						break while_4_;
-					if (i_3_ == 1)
+					}
+					if (i_3_ == 1) {
 						break;
+					}
 					is_7_[i_8_] = i;
 					i_3_--;
 					i_8_++;
@@ -96,17 +95,17 @@ public final class BZip2InputStream {
 			int i_13_ = (byte) (i_6_ & 0xff);
 			i_6_ >>= 8;
 			if (++i_4_ != i_11_) {
-				if (i_13_ != i_5_)
+				if (i_13_ != i_5_) {
 					i_5_ = i_13_;
-				else {
+				} else {
 					i_3_ = 3;
 					i_6_ = is[i_6_];
 					i_13_ = (byte) (i_6_ & 0xff);
 					i_6_ >>= 8;
 					if (++i_4_ != i_11_) {
-						if (i_13_ != i_5_)
+						if (i_13_ != i_5_) {
 							i_5_ = i_13_;
-						else {
+						} else {
 							i_6_ = is[i_6_];
 							i_13_ = (byte) (i_6_ & 0xff);
 							i_6_ >>= 8;
@@ -123,8 +122,9 @@ public final class BZip2InputStream {
 		}
 		int i_14_ = c.anInt456;
 		c.anInt456 += i_10_ - i_9_;
-		if (c.anInt456 < i_14_)
+		if (c.anInt456 < i_14_) {
 			c.anInt457++;
+		}
 		c.aByte458 = i;
 		c.anInt459 = i_3_;
 		c.anInt469 = i_4_;
@@ -142,13 +142,15 @@ public final class BZip2InputStream {
 		int[] is_33_ = null;
 		int[] is_34_ = null;
 		c.anInt463 = 1;
-		if (BZip2Context.anIntArray472 == null)
+		if (BZip2Context.anIntArray472 == null) {
 			BZip2Context.anIntArray472 = new int[c.anInt463 * 100000];
+		}
 		boolean bool_35_ = true;
 		while (bool_35_) {
 			byte i_36_ = method245(c);
-			if (i_36_ == 23)
+			if (i_36_ == 23) {
 				break;
+			}
 			i_36_ = method245(c);
 			i_36_ = method245(c);
 			i_36_ = method245(c);
@@ -160,12 +162,14 @@ public final class BZip2InputStream {
 			i_36_ = method245(c);
 			i_36_ = method245(c);
 			i_36_ = method246(c);
-			if (i_36_ != 0)
+			if (i_36_ != 0) {
 				c.aBoolean460 = true;
-			else
+			} else {
 				c.aBoolean460 = false;
-			if (c.aBoolean460)
+			}
+			if (c.aBoolean460) {
 				System.out.println("PANIC! RANDOMISED BLOCK!");
+			}
 			c.anInt465 = 0;
 			int i_37_ = method245(c);
 			c.anInt465 = c.anInt465 << 8 | i_37_ & 0xff;
@@ -175,19 +179,22 @@ public final class BZip2InputStream {
 			c.anInt465 = c.anInt465 << 8 | i_37_ & 0xff;
 			for (int i_38_ = 0; i_38_ < 16; i_38_++) {
 				i_36_ = method246(c);
-				if (i_36_ == 1)
+				if (i_36_ == 1) {
 					c.aBooleanArray475[i_38_] = true;
-				else
+				} else {
 					c.aBooleanArray475[i_38_] = false;
+				}
 			}
-			for (int i_39_ = 0; i_39_ < 256; i_39_++)
+			for (int i_39_ = 0; i_39_ < 256; i_39_++) {
 				c.aBooleanArray474[i_39_] = false;
+			}
 			for (int i_40_ = 0; i_40_ < 16; i_40_++) {
 				if (c.aBooleanArray475[i_40_]) {
 					for (int i_41_ = 0; i_41_ < 16; i_41_++) {
 						i_36_ = method246(c);
-						if (i_36_ == 1)
+						if (i_36_ == 1) {
 							c.aBooleanArray474[i_40_ * 16 + i_41_] = true;
+						}
 					}
 				}
 			}
@@ -199,20 +206,23 @@ public final class BZip2InputStream {
 				int i_46_ = 0;
 				for (;;) {
 					i_36_ = method246(c);
-					if (i_36_ == 0)
+					if (i_36_ == 0) {
 						break;
+					}
 					i_46_++;
 				}
 				c.aByteArray480[i_45_] = (byte) i_46_;
 			}
 			byte[] is_47_ = new byte[6];
-			for (byte i_48_ = 0; i_48_ < i_43_; i_48_++)
+			for (byte i_48_ = 0; i_48_ < i_43_; i_48_++) {
 				is_47_[i_48_] = i_48_;
+			}
 			for (int i_49_ = 0; i_49_ < i_44_; i_49_++) {
 				byte i_50_ = c.aByteArray480[i_49_];
 				byte i_51_ = is_47_[i_50_];
-				for (/**/; i_50_ > 0; i_50_--)
+				for (/**/; i_50_ > 0; i_50_--) {
 					is_47_[i_50_] = is_47_[i_50_ - 1];
+				}
 				is_47_[0] = i_51_;
 				c.aByteArray479[i_49_] = i_51_;
 			}
@@ -221,13 +231,15 @@ public final class BZip2InputStream {
 				for (int i_54_ = 0; i_54_ < i_42_; i_54_++) {
 					for (;;) {
 						i_36_ = method246(c);
-						if (i_36_ == 0)
+						if (i_36_ == 0) {
 							break;
+						}
 						i_36_ = method246(c);
-						if (i_36_ == 0)
+						if (i_36_ == 0) {
 							i_53_++;
-						else
+						} else {
 							i_53_--;
+						}
 					}
 					c.aByteArrayArray481[i_52_][i_54_] = (byte) i_53_;
 				}
@@ -236,10 +248,12 @@ public final class BZip2InputStream {
 				int i_56_ = 32;
 				byte i_57_ = 0;
 				for (int i_58_ = 0; i_58_ < i_42_; i_58_++) {
-					if (c.aByteArrayArray481[i_55_][i_58_] > i_57_)
+					if (c.aByteArrayArray481[i_55_][i_58_] > i_57_) {
 						i_57_ = c.aByteArrayArray481[i_55_][i_58_];
-					if (c.aByteArrayArray481[i_55_][i_58_] < i_56_)
+					}
+					if (c.aByteArrayArray481[i_55_][i_58_] < i_56_) {
 						i_56_ = c.aByteArrayArray481[i_55_][i_58_];
+					}
 				}
 				method249(c.anIntArrayArray482[i_55_], c.anIntArrayArray483[i_55_], c.anIntArrayArray484[i_55_], c.aByteArrayArray481[i_55_], i_56_, i_57_, i_42_);
 				c.anIntArray485[i_55_] = i_56_;
@@ -247,8 +261,9 @@ public final class BZip2InputStream {
 			int i_59_ = c.anInt473 + 1;
 			int i_61_ = -1;
 			int i_62_ = 0;
-			for (int i_63_ = 0; i_63_ <= 255; i_63_++)
+			for (int i_63_ = 0; i_63_ <= 255; i_63_++) {
 				c.anIntArray468[i_63_] = 0;
+			}
 			int i_64_ = 4095;
 			for (int i_65_ = 15; i_65_ >= 0; i_65_--) {
 				for (int i_66_ = 15; i_66_ >= 0; i_66_--) {
@@ -281,10 +296,11 @@ public final class BZip2InputStream {
 					int i_73_ = -1;
 					int i_74_ = 1;
 					do {
-						if (i_72_ == 0)
+						if (i_72_ == 0) {
 							i_73_ += i_74_;
-						else if (i_72_ == 1)
+						} else if (i_72_ == 1) {
 							i_73_ += i_74_ * 2;
+						}
 						i_74_ *= 2;
 						if (i_62_ == 0) {
 							i_61_++;
@@ -322,16 +338,18 @@ public final class BZip2InputStream {
 							c.aByteArray477[i_78_ - 2] = c.aByteArray477[i_78_ - 3];
 							c.aByteArray477[i_78_ - 3] = c.aByteArray477[i_78_ - 4];
 						}
-						for (/**/; i_76_ > 0; i_76_--)
+						for (/**/; i_76_ > 0; i_76_--) {
 							c.aByteArray477[i_77_ + i_76_] = c.aByteArray477[i_77_ + i_76_ - 1];
+						}
 						c.aByteArray477[i_77_] = i_36_;
 					} else {
 						int i_79_ = i_76_ / 16;
 						int i_80_ = i_76_ % 16;
 						int i_81_ = c.anIntArray478[i_79_] + i_80_;
 						i_36_ = c.aByteArray477[i_81_];
-						for (/**/; i_81_ > c.anIntArray478[i_79_]; i_81_--)
+						for (/**/; i_81_ > c.anIntArray478[i_79_]; i_81_--) {
 							c.aByteArray477[i_81_] = c.aByteArray477[i_81_ - 1];
+						}
 						c.anIntArray478[i_79_]++;
 						for (/**/; i_79_ > 0; i_79_--) {
 							c.anIntArray478[i_79_]--;
@@ -374,10 +392,12 @@ public final class BZip2InputStream {
 			c.anInt459 = 0;
 			c.aByte458 = (byte) 0;
 			c.anIntArray470[0] = 0;
-			for (int i_86_ = 1; i_86_ <= 256; i_86_++)
+			for (int i_86_ = 1; i_86_ <= 256; i_86_++) {
 				c.anIntArray470[i_86_] = c.anIntArray468[i_86_ - 1];
-			for (int i_87_ = 1; i_87_ <= 256; i_87_++)
+			}
+			for (int i_87_ = 1; i_87_ <= 256; i_87_++) {
 				c.anIntArray470[i_87_] += c.anIntArray470[i_87_ - 1];
+			}
 			for (int i_88_ = 0; i_88_ < i_67_; i_88_++) {
 				i_37_ = (byte) (BZip2Context.anIntArray472[i_88_] & 0xff);
 				BZip2Context.anIntArray472[c.anIntArray470[i_37_ & 0xff]] |= i_88_ << 8;
@@ -391,10 +411,11 @@ public final class BZip2InputStream {
 			c.anInt469++;
 			c.anInt486 = i_67_;
 			method243(c);
-			if (c.anInt469 == c.anInt486 + 1 && c.anInt459 == 0)
+			if (c.anInt469 == c.anInt486 + 1 && c.anInt459 == 0) {
 				bool_35_ = true;
-			else
+			} else {
 				bool_35_ = false;
+			}
 		}
 	}
 
@@ -420,8 +441,9 @@ public final class BZip2InputStream {
 			class30.srcOff++;
 			class30.srcLen--;
 			class30.anInt451++;
-			if (class30.anInt451 == 0)
+			if (class30.anInt451 == 0) {
 				class30.anInt452++;
+			}
 		}
 		return i_89_;
 	}
@@ -446,21 +468,26 @@ public final class BZip2InputStream {
 				}
 			}
 		}
-		for (int i_99_ = 0; i_99_ < 23; i_99_++)
+		for (int i_99_ = 0; i_99_ < 23; i_99_++) {
 			is_91_[i_99_] = 0;
-		for (int i_100_ = 0; i_100_ < i_95_; i_100_++)
+		}
+		for (int i_100_ = 0; i_100_ < i_95_; i_100_++) {
 			is_91_[is_93_[i_100_] + 1]++;
-		for (int i_101_ = 1; i_101_ < 23; i_101_++)
+		}
+		for (int i_101_ = 1; i_101_ < 23; i_101_++) {
 			is_91_[i_101_] += is_91_[i_101_ - 1];
-		for (int i_102_ = 0; i_102_ < 23; i_102_++)
+		}
+		for (int i_102_ = 0; i_102_ < 23; i_102_++) {
 			is[i_102_] = 0;
+		}
 		int i_103_ = 0;
 		for (int i_104_ = i; i_104_ <= i_94_; i_104_++) {
 			i_103_ += is_91_[i_104_ + 1] - is_91_[i_104_];
 			is[i_104_] = i_103_ - 1;
 			i_103_ <<= 1;
 		}
-		for (int i_105_ = i + 1; i_105_ <= i_94_; i_105_++)
+		for (int i_105_ = i + 1; i_105_ <= i_94_; i_105_++) {
 			is_91_[i_105_] = (is[i_105_ - 1] + 1 << 1) - is_91_[i_105_];
+		}
 	}
 }

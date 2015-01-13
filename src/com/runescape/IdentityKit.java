@@ -8,7 +8,7 @@ public class IdentityKit {
 	public int[] modelIndices;
 	public int[] oldColors = new int[6];
 	public int[] newColors = new int[6];
-	public int[] headModelIndices = { -1, -1, -1, -1, -1 };
+	public int[] headModelIndices = {-1, -1, -1, -1, -1};
 
 	public static void load(Archive a) {
 		Buffer b = new Buffer(a.get("idk.dat", null));
@@ -84,15 +84,15 @@ public class IdentityKit {
 
 	public Model getHeadModel() {
 		Model[] models = new Model[5];
-		int count = 0;
+		int modelCount = 0;
 
 		for (int n = 0; n < 5; n++) {
 			if (headModelIndices[n] != -1) {
-				models[count++] = new Model(headModelIndices[n]);
+				models[modelCount++] = new Model(headModelIndices[n]);
 			}
 		}
 
-		Model m = new Model(models, count);
+		Model m = new Model(models, modelCount);
 
 		for (int n = 0; n < 6; n++) {
 			if (oldColors[n] == 0) {

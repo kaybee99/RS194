@@ -1,6 +1,7 @@
 package com.runescape;
 
 public final class Tile extends Link {
+
 	public int y;
 	public int x;
 	public int z;

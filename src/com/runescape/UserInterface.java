@@ -21,51 +21,29 @@ public class UserInterface {
 	private static List bitmapCache;
 	private static List modelCache;
 
-	private static final Bitmap getBitmap(String name, Archive media, int index) {
+	private static Bitmap getBitmap(String name, Archive media, int index) {
 		long l = (StringUtil.getHash(name) << 4) + (long) index;
 		Bitmap b = (Bitmap) bitmapCache.get(l);
-	
+
 		if (b != null) {
 			return b;
 		}
-	
+
 		b = new Bitmap(media, name, index);
 		bitmapCache.put(b, l);
 		return b;
 	}
 
-	private static final Model getModel(int index) {
+	private static Model getModel(int index) {
 		Model m = (Model) modelCache.get((long) index);
-	
+
 		if (m != null) {
 			return m;
 		}
-	
+
 		m = new Model(index);
 		modelCache.put(m, (long) index);
 		return m;
-	}
-
-	public static UserInterface create() {
-		// extend
-		UserInterface[] old = instances;
-		instances = new UserInterface[old.length + 1];
-		System.arraycopy(old, 0, instances, 0, old.length);
-
-		// create
-		UserInterface i = new UserInterface();
-		i.index = old.length;
-		instances[i.index] = i;
-		return i;
-	}
-
-	public static UserInterface createParent() {
-		UserInterface i = create();
-		i.type = TYPE_PARENT;
-		i.children = new int[0];
-		i.childX = new int[0];
-		i.childY = new int[0];
-		return i;
 	}
 
 	public static void load(BitmapFont[] fonts, Archive media, Archive interfaces) {
@@ -314,17 +292,6 @@ public class UserInterface {
 		bitmapCache = null;
 	}
 
-	public void setOptionType(int type) {
-		if (type == OPTIONTYPE_OK) {
-			option = "Ok";
-		} else if (type == OPTIONTYPE_SELECT) {
-			option = "Select";
-		} else if (type == OPTIONTYPE_CONTINUE) {
-			option = "Continue";
-		}
-		optionType = type;
-	}
-
 	public int[] inventoryIndices;
 	public int[] inventoryAmount;
 	public int seqFrame;
@@ -379,58 +346,6 @@ public class UserInterface {
 	public String optionSuffix;
 	public int optionFlags;
 	public String option;
-
-	public UserInterface addRect(int x, int y, int w, int h, int color, boolean fill) {
-		UserInterface rect = create();
-		rect.type = TYPE_RECT;
-		rect.width = w;
-		rect.height = h;
-		rect.fill = fill;
-		rect.colorDisabled = color;
-		addChild(rect, x, y);
-		return rect;
-	}
-
-	public UserInterface addText(BitmapFont font, String s, int x, int y, int color, boolean shadow) {
-		UserInterface text = create();
-		text.type = TYPE_TEXT;
-		text.width = font.stringWidth(s);
-		text.height = font.height;
-		text.font = font;
-		text.colorDisabled = color;
-		text.messageDisabled = s;
-		text.shadow = shadow;
-		addChild(text, x, y);
-		return text;
-	}
-
-	public UserInterface addHoverText(BitmapFont font, String s, int x, int y, int color, boolean shadow) {
-		UserInterface text = addText(font, s, x, y, color, shadow);
-		text.hoverColor = 0xFFFFFF;
-		return text;
-	}
-
-	public int addChild(UserInterface child, int x, int y) {
-		int index = children.length;
-
-		int[] old = children;
-		children = new int[index + 1];
-		System.arraycopy(old, 0, children, 0, old.length);
-
-		old = childX;
-		childX = new int[index + 1];
-		System.arraycopy(old, 0, childX, 0, old.length);
-
-		old = childY;
-		childY = new int[index + 1];
-		System.arraycopy(old, 0, childY, 0, old.length);
-
-		children[index] = child.index;
-		childX[index] = x;
-		childY[index] = y;
-
-		return index;
-	}
 
 	public Model getModel(int primaryFrame, int secondaryFrame, boolean enabled) {
 		Model m = modelDisabled;

@@ -1,6 +1,7 @@
 package com.runescape;
 
 final class NPC extends Entity {
+
 	NPCConfig config;
 
 	@Override
@@ -25,7 +26,7 @@ final class NPC extends Entity {
 		m.labelVertices = null;
 
 		m.applyLighting(64, 850, -30, -50, -30, true);
-		return new Model(new Model[] { getModel(), m }, 2, true, 20525);
+		return new Model(new Model[]{getModel(), m}, 2, true, 20525);
 	}
 
 	public final Model getModel() {
@@ -52,9 +53,6 @@ final class NPC extends Entity {
 	}
 
 	public final boolean isValid() {
-		if (config == null) {
-			return false;
-		}
-		return true;
+		return config != null;
 	}
 }

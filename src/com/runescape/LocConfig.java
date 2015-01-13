@@ -12,7 +12,7 @@ public final class LocConfig {
 	private static LocConfig[] cache;
 	private static int cachePosition;
 
-	private int index = -1;
+	private int index;
 	public int[] modelIndices;
 	public int[] modelTypes;
 	public String name;
@@ -96,7 +96,11 @@ public final class LocConfig {
 		return c;
 	}
 
-	private final void reset() {
+	public LocConfig() {
+		this.index = -1;
+	}
+
+	private void reset() {
 		modelIndices = null;
 		modelTypes = null;
 		name = null;
@@ -127,7 +131,7 @@ public final class LocConfig {
 		interactionSideFlags = 0;
 	}
 
-	private final void read(Buffer b) {
+	private void read(Buffer b) {
 		int bool = -1;
 
 		for (;;) {
@@ -298,13 +302,7 @@ public final class LocConfig {
 			m = new Model(modelIndex & 0xFFFF);
 		}
 
-		boolean rescale;
-
-		if (scaleX != 128 || scaleY != 128 || scaleZ != 128) {
-			rescale = true;
-		} else {
-			rescale = false;
-		}
+		boolean rescale = scaleX != 128 || scaleY != 128 || scaleZ != 128;
 
 		m = new Model(m, rotation == 0 && !adjustToTerrain && !rescale, oldColors == null, !disposeAlpha, !flatShaded);
 
@@ -349,7 +347,7 @@ public final class LocConfig {
 
 	public final Model getModel(int type, int rotation, int southwestY, int southeastY, int northeastY, int northwestY, int seqFrame) {
 		long uid;
-		Model m = null;
+		Model m;
 
 		if (modelTypes == null) {
 			if (type != 10) {
@@ -451,13 +449,7 @@ public final class LocConfig {
 			}
 		}
 
-		boolean rescale;
-
-		if (scaleX != 128 || scaleY != 128 || scaleZ != 128) {
-			rescale = true;
-		} else {
-			rescale = false;
-		}
+		boolean rescale = scaleX != 128 || scaleY != 128 || scaleZ != 128;
 
 		m = new Model(m, rotation == 0 && !adjustToTerrain && seqFrame == -1 && !rescale, oldColors == null, !disposeAlpha, !flatShaded);
 

@@ -1,6 +1,7 @@
 package com.runescape;
 
-class Entity extends Renderable {
+public class Entity extends Renderable {
+
 	int sceneX;
 	int sceneZ;
 	int yaw;

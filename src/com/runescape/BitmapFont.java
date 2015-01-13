@@ -138,40 +138,57 @@ public final class BitmapFont extends Canvas2D {
 		for (int i = 0; i < s.length(); i++) {
 			if (s.charAt(i) == '@' && i + 4 < s.length() && s.charAt(i + 4) == '@') {
 				String tag = s.substring(i + 1, i + 4);
-				if (tag.equals("red"))
+				if (tag.equals("red")) {
 					rgb = 16711680;
-				if (tag.equals("gre"))
+				}
+				if (tag.equals("gre")) {
 					rgb = 65280;
-				if (tag.equals("blu"))
+				}
+				if (tag.equals("blu")) {
 					rgb = 255;
-				if (tag.equals("yel"))
+				}
+				if (tag.equals("yel")) {
 					rgb = 16776960;
-				if (tag.equals("cya"))
+				}
+				if (tag.equals("cya")) {
 					rgb = 65535;
-				if (tag.equals("mag"))
+				}
+				if (tag.equals("mag")) {
 					rgb = 16711935;
-				if (tag.equals("whi"))
+				}
+				if (tag.equals("whi")) {
 					rgb = 16777215;
-				if (tag.equals("bla"))
+				}
+				if (tag.equals("bla")) {
 					rgb = 0;
-				if (tag.equals("lre"))
+				}
+				if (tag.equals("lre")) {
 					rgb = 16748608;
-				if (tag.equals("dre"))
+				}
+				if (tag.equals("dre")) {
 					rgb = 8388608;
-				if (tag.equals("dbl"))
+				}
+				if (tag.equals("dbl")) {
 					rgb = 128;
-				if (tag.equals("or1"))
+				}
+				if (tag.equals("or1")) {
 					rgb = 16756736;
-				if (tag.equals("or2"))
+				}
+				if (tag.equals("or2")) {
 					rgb = 16740352;
-				if (tag.equals("or3"))
+				}
+				if (tag.equals("or3")) {
 					rgb = 16723968;
-				if (tag.equals("gr1"))
+				}
+				if (tag.equals("gr1")) {
 					rgb = 12648192;
-				if (tag.equals("gr2"))
+				}
+				if (tag.equals("gr2")) {
 					rgb = 8453888;
-				if (tag.equals("gr3"))
+				}
+				if (tag.equals("gr3")) {
 					rgb = 4259584;
+				}
 				i += 4;
 			} else {
 				int c = CHAR_LOOKUP[s.charAt(i)];

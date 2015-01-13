@@ -1,6 +1,7 @@
 package com.runescape;
 
 public final class Array {
+
 	private int length;
 	private Link[] array;
 
@@ -18,8 +19,9 @@ public final class Array {
 	public Link get(long id) {
 		Link l = array[(int) (id & (long) (length - 1))];
 		for (Link l1 = l.previous; l1 != l; l1 = l1.previous) {
-			if (l1.unique == id)
+			if (l1.unique == id) {
 				return l1;
+			}
 		}
 		return null;
 	}

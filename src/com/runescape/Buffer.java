@@ -186,8 +186,9 @@ public final class Buffer extends CacheLink {
 			/* empty */
 		}
 		byte[] bytes = new byte[pos - start - 1];
-		for (int i = start; i < pos - 1; i++)
+		for (int i = start; i < pos - 1; i++) {
 			bytes[i - start] = data[i];
+		}
 		return bytes;
 	}
 
@@ -246,14 +247,14 @@ public final class Buffer extends CacheLink {
 		byte[] tmp = new byte[pos];
 		System.arraycopy(data, 0, tmp, 0, pos);
 		byte[] encoded = new BigInteger(tmp).toByteArray();// .modPow(exponent,
-															// modulus).toByteArray();
+		// modulus).toByteArray();
 		pos = 0;
 		write(encoded.length);
 		write(encoded, 0, encoded.length);
 	}
 
 	static {
-		BITMASK = new int[] { 0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535, 131071, 262143, 524287, 1048575, 2097151, 4194303, 8388607, 16777215, 33554431, 67108863, 134217727, 268435455, 536870911, 1073741823, 2147483647, -1 };
+		BITMASK = new int[]{0, 1, 3, 7, 15, 31, 63, 127, 255, 511, 1023, 2047, 4095, 8191, 16383, 32767, 65535, 131071, 262143, 524287, 1048575, 2097151, 4194303, 8388607, 16777215, 33554431, 67108863, 134217727, 268435455, 536870911, 1073741823, 2147483647, -1};
 		pool1 = new LinkedList();
 		pool2 = new LinkedList();
 		pool3 = new LinkedList();

@@ -408,41 +408,57 @@ public class CollisionMap {
 
 		if (type == 2) {
 			if (direction == 0) {
-				if (x0 == x1 - 1 && y0 == y1)
+				if (x0 == x1 - 1 && y0 == y1) {
 					return true;
-				if (x0 == x1 && y0 == y1 + 1)
+				}
+				if (x0 == x1 && y0 == y1 + 1) {
 					return true;
-				if (x0 == x1 + 1 && y0 == y1 && (flags[x0][y0] & 0x280180) == 0)
+				}
+				if (x0 == x1 + 1 && y0 == y1 && (flags[x0][y0] & 0x280180) == 0) {
 					return true;
-				if (x0 == x1 && y0 == y1 - 1 && (flags[x0][y0] & 0x280102) == 0)
+				}
+				if (x0 == x1 && y0 == y1 - 1 && (flags[x0][y0] & 0x280102) == 0) {
 					return true;
+				}
 			} else if (direction == 1) {
-				if (x0 == x1 - 1 && y0 == y1 && (flags[x0][y0] & 0x280108) == 0)
+				if (x0 == x1 - 1 && y0 == y1 && (flags[x0][y0] & 0x280108) == 0) {
 					return true;
-				if (x0 == x1 && y0 == y1 + 1)
+				}
+				if (x0 == x1 && y0 == y1 + 1) {
 					return true;
-				if (x0 == x1 + 1 && y0 == y1)
+				}
+				if (x0 == x1 + 1 && y0 == y1) {
 					return true;
-				if (x0 == x1 && y0 == y1 - 1 && (flags[x0][y0] & 0x280102) == 0)
+				}
+				if (x0 == x1 && y0 == y1 - 1 && (flags[x0][y0] & 0x280102) == 0) {
 					return true;
+				}
 			} else if (direction == 2) {
-				if (x0 == x1 - 1 && y0 == y1 && (flags[x0][y0] & 0x280108) == 0)
+				if (x0 == x1 - 1 && y0 == y1 && (flags[x0][y0] & 0x280108) == 0) {
 					return true;
-				if (x0 == x1 && y0 == y1 + 1 && (flags[x0][y0] & 0x280120) == 0)
+				}
+				if (x0 == x1 && y0 == y1 + 1 && (flags[x0][y0] & 0x280120) == 0) {
 					return true;
-				if (x0 == x1 + 1 && y0 == y1)
+				}
+				if (x0 == x1 + 1 && y0 == y1) {
 					return true;
-				if (x0 == x1 && y0 == y1 - 1)
+				}
+				if (x0 == x1 && y0 == y1 - 1) {
 					return true;
+				}
 			} else if (direction == 3) {
-				if (x0 == x1 - 1 && y0 == y1)
+				if (x0 == x1 - 1 && y0 == y1) {
 					return true;
-				if (x0 == x1 && y0 == y1 + 1 && (flags[x0][y0] & 0x280120) == 0)
+				}
+				if (x0 == x1 && y0 == y1 + 1 && (flags[x0][y0] & 0x280120) == 0) {
 					return true;
-				if (x0 == x1 + 1 && y0 == y1 && (flags[x0][y0] & 0x280180) == 0)
+				}
+				if (x0 == x1 + 1 && y0 == y1 && (flags[x0][y0] & 0x280180) == 0) {
 					return true;
-				if (x0 == x1 && y0 == y1 - 1)
+				}
+				if (x0 == x1 && y0 == y1 - 1) {
 					return true;
+				}
 			}
 		}
 

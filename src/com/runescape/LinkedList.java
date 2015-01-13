@@ -1,6 +1,7 @@
 package com.runescape;
 
 public final class LinkedList {
+
 	Link head = new Link();
 	Link selected;
 

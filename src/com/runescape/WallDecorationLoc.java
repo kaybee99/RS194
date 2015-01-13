@@ -1,10 +1,7 @@
 package com.runescape;
 
-/* Class11 - Decompiled by JODE
- * Visit http://jode.sourceforge.net/
- */
+public final class WallDecorationLoc {
 
-final class WallDecorationLoc {
 	int sceneY;
 	int sceneX;
 	int sceneZ;

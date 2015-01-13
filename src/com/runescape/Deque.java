@@ -1,10 +1,7 @@
 package com.runescape;
 
-/* Class24 - Decompiled by JODE
- * Visit http://jode.sourceforge.net/
- */
-
 public final class Deque {
+
 	CacheLink head = new CacheLink();
 
 	public Deque() {

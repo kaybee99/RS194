@@ -74,7 +74,7 @@ public final class NPCConfig {
 		return n;
 	}
 
-	private final void read(Buffer b) {
+	private void read(Buffer b) {
 		for (;;) {
 			int opcode = b.read();
 			if (opcode == 0) {

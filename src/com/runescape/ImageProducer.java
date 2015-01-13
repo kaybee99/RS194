@@ -24,7 +24,7 @@ public class ImageProducer extends Link {
 		Arrays.fill(pixels, rgb);
 	}
 
-	public void prepare() {
+	public final void prepare() {
 		Canvas2D.prepare(pixels, width, height);
 	}
 

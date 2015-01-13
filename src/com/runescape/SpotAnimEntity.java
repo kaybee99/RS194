@@ -1,7 +1,8 @@
 package com.runescape;
 
 final class SpotAnimEntity extends Renderable {
-	private SpotAnim spotanim;
+
+	private final SpotAnim spotanim;
 	public int firstCycle;
 	public int plane;
 	public int x;
@@ -34,6 +35,7 @@ final class SpotAnimEntity extends Renderable {
 		}
 	}
 
+	@Override
 	public final Model getDrawModel() {
 		Model m = new Model(spotanim.getModel(), false, true, !spotanim.disposeAlpha, true);
 

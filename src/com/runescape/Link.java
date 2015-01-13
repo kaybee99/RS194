@@ -1,6 +1,7 @@
 package com.runescape;
 
 public class Link {
+
 	long unique;
 	Link previous;
 	Link next;

@@ -1,8 +1,9 @@
 package com.runescape;
 
 public class SeqFrame {
+
 	public static SeqFrame[] instance;
-	
+
 	public int delta;
 	public SeqTransform transform;
 	public int groupCount;

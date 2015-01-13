@@ -30,14 +30,18 @@ public class Canvas2D extends CacheLink {
 	}
 
 	public static void setBounds(int x0, int y0, int x1, int y1) {
-		if (x0 < 0)
+		if (x0 < 0) {
 			x0 = 0;
-		if (y0 < 0)
+		}
+		if (y0 < 0) {
 			y0 = 0;
-		if (x1 > dstW)
+		}
+		if (x1 > dstW) {
 			x1 = dstW;
-		if (y1 > dstH)
+		}
+		if (y1 > dstH) {
 			y1 = dstH;
+		}
 		left = x0;
 		top = y0;
 		right = x1;

@@ -7,10 +7,10 @@ public final class Scene {
 	public static final int FAR_Z = 128 * VIEW_RADIUS;
 	public static final int NEAR_Z = 50;
 
-	private static final int[] WALL_ROTATION_TYPE1 = { 0x1, 0x2, 0x4, 0x8 };
-	private static final int[] WALL_ROTATION_TYPE2 = { 0x10, 0x20, 0x40, 0x80 };
-	private static final int[] WALL_DECO_ROT_SIZE_X_DIR = { 1, 0, -1, 0 };
-	private static final int[] WALL_DECO_ROT_SIZE_Y_DIR = { 0, -1, 0, 1 };
+	private static final int[] WALL_ROTATION_TYPE1 = {0x1, 0x2, 0x4, 0x8};
+	private static final int[] WALL_ROTATION_TYPE2 = {0x10, 0x20, 0x40, 0x80};
+	private static final int[] WALL_DECO_ROT_SIZE_X_DIR = {1, 0, -1, 0};
+	private static final int[] WALL_DECO_ROT_SIZE_Y_DIR = {0, -1, 0, 1};
 
 	public static int hoverRadius = 4;
 	public static int hoverRadiusSquared = hoverRadius * hoverRadius;
@@ -750,7 +750,8 @@ public final class Scene {
 									}
 								}
 
-								findMinPlane: for (; minPlane > 0; minPlane--) {
+								findMinPlane:
+								for (; minPlane > 0; minPlane--) {
 									for (int y = minTileY; y <= maxTileY; y++) {
 										if ((cullingflags[minPlane - 1][tileX][y] & rule0) == 0) {
 											break findMinPlane;
@@ -758,10 +759,12 @@ public final class Scene {
 									}
 								}
 
-								findMaxPlane: for (; maxPlane < plane; maxPlane++) {
+								findMaxPlane:
+								for (; maxPlane < plane; maxPlane++) {
 									for (int x = minTileY; x <= maxTileY; x++) {
-										if ((cullingflags[maxPlane + 1][tileX][x] & rule0) == 0)
+										if ((cullingflags[maxPlane + 1][tileX][x] & rule0) == 0) {
 											break findMaxPlane;
+										}
 									}
 								}
 
@@ -799,7 +802,8 @@ public final class Scene {
 									}
 								}
 
-								findMinPlane: for (; minPlane > 0; minPlane--) {
+								findMinPlane:
+								for (; minPlane > 0; minPlane--) {
 									for (int x = minX; x <= maxX; x++) {
 										if (((cullingflags[minPlane - 1][x][tileY]) & rule1) == 0) {
 											break findMinPlane;
@@ -807,7 +811,8 @@ public final class Scene {
 									}
 								}
 
-								findMaxPlane: for (; maxPlane < plane; maxPlane++) {
+								findMaxPlane:
+								for (; maxPlane < plane; maxPlane++) {
 									for (int x = minX; x <= maxX; x++) {
 										if (((cullingflags[maxPlane + 1][x][tileY]) & rule1) == 0) {
 											break findMaxPlane;
@@ -849,7 +854,8 @@ public final class Scene {
 									}
 								}
 
-								FIND_MIN_X: for (; minX > 0; minX--) {
+								FIND_MIN_X:
+								for (; minX > 0; minX--) {
 									for (int y = minY; y <= maxY; y++) {
 										if (((cullingflags[p][minX - 1][y]) & rule2) == 0) {
 											break FIND_MIN_X;
@@ -857,7 +863,8 @@ public final class Scene {
 									}
 								}
 
-								FIND_MAX_X: for (; maxX < tileSizeX; maxX++) {
+								FIND_MAX_X:
+								for (; maxX < tileSizeX; maxX++) {
 									for (int y = minY; y <= maxY; y++) {
 										if (((cullingflags[p][maxX + 1][y]) & rule2) == 0) {
 											break FIND_MAX_X;
@@ -896,7 +903,7 @@ public final class Scene {
 		return v;
 	}
 
-	private static final int getSmoothNoise(int x, int y, int fraction) {
+	private static int getSmoothNoise(int x, int y, int fraction) {
 		int x1 = x / fraction;
 		int x2 = x & fraction - 1;
 		int y1 = y / fraction;
@@ -910,26 +917,26 @@ public final class Scene {
 		return getCosineLerp(e, f, y2, fraction);
 	}
 
-	private static final int getCosineLerp(int a, int b, int ft, int frac) {
+	private static int getCosineLerp(int a, int b, int ft, int frac) {
 		int f = (65536 - (Canvas3D.cos[ft * 1024 / frac]) >> 1);
 		return (a * (65536 - f) >> 16) + (b * f >> 16);
 	}
 
-	private static final int getSmoothNoise2D(int x, int y) {
+	private static int getSmoothNoise2D(int x, int y) {
 		int corners = (getNoise(x - 1, y - 1) + getNoise(x + 1, y - 1) + getNoise(x - 1, y + 1) + getNoise(x + 1, y + 1));
 		int sides = (getNoise(x - 1, y) + getNoise(x + 1, y) + getNoise(x, y - 1) + getNoise(x, y + 1));
 		int center = getNoise(x, y);
 		return corners / 16 + sides / 8 + center / 4;
 	}
 
-	private static final int getNoise(int x, int y) {
+	private static int getNoise(int x, int y) {
 		int z = x + y * 57;
 		z = z << 13 ^ z;
 		int v = (z * (z * z * 15731 + 789221) + 1376312589 & 0x7fffffff);
 		return (v >> 19) & 0xFF;
 	}
 
-	private static final int adjustColorLightness(int hsl, int lightness) {
+	private static int adjustColorLightness(int hsl, int lightness) {
 		if (hsl == -1) {
 			return 12345678;
 		}
@@ -945,7 +952,7 @@ public final class Scene {
 		return (hsl & 0xff80) + lightness;
 	}
 
-	private final int adjustHSLLightness0(int hsl, int lightness) {
+	private int adjustHSLLightness0(int hsl, int lightness) {
 		if (hsl == -2) {
 			return 12345678;
 		}
@@ -970,7 +977,7 @@ public final class Scene {
 		return (hsl & 0xff80) + lightness;
 	}
 
-	private final int getColor(int hue, int saturation, int lightness) {
+	private int getColor(int hue, int saturation, int lightness) {
 		if (lightness > 179) {
 			saturation /= 2;
 		}

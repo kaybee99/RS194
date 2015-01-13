@@ -105,8 +105,7 @@ public class Censor {
 			// allow all ascii, spaces, newlines, tabs, and 2 currency symbols.
 			if (isValid(chars[n])) {
 				chars[off] = chars[n];
-			}
-			// if it's bad, replace with a space
+			} // if it's bad, replace with a space
 			else {
 				chars[off] = ' ';
 			}
@@ -125,7 +124,7 @@ public class Censor {
 	}
 
 	public static boolean isValid(char c) {
-		return c >= ' ' && c <= 127 || c == ' ' || c == '\n' || c == '\t' || c == '£' || c == '€';
+		return c >= ' ' && c <= 127 || c == ' ' || c == '\n' || c == '\t' || c == '\u00A3' || c == '\u20AC';
 	}
 
 	public static String getFiltered(String s) {
@@ -193,10 +192,10 @@ public class Censor {
 
 	public static void filterDomains(char[] chars) {
 		char ac1[] = (char[]) chars.clone();
-		filterBad(ac1, new char[] { '(', 'a', ')' }, null);
+		filterBad(ac1, new char[]{'(', 'a', ')'}, null);
 
 		char ac3[] = (char[]) chars.clone();
-		filterBad(ac3, new char[] { 'd', 'o', 't' }, null);
+		filterBad(ac3, new char[]{'d', 'o', 't'}, null);
 
 		for (int n = domains.length - 1; n >= 0; n--) {
 			filterDomain(chars, domains[n], ac3, ac1);
@@ -340,10 +339,10 @@ public class Censor {
 
 	public static void filterTlds(char[] chars) {
 		char filteredDot[] = (char[]) chars.clone();
-		filterBad(filteredDot, new char[] { 'd', 'o', 't' }, null);
+		filterBad(filteredDot, new char[]{'d', 'o', 't'}, null);
 
 		char filteredSlash[] = (char[]) chars.clone();
-		filterBad(filteredSlash, new char[] { 's', 'l', 'a', 's', 'h' }, null);
+		filterBad(filteredSlash, new char[]{'s', 'l', 'a', 's', 'h'}, null);
 
 		for (int n = 0; n < tlds.length; n++) {
 			filterTld(chars, tlds[n], tldTypes[n], filteredDot, filteredSlash);
@@ -406,14 +405,12 @@ public class Censor {
 				// 2 = start pos was 0
 				// 3 = found comma or period
 				// 4 = found a string of 3 or more asterisks
-
 				// status1 number meanings
 				// 0 = found no symbols
 				// 1 = found symbol but not comma, period, or >= 5 asterisks
 				// 2 = end pos was 0
 				// 3 = found forward or backwards slash
 				// 4 = found a string of 5 or more asterisks
-
 				if (type == 1 && status0 > 0 && status1 > 0) {
 					bad = true;
 				}
@@ -676,7 +673,7 @@ public class Censor {
 							cur = start;
 						}
 
-						for (; !good && cur < end; cur++)
+						for (; !good && cur < end; cur++) {
 							if (cur >= 0 && (!StringUtil.isSymbol(chars[cur]) || chars[cur] == '\'')) {
 								char[] frag = new char[3];
 								int off;
@@ -704,6 +701,7 @@ public class Censor {
 									good = true;
 								}
 							}
+						}
 
 						if (!good) {
 							bad = false;
@@ -772,43 +770,44 @@ public class Censor {
 	/**
 	 * Returns the lengths of the emulated characters for 'o', 'c', 'e', 's',
 	 * and 'l' e.g.: "()" for 'o' would return 2.
-	 * 
-	 * @param a
-	 *            the first char
-	 * @param b
-	 *            the second char
-	 * @param c
-	 *            the third char
+	 *
+	 * @param a the first char
+	 * @param b the second char
+	 * @param c the third char
 	 * @return the length
 	 */
 	public static int getEmulatedDomainCharLen(char a, char b, char c) {
-		if (a == b)
+		if (a == b) {
 			return 1;
-		if (a == 'o' && b == '0')
+		}
+		if (a == 'o' && b == '0') {
 			return 1;
-		if (a == 'o' && b == '(' && c == ')')
+		}
+		if (a == 'o' && b == '(' && c == ')') {
 			return 2;
-		if (a == 'c' && (b == '(' || b == '<' || b == '['))
+		}
+		if (a == 'c' && (b == '(' || b == '<' || b == '[')) {
 			return 1;
-		if (a == 'e' && b == '\u20AC')
+		}
+		if (a == 'e' && b == '\u20AC') {
 			return 1;
-		if (a == 's' && b == '$')
+		}
+		if (a == 's' && b == '$') {
 			return 1;
-		if (a == 'l' && b == 'i')
+		}
+		if (a == 'l' && b == 'i') {
 			return 1;
+		}
 		return 0;
 	}
 
 	/**
 	 * Used for getting the length of an emulated character. e.g.; [) for 'd'
 	 * would return 2 since it uses 2 characters to emulate the letter d.
-	 * 
-	 * @param a
-	 *            the first char
-	 * @param b
-	 *            the second char
-	 * @param c
-	 *            the third char
+	 *
+	 * @param a the first char
+	 * @param b the second char
+	 * @param c the third char
 	 * @return the length
 	 */
 	public static int getEmulatedBadCharLen(char a, char b, char c) {
@@ -1120,6 +1119,6 @@ public class Censor {
 	public static char domains[][];
 	public static char tlds[][];
 	public static int tldTypes[];
-	public static final String WHITELIST[] = { "cook", "cook's", "cooks", "seeks", "sheet", "woop", "woops", "faq", "noob", "noobs" };
+	public static final String WHITELIST[] = {"cook", "cook's", "cooks", "seeks", "sheet", "woop", "woops", "faq", "noob", "noobs"};
 
 }

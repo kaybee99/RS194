@@ -1,6 +1,7 @@
 package com.runescape;
 
 final class Player extends Entity {
+
 	String name;
 	boolean visible = false;
 	int gender;
@@ -99,7 +100,7 @@ final class Player extends Entity {
 			m.labelVertices = null;
 			m.applyLighting(64, 850, -30, -50, -30, true);
 
-			model = new Model(new Model[] { model, m }, 2, true, 20525);
+			model = new Model(new Model[]{model, m}, 2, true, 20525);
 		}
 
 		if (locModel != null) {
@@ -123,7 +124,7 @@ final class Player extends Entity {
 				}
 
 				// merge player model with loc model (like chris said lel)
-				model = new Model(new Model[] { model, m }, 2, true, 20525);
+				model = new Model(new Model[]{model, m}, 2, true, 20525);
 
 				if (dstYaw == 512) {
 					m.rotateCounterClockwise();

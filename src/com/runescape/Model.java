@@ -1905,7 +1905,6 @@ public class Model extends CacheLink {
 		// If cZ is >= NEAR_Z, we're going to approach A to C by howver much we
 		// need to to simulate aZ being atleast 50.
 		// The same for bZ.
-
 		if (aZ >= Scene.NEAR_Z) {
 			tmpX[n] = vertexScreenX[a];
 			tmpY[n] = vertexScreenY[a];
@@ -2061,14 +2060,18 @@ public class Model extends CacheLink {
 	}
 
 	public static final boolean withinTriangle(int x, int y, int y0, int y1, int y2, int x0, int x1, int x2) {
-		if (y < y0 && y < y1 && y < y2)
+		if (y < y0 && y < y1 && y < y2) {
 			return false;
-		if (y > y0 && y > y1 && y > y2)
+		}
+		if (y > y0 && y > y1 && y > y2) {
 			return false;
-		if (x < x0 && x < x1 && x < x2)
+		}
+		if (x < x0 && x < x1 && x < x2) {
 			return false;
-		if (x > x0 && x > x1 && x > x2)
+		}
+		if (x > x0 && x > x1 && x > x2) {
 			return false;
+		}
 		return true;
 	}
 }

@@ -1,6 +1,7 @@
 package com.runescape;
 
 public class Landscape {
+
 	public static boolean lowmemory = true;
 
 	public int planeCount;
@@ -31,10 +32,10 @@ public class Landscape {
 	public static int yawCos;
 	public static Loc[] drawnLocs = new Loc[100];
 
-	public static final int[] DECO_TYPE1_OFFSET_X = { 53, -53, -53, 53 };
-	public static final int[] DECO_TYPE1_OFFSET_Z = { -53, -53, 53, 53 };
-	public static final int[] DECO_TYPE2_OFFSET_X = { -45, 45, 45, -45 };
-	public static final int[] DECO_TYPE2_OFFSET_Z = { 45, 45, -45, -45 };
+	public static final int[] DECO_TYPE1_OFFSET_X = {53, -53, -53, 53};
+	public static final int[] DECO_TYPE1_OFFSET_Z = {-53, -53, 53, 53};
+	public static final int[] DECO_TYPE2_OFFSET_X = {-45, 45, 45, -45};
+	public static final int[] DECO_TYPE2_OFFSET_Z = {45, 45, -45, -45};
 
 	public static final int MAX_OCCLUDER_PLANES = 4;
 	public static int[] planeOccluderCount = new int[MAX_OCCLUDER_PLANES];
@@ -45,32 +46,32 @@ public class Landscape {
 
 	// @formatter:off
 	public static final int[] DIRECTION_DRAW_TYPE = {
-												0x10					|	0x2	|	0x1,
-									0x20	|	0x10	|			0x4	|	0x2	|	0x1,
-									0x20	|						0x4	|	0x2,
-			0x80							|	0x10	|	0x8			|	0x2	|	0x1,
-			0x80	|	0x40	|	0x20	|	0x10	|	0x8	|	0x4	|	0x2	|	0x1,
-						0x40	|	0x20	|				0x8	|	0x4	|	0x2,
-			0x80	|										0x8	|					0x1,
-			0x80	|	0x40	|							0x8	|	0x4	|			0x1,
-						0x40	|							0x8	|	0x4
+		0x10 | 0x2 | 0x1,
+		0x20 | 0x10 | 0x4 | 0x2 | 0x1,
+		0x20 | 0x4 | 0x2,
+		0x80 | 0x10 | 0x8 | 0x2 | 0x1,
+		0x80 | 0x40 | 0x20 | 0x10 | 0x8 | 0x4 | 0x2 | 0x1,
+		0x40 | 0x20 | 0x8 | 0x4 | 0x2,
+		0x80 | 0x8 | 0x1,
+		0x80 | 0x40 | 0x8 | 0x4 | 0x1,
+		0x40 | 0x8 | 0x4
 	};
 	// @formatter:on
 
-	public static final int[] anIntArray414 = { 160, 192, 80, 96, 0, 144, 80, 48, 160 };
-	public static final int[] anIntArray415 = { 76, 8, 137, 4, 0, 1, 38, 2, 19 };
-	public static final int[] anIntArray416 = { 0, 0, 2, 0, 0, 2, 1, 1, 0 };
-	public static final int[] anIntArray417 = { 2, 0, 0, 2, 0, 0, 0, 4, 4 };
-	public static final int[] anIntArray418 = { 0, 4, 4, 8, 0, 0, 8, 0, 0 };
-	public static final int[] anIntArray419 = { 1, 1, 0, 0, 0, 8, 0, 0, 8 };
-	public static final int[] TEXTURE_HSL = { 41, 39248, 41, 4643, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 43086, 41, 41, 41, 41, 41, 41, 41, 8602, 41, 28992, 41, 41, 41, 41, 41, 5056, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 3131, 41, 41, 41 };
+	public static final int[] anIntArray414 = {160, 192, 80, 96, 0, 144, 80, 48, 160};
+	public static final int[] anIntArray415 = {76, 8, 137, 4, 0, 1, 38, 2, 19};
+	public static final int[] anIntArray416 = {0, 0, 2, 0, 0, 2, 1, 1, 0};
+	public static final int[] anIntArray417 = {2, 0, 0, 2, 0, 0, 0, 4, 4};
+	public static final int[] anIntArray418 = {0, 4, 4, 8, 0, 0, 8, 0, 0};
+	public static final int[] anIntArray419 = {1, 1, 0, 0, 0, 8, 0, 0, 8};
+	public static final int[] TEXTURE_HSL = {41, 39248, 41, 4643, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 43086, 41, 41, 41, 41, 41, 41, 41, 8602, 41, 28992, 41, 41, 41, 41, 41, 5056, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 3131, 41, 41, 41};
 
 	public int[] vertexAMergeIndex = new int[10000];
 	public int[] vertexBMergeIndex = new int[10000];
 	public int normalMergeIndex;
 
 	/* @formatter:off */
-	public static final int[][] TILE_MASK_2D = { new int[16], {
+	public static final int[][] TILE_MASK_2D = {new int[16], {
 		1, 1, 1, 1,
 		1, 1, 1, 1,
 		1, 1, 1, 1,
@@ -130,8 +131,8 @@ public class Landscape {
 		0, 0, 0, 0,
 		0, 1, 1, 0,
 		1, 1, 1, 1
-	} };
-	
+	}};
+
 	public static final int[][] TILE_ROTATION_2D = {{
 		0, 1, 2, 3,
 		4, 5, 6, 7,
@@ -152,7 +153,7 @@ public class Landscape {
 		2, 6, 10, 14,
 		1, 5, 9, 13,
 		0, 4, 8, 12
-	} };
+	}};
 	/* @formatter:on */
 
 	public static boolean[][][][] visibilityMaps = new boolean[8][32][Scene.VIEW_DIAMETER + 1][Scene.VIEW_DIAMETER + 1];
@@ -261,15 +262,17 @@ public class Landscape {
 		if (type == 0) {
 			TileUnderlay t = new TileUnderlay(southwestColor1, southeastColor1, northeastColor1, northwestColor1, -1, rgb0, false);
 			for (int y = tileY; y >= 0; y--) {
-				if (planeTiles[y][tileX][tileZ] == null)
+				if (planeTiles[y][tileX][tileZ] == null) {
 					planeTiles[y][tileX][tileZ] = new Tile(y, tileX, tileZ);
+				}
 			}
 			planeTiles[tileY][tileX][tileZ].underlay = t;
 		} else if (type == 1) {
 			TileUnderlay t = new TileUnderlay(southwestColor2, southeastColor2, northeastColor2, northwestColor2, textureIndex, rgb1, (southwestY == southeastY && southwestY == northeastY && southwestY == northwestY));
 			for (int p = tileY; p >= 0; p--) {
-				if (planeTiles[p][tileX][tileZ] == null)
+				if (planeTiles[p][tileX][tileZ] == null) {
 					planeTiles[p][tileX][tileZ] = new Tile(p, tileX, tileZ);
+				}
 			}
 			planeTiles[tileY][tileX][tileZ].underlay = t;
 		} else {
@@ -1001,7 +1004,8 @@ public class Landscape {
 					for (int y = -Scene.VIEW_RADIUS; y < Scene.VIEW_RADIUS; y++) {
 						boolean visible = false;
 
-						LOOP: {
+						LOOP:
+						{
 							for (int dx = -1; dx <= 1; dx++) {
 								for (int dy = -1; dy <= 1; dy++) {
 									if (tileVisible[pitch][yaw][x + dx + Scene.VIEW_RADIUS + 1][y + dy + Scene.VIEW_RADIUS + 1]) {
@@ -1530,7 +1534,8 @@ public class Landscape {
 					int locN = tile.locN;
 					tile.drawLocs = false;
 					int locCount = 0;
-					LOOP: for (int n = 0; n < locN; n++) {
+					LOOP:
+					for (int n = 0; n < locN; n++) {
 						Loc l = tile.locs[n];
 
 						if (l.cycle != cullCycle) {
@@ -2220,7 +2225,8 @@ public class Landscape {
 
 						boolean visible = false;
 
-						LOOP: {
+						LOOP:
+						{
 							for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
 								for (int tileY = minTileY; tileY <= maxTileY; tileY++) {
 									if (visibilityMap[tileX][tileY]) {

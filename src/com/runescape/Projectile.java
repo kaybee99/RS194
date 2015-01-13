@@ -1,11 +1,8 @@
 package com.runescape;
 
-/* Class34_Sub7_Sub3 - Decompiled by JODE
- * Visit http://jode.sourceforge.net/
- */
-
 final class Projectile extends Renderable {
-	private SpotAnim spotanim;
+
+	private final SpotAnim spotanim;
 	public int plane;
 	public int sourceX;
 	public int sourceY;
@@ -77,7 +74,6 @@ final class Projectile extends Renderable {
 		// sin : opposite / hypotenuse
 		// cos : ajacent / hypotenuse
 		// tan : opposite / ajacent
-
 		yaw = ((int) (Math.atan2(velocityX, velocityY) * 325.949) + 1024) & 0x7FF;
 		pitch = ((int) (Math.atan2(velocityZ, velocity) * 325.949) & 0x7FF);
 

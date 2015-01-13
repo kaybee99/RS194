@@ -1,6 +1,7 @@
 package com.runescape;
 
 public class ModelContext {
+
 	public int vertexCount;
 	public int triangleCount;
 	public int texturedCount;

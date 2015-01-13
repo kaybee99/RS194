@@ -1,17 +1,17 @@
 package com.runescape;
 
 public final class ISAAC {
+
 	private int anInt490;
-	private int[] anIntArray491;
-	private int[] anIntArray492 = new int[256];
+	private final int[] anIntArray491;
+	private final int[] anIntArray492 = new int[256];
 	private int anInt493;
 	private int anInt494;
 	private int anInt495;
 
 	public ISAAC(int[] keys) {
 		anIntArray491 = new int[256];
-		for (int n = 0; n < keys.length; n++)
-			anIntArray491[n] = keys[n];
+		System.arraycopy(keys, 0, anIntArray491, 0, keys.length);
 		method257();
 	}
 
@@ -21,18 +21,13 @@ public final class ISAAC {
 		}
 
 		if (anInt490-- == 0) {
-			method256(4);
+			method256();
 			anInt490 = 255;
 		}
 		return anIntArray491[anInt490];
 	}
 
-	private final void method256(int i) {
-		if (i != 4) {
-			for (int i_1_ = 1; i_1_ > 0; i_1_++) {
-				/* empty */
-			}
-		}
+	private void method256() {
 		anInt494 += ++anInt495;
 		for (int i_2_ = 0; i_2_ < 256; i_2_++) {
 			int i_3_ = anIntArray492[i_2_];
@@ -57,7 +52,7 @@ public final class ISAAC {
 		}
 	}
 
-	private final void method257() {
+	private void method257() {
 		int i_5_;
 		int i_6_;
 		int i_7_;
@@ -176,7 +171,7 @@ public final class ISAAC {
 			anIntArray492[i_14_ + 6] = i_10_;
 			anIntArray492[i_14_ + 7] = i_11_;
 		}
-		method256(4);
+		method256();
 		anInt490 = 256;
 	}
 }

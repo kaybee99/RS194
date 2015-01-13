@@ -41,12 +41,14 @@ public final class IndexedBitmap extends Canvas2D {
 		data = new byte[width * height];
 
 		if (type == 0) {
-			for (int n = 0; n < data.length; n++)
+			for (int n = 0; n < data.length; n++) {
 				data[n] = dat.readByte();
+			}
 		} else if (type == 1) {
 			for (int x = 0; x < width; x++) {
-				for (int y = 0; y < height; y++)
+				for (int y = 0; y < height; y++) {
 					data[x + y * width] = dat.readByte();
+				}
 			}
 		}
 	}
@@ -74,8 +76,9 @@ public final class IndexedBitmap extends Canvas2D {
 			byte[] newPixels = new byte[clipWidth * clipHeight];
 			int off = 0;
 			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++)
+				for (int x = 0; x < width; x++) {
 					newPixels[x + clipX + (y + clipY) * clipWidth] = data[off++];
+				}
 			}
 			data = newPixels;
 			width = clipWidth;
@@ -125,8 +128,9 @@ public final class IndexedBitmap extends Canvas2D {
 			srcOff += trim * w;
 			dstOff += trim * Canvas2D.dstW;
 		}
-		if (y + h > Canvas2D.bottom)
+		if (y + h > Canvas2D.bottom) {
 			h -= y + h - Canvas2D.bottom;
+		}
 		if (x < Canvas2D.left) {
 			int trim = Canvas2D.left - x;
 			w -= trim;
@@ -142,8 +146,9 @@ public final class IndexedBitmap extends Canvas2D {
 			srcStep += trim;
 			dstStep += trim;
 		}
-		if (w > 0 && h > 0)
+		if (w > 0 && h > 0) {
 			copyImage(h, data, palette, w, dstOff, srcOff, Canvas2D.dst, dstStep, srcStep);
+		}
 	}
 
 	private void copyImage(int h, byte[] src, int[] palette, int w, int dstOff, int srcOff, int[] dst, int dstStep, int srcstep) {
@@ -152,32 +157,37 @@ public final class IndexedBitmap extends Canvas2D {
 		for (int y = -h; y < 0; y++) {
 			for (int x = hw; x < 0; x++) {
 				int p = src[srcOff++];
-				if (p != 0)
+				if (p != 0) {
 					dst[dstOff++] = palette[p & 0xff];
-				else
+				} else {
 					dstOff++;
+				}
 				p = src[srcOff++];
-				if (p != 0)
+				if (p != 0) {
 					dst[dstOff++] = palette[p & 0xff];
-				else
+				} else {
 					dstOff++;
+				}
 				p = src[srcOff++];
-				if (p != 0)
+				if (p != 0) {
 					dst[dstOff++] = palette[p & 0xff];
-				else
+				} else {
 					dstOff++;
+				}
 				p = src[srcOff++];
-				if (p != 0)
+				if (p != 0) {
 					dst[dstOff++] = palette[p & 0xff];
-				else
+				} else {
 					dstOff++;
+				}
 			}
 			for (int x = w; x < 0; x++) {
 				int p = src[srcOff++];
-				if (p != 0)
+				if (p != 0) {
 					dst[dstOff++] = palette[p & 0xff];
-				else
+				} else {
 					dstOff++;
+				}
 			}
 			dstOff += dstStep;
 			srcOff += srcstep;

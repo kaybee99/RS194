@@ -4,7 +4,7 @@ public final class ObjConfig {
 
 	public static int count;
 	private static int[] pointers;
-	private static Buffer data;
+	private static Buffer buffer;
 	private static ObjConfig[] cache;
 	private static int cachepos;
 	public static List uniqueModelCache = new List(50);
@@ -43,7 +43,7 @@ public final class ObjConfig {
 	}
 
 	public static final void load(Archive a) {
-		data = new Buffer(a.get("obj.dat", null));
+		buffer = new Buffer(a.get("obj.dat", null));
 		Buffer b = new Buffer(a.get("obj.idx", null));
 		count = b.readUShort();
 		pointers = new int[count];
@@ -66,7 +66,7 @@ public final class ObjConfig {
 		uniqueBitmapCache = null;
 		pointers = null;
 		cache = null;
-		data = null;
+		buffer = null;
 	}
 
 	public static final ObjConfig get(int i) {
@@ -77,10 +77,10 @@ public final class ObjConfig {
 		}
 		cachepos = (cachepos + 1) % 10;
 		ObjConfig o = cache[cachepos];
-		data.pos = pointers[i];
+		buffer.pos = pointers[i];
 		o.index = i;
 		o.reset();
-		o.read(data);
+		o.read(buffer);
 		return o;
 	}
 

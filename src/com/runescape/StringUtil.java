@@ -1,7 +1,8 @@
 package com.runescape;
 
 public final class StringUtil {
-	public static final char[] BASE37_LOOKUP = { '_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
+
+	public static final char[] BASE37_LOOKUP = {'_', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'};
 	public static final String ASCII_TABLE = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\u00a3$%^&*()-_=+[{]};:'@#~,<.>/?\\| ";
 
 	public static long toBase37(String s) {
@@ -50,9 +51,8 @@ public final class StringUtil {
 
 	/**
 	 * Only allows the string to contain 'a' to 'z', '0' to '9', and '_'.
-	 * 
-	 * @param s
-	 *            the input string.
+	 *
+	 * @param s the input string.
 	 * @return the safe string.
 	 */
 	public static String getSafe(String s) {

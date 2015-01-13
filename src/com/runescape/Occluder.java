@@ -1,6 +1,7 @@
 package com.runescape;
 
 final class Occluder {
+
 	int minTileX;
 	int maxTileX;
 	int minTileZ;

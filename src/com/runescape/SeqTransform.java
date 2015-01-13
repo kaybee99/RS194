@@ -1,6 +1,7 @@
 package com.runescape;
 
 public class SeqTransform {
+
 	public static SeqTransform[] instance;
 	public int length;
 	public int[] types;

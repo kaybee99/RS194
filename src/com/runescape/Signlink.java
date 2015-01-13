@@ -20,6 +20,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.swing.JFileChooser;
 
 public final class Signlink implements Runnable {
+
 	public static Applet mainapp;
 	public static boolean sunjava;
 	private static boolean active;
@@ -65,6 +66,7 @@ public final class Signlink implements Runnable {
 		}
 	}
 
+	@Override
 	public final void run() {
 		if (!active) {
 			active = true;
@@ -109,28 +111,24 @@ public final class Signlink implements Runnable {
 					} catch (Exception e) {
 					}
 
-					try {
-						File f = new File(path, loadreq);
+					File f = new File(path, loadreq);
 
-						if (f.exists()) {
-							int i = (int) f.length();
-							loadbuf = new byte[i];
-							DataInputStream dis = new DataInputStream(new FileInputStream(f));
+					if (f.exists()) {
+						int i = (int) f.length();
+						loadbuf = new byte[i];
+						try (DataInputStream dis = new DataInputStream(new FileInputStream(f))) {
 							dis.readFully(loadbuf, 0, i);
-							dis.close();
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-					} catch (Exception e) {
-						e.printStackTrace();
 					}
 
 					loadreq = null;
 				}
 
 				if (savereq != null) {
-					try {
-						FileOutputStream fos = new FileOutputStream(new File(path, savereq));
+					try (FileOutputStream fos = new FileOutputStream(new File(path, savereq))) {
 						fos.write(savebuf, 0, savebuf.length);
-						fos.close();
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -161,17 +159,13 @@ public final class Signlink implements Runnable {
 			return cacheDirectory;
 		}
 
-		String[] paths = { "c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/", "/tmp/", "" };
+		String[] paths = {"c:/windows/", "c:/winnt/", "d:/windows/", "d:/winnt/", "e:/windows/", "e:/winnt/", "f:/windows/", "f:/winnt/", "c:/", "~/", "/tmp/", ""};
 		String folder = ".file_store_32/";
 
-		for (int i = 0; i < paths.length; i++) {
+		for (String path : paths) {
 			try {
-				String path = paths[i];
-
 				if (path.length() > 0) {
-					File f = new File(path);
-
-					if (!f.exists()) {
+					if (!new File(path).exists()) {
 						continue;
 					}
 				}
@@ -203,7 +197,7 @@ public final class Signlink implements Runnable {
 	public static final URL getURL(String s) {
 		File f = new File(cacheDirectory, s);
 
-		if (f != null && f.exists()) {
+		if (f.exists()) {
 			try {
 				return f.toURI().toURL();
 			} catch (MalformedURLException e) {
@@ -278,8 +272,9 @@ public final class Signlink implements Runnable {
 				/* empty */
 			}
 		}
-		if (socket == null)
+		if (socket == null) {
 			throw new IOException("could not open socket");
+		}
 		return socket;
 	}
 
@@ -301,8 +296,9 @@ public final class Signlink implements Runnable {
 				/* empty */
 			}
 		}
-		if (urlstream == null)
+		if (urlstream == null) {
 			throw new IOException("could not open: " + string);
+		}
 		return urlstream;
 	}
 }
