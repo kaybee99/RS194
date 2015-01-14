@@ -12,8 +12,8 @@ public final class Scene {
 	private static final int[] WALL_DECO_ROT_SIZE_X_DIR = {1, 0, -1, 0};
 	private static final int[] WALL_DECO_ROT_SIZE_Y_DIR = {0, -1, 0, 1};
 
-	public static int hoverRadius = 4;
-	public static int hoverRadiusSquared = hoverRadius * hoverRadius;
+	public static int hoverRadius;
+	public static int hoverRadiusSquared;
 
 	public static int hoverColor = 0x708090;
 	public static int hoverPlane = 0;

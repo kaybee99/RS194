@@ -114,6 +114,7 @@ public class Stream implements Runnable {
 	@Override
 	public void run() {
 		System.out.println("clientstream writer starting");
+		
 		while (writing == true) {
 			int off;
 			int len;
@@ -122,7 +123,7 @@ public class Stream implements Runnable {
 				if (bufPos == bufLen) {
 					try {
 						this.wait();
-					} catch (InterruptedException interruptedexception) {
+					} catch (InterruptedException e) {
 						/* empty */
 					}
 				}

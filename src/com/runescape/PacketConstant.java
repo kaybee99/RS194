@@ -2,7 +2,6 @@ package com.runescape;
 
 public class PacketConstant {
 
-	/* @formatter:off */
 	public static final int[] SIZE = {
 		//	0	1	2	3	4	5	6	7	8	9
 		0, 0, 0, 0, 0, 0, -2, 0, 0, -2, //	0
@@ -33,6 +32,5 @@ public class PacketConstant {
 		3, 0, 0, 0, 1, 0, 0 //	250
 	//	0	1	2	3	4	5	6	7	8	9
 	};
-	/* @formatter:on */
 
 }

@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class Landscape {
+public final class Landscape {
 
 	public static boolean lowmemory = true;
 
@@ -39,9 +39,9 @@ public class Landscape {
 
 	public static final int MAX_OCCLUDER_PLANES = 4;
 	public static int[] planeOccluderCount = new int[MAX_OCCLUDER_PLANES];
-	public static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
+	static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
 	public static int activeOcludderN;
-	public static Occluder[] activeOcludders = new Occluder[500];
+	static Occluder[] activeOcludders = new Occluder[500];
 	public static LinkedList tileQueue = new LinkedList();
 
 	// @formatter:off
@@ -1051,10 +1051,7 @@ public class Landscape {
 		int screenX = viewportCenterX + (x << 9) / z;
 		int screenY = viewportCenterY + (y << 9) / z;
 
-		if (screenX < viewportLeft || screenX > viewportRight || screenY < viewportTop || screenY > viewportBottom) {
-			return false;
-		}
-		return true;
+		return !(screenX < viewportLeft || screenX > viewportRight || screenY < viewportTop || screenY > viewportBottom);
 	}
 
 	public void sendClick(int clickX, int clickY) {
@@ -1134,13 +1131,7 @@ public class Landscape {
 						} else {
 							t.draw = true;
 							t.update = true;
-
-							if (t.locN > 0) {
-								t.drawLocs = true;
-							} else {
-								t.drawLocs = false;
-							}
-
+							t.drawLocs = t.locN > 0;
 							tileUpdateN++;
 						}
 					}
@@ -2077,11 +2068,7 @@ public class Landscape {
 		int b = ((y - y2) * (x0 - x2) - (x - x2) * (y0 - y2));
 		int c = ((y - y1) * (x2 - x1) - (x - x1) * (y2 - y1));
 
-		if (a * c > 0 && c * b > 0) {
-			return true;
-		}
-
-		return false;
+		return a * c > 0 && c * b > 0;
 	}
 
 	private void updateOccluders() {
@@ -2315,10 +2302,7 @@ public class Landscape {
 					return false;
 				}
 
-				if (!culled(sceneX, planeY1, sceneZ + 128)) {
-					return false;
-				}
-				return true;
+				return culled(sceneX, planeY1, sceneZ + 128);
 			}
 
 			if (type == 2) {
@@ -2341,10 +2325,7 @@ public class Landscape {
 				if (!culled(sceneX, planeY1, sceneZ + 128)) {
 					return false;
 				}
-				if (!culled(sceneX + 128, planeY1, sceneZ + 128)) {
-					return false;
-				}
-				return true;
+				return culled(sceneX + 128, planeY1, sceneZ + 128);
 			}
 
 			if (type == 4) {
@@ -2370,10 +2351,7 @@ public class Landscape {
 					return false;
 				}
 
-				if (!culled(sceneX + 128, planeY1, sceneZ + 128)) {
-					return false;
-				}
-				return true;
+				return culled(sceneX + 128, planeY1, sceneZ + 128);
 			}
 
 			if (type == 8) {
@@ -2399,10 +2377,7 @@ public class Landscape {
 					return false;
 				}
 
-				if (!culled(sceneX + 128, planeY1, sceneZ)) {
-					return false;
-				}
-				return true;
+				return culled(sceneX + 128, planeY1, sceneZ);
 			}
 		}
 
@@ -2411,32 +2386,15 @@ public class Landscape {
 		}
 
 		if (type == 16) {
-			if (!culled(sceneX, planeY1, sceneZ + 128)) {
-				return false;
-			}
-			return true;
+			return culled(sceneX, planeY1, sceneZ + 128);
+		} else if (type == 32) {
+			return culled(sceneX + 128, planeY1, sceneZ + 128);
+		} else if (type == 64) {
+			return culled(sceneX + 128, planeY1, sceneZ);
+		} else if (type == 128) {
+			return culled(sceneX, planeY1, sceneZ);
 		}
-
-		if (type == 32) {
-			if (!culled(sceneX + 128, planeY1, sceneZ + 128)) {
-				return false;
-			}
-			return true;
-		}
-
-		if (type == 64) {
-			if (!culled(sceneX + 128, planeY1, sceneZ)) {
-				return false;
-			}
-			return true;
-		}
-
-		if (type == 128) {
-			if (!culled(sceneX, planeY1, sceneZ)) {
-				return false;
-			}
-			return true;
-		}
+		
 		System.out.println("Warning unsupported wall type");
 		return true;
 	}
@@ -2449,11 +2407,7 @@ public class Landscape {
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		if (culled(sceneX + 1, levelHeightmap[plane][tileX][tileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY + 1] - minY), sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][tileX][tileY + 1] - minY), sceneZ + 128 - 1)) {
-			return true;
-		}
-
-		return false;
+		return culled(sceneX + 1, levelHeightmap[plane][tileX][tileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY + 1] - minY), sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][tileX][tileY + 1] - minY), sceneZ + 128 - 1);
 	}
 
 	private boolean culledArea(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int minY) {
@@ -2465,10 +2419,7 @@ public class Landscape {
 			int sceneX = minTileX << 7;
 			int sceneZ = minTileY << 7;
 
-			if (culled(sceneX + 1, levelHeightmap[plane][minTileX][minTileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY + 1]) - minY, sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][minTileX][minTileY + 1] - minY), sceneZ + 128 - 1)) {
-				return true;
-			}
-			return false;
+			return culled(sceneX + 1, levelHeightmap[plane][minTileX][minTileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY + 1]) - minY, sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][minTileX][minTileY + 1] - minY), sceneZ + 128 - 1);
 		}
 
 		for (int x = minTileX; x <= maxTileX; x++) {

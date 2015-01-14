@@ -2,7 +2,7 @@ package com.runescape;
 
 import java.util.Arrays;
 
-public final class LocConfig {
+public class LocConfig {
 
 	private static final Model[] tmpModelStore = new Model[4];
 	public static String[] names;
@@ -12,7 +12,7 @@ public final class LocConfig {
 	private static LocConfig[] cache;
 	private static int cachePosition;
 
-	private int index;
+	public int index;
 	public int[] modelIndices;
 	public int[] modelTypes;
 	public String name;

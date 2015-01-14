@@ -8,10 +8,14 @@ import java.awt.image.BufferedImage;
 import java.awt.image.PixelGrabber;
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
 public class Bitmap extends Canvas2D {
+
+	private static final Logger logger = Logger.getLogger(Bitmap.class.toString());
 
 	public static final Bitmap load(File f) throws IOException {
 		BufferedImage image = ImageIO.read(f);
@@ -342,14 +346,14 @@ public class Bitmap extends Canvas2D {
 
 	public void draw(int x, int y, int w, int h, int pivotX, int pivotY, int theta, int[] lineStart, int[] lineWidth) {
 		try {
-			int centerX = -w / 2;
-			int centerY = -h / 2;
+			int cx = -w / 2;
+			int cy = -h / 2;
 
 			int sin = (int) (Math.sin((double) theta / 326.11) * 65536.0);
 			int cos = (int) (Math.cos((double) theta / 326.11) * 65536.0);
 
-			int offX = (pivotX << 16) + (centerY * sin + centerX * cos);
-			int offY = (pivotY << 16) + (centerY * cos - centerX * sin);
+			int offX = (pivotX << 16) + (cy * sin + cx * cos);
+			int offY = (pivotY << 16) + (cy * cos - cx * sin);
 			int baseOffset = x + (y * Canvas2D.dstW);
 
 			for (y = 0; y < h; y++) {
@@ -372,14 +376,14 @@ public class Bitmap extends Canvas2D {
 
 	public void draw(int x, int y, int w, int h, int pivotX, int pivotY, int theta) {
 		try {
-			int centerX = -w / 2;
-			int centerY = -h / 2;
+			int cx = -w / 2;
+			int cy = -h / 2;
 
 			int sin = (int) (Math.sin((double) theta / 326.11) * 65536.0);
 			int cos = (int) (Math.cos((double) theta / 326.11) * 65536.0);
 
-			int offX = (pivotX << 16) + (centerY * sin + centerX * cos);
-			int offY = (pivotY << 16) + (centerY * cos - centerX * sin);
+			int offX = (pivotX << 16) + (cy * sin + cx * cos);
+			int offY = (pivotY << 16) + (cy * cos - cx * sin);
 			int baseOffset = x + (y * Canvas2D.dstW);
 
 			for (y = 0; y < h; y++) {
@@ -402,50 +406,57 @@ public class Bitmap extends Canvas2D {
 				baseOffset += Canvas2D.dstW;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error drawing rotated bitmap", e);
 		}
 	}
 
 	public void draw(IndexedBitmap mask, int x, int y) {
 		x += clipX;
 		y += clipY;
-		int i_102_ = x + y * Canvas2D.dstW;
-		int i_103_ = 0;
-		int i_104_ = height;
-		int i_105_ = width;
-		int i_106_ = Canvas2D.dstW - i_105_;
-		int i_107_ = 0;
+
+		int dstOff = x + y * Canvas2D.dstW;
+		int srcOff = 0;
+
+		int h = height;
+		int w = width;
+
+		int dstStep = Canvas2D.dstW - w;
+		int srcStep = 0;
+
 		if (y < Canvas2D.top) {
-			int i_108_ = Canvas2D.top - y;
-			i_104_ -= i_108_;
+			int i = Canvas2D.top - y;
+			h -= i;
 			y = Canvas2D.top;
-			i_103_ += i_108_ * i_105_;
-			i_102_ += i_108_ * Canvas2D.dstW;
+			srcOff += i * w;
+			dstOff += i * Canvas2D.dstW;
 		}
-		if (y + i_104_ > Canvas2D.bottom) {
-			i_104_ -= y + i_104_ - Canvas2D.bottom;
+
+		if (y + h > Canvas2D.bottom) {
+			h -= y + h - Canvas2D.bottom;
 		}
+
 		if (x < Canvas2D.left) {
-			int i_109_ = Canvas2D.left - x;
-			i_105_ -= i_109_;
+			int i = Canvas2D.left - x;
+			w -= i;
 			x = Canvas2D.left;
-			i_103_ += i_109_;
-			i_102_ += i_109_;
-			i_107_ += i_109_;
-			i_106_ += i_109_;
+			srcOff += i;
+			dstOff += i;
+			srcStep += i;
+			dstStep += i;
 		}
-		if (x + i_105_ > Canvas2D.right) {
-			int i_110_ = x + i_105_ - Canvas2D.right;
-			i_105_ -= i_110_;
-			i_107_ += i_110_;
-			i_106_ += i_110_;
+		if (x + w > Canvas2D.right) {
+			int i = x + w - Canvas2D.right;
+			w -= i;
+			srcStep += i;
+			dstStep += i;
 		}
-		if (i_105_ > 0 && i_104_ > 0) {
-			copyImage(Canvas2D.dst, i_103_, 0, i_104_, false, i_107_, i_102_, i_106_, pixels, mask.data, i_105_);
+
+		if (w > 0 && h > 0) {
+			copyImage(Canvas2D.dst, srcOff, 0, h, srcStep, dstOff, dstStep, pixels, mask.data, w);
 		}
 	}
 
-	private void copyImage(int[] is, int i, int i_111_, int i_112_, boolean bool, int i_113_, int i_114_, int i_115_, int[] is_116_, byte[] is_117_, int i_118_) {
+	private void copyImage(int[] is, int i, int i_111_, int i_112_, int i_113_, int i_114_, int i_115_, int[] is_116_, byte[] is_117_, int i_118_) {
 		int i_119_ = -(i_118_ >> 2);
 		i_118_ = -(i_118_ & 0x3);
 		for (int i_120_ = -i_112_; i_120_ < 0; i_120_++) {

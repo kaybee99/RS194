@@ -187,11 +187,7 @@ final class Player extends Entity {
 				int n = 0;
 
 				for (int i = 0; i < models.length; i++) {
-					Model model = new Model(c.modelIndices[i]);
-
-					if (model != null) {
-						models[n++] = model;
-					}
+					models[n++] = new Model(c.modelIndices[i]);
 				}
 
 				if (n > 0) {
@@ -310,9 +306,6 @@ final class Player extends Entity {
 	}
 
 	public final boolean isVisible() {
-		if (!visible) {
-			return false;
-		}
-		return true;
+		return visible;
 	}
 }

@@ -1,6 +1,11 @@
 package com.runescape;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 public class Model extends CacheLink {
+
+	private static final Logger logger = Logger.getLogger(Model.class.getName());
 
 	public static ModelContext[] contexts;
 
@@ -33,7 +38,7 @@ public class Model extends CacheLink {
 	public static int[] depthTriangleCount = new int[1500];
 	public static int[][] depthTriangles = new int[1500][512];
 
-	public static int[] priorityTriangleCount = new int[12];
+	public static int[] priorityTriangleCounts = new int[12];
 	public static int[][] priorityTriangles = new int[12][2000];
 
 	public static int[] normalTrianglePriority = new int[2000];
@@ -75,7 +80,7 @@ public class Model extends CacheLink {
 	public int[] triangleColorC;
 
 	public int[] triangleInfo;
-	public int[] trianglePriority;
+	public int[] trianglePriorities;
 	public int[] triangleAlpha;
 
 	public int[] unmodifiedTriangleColor;
@@ -133,7 +138,7 @@ public class Model extends CacheLink {
 		projectSceneZ = null;
 		depthTriangleCount = null;
 		depthTriangles = null;
-		priorityTriangleCount = null;
+		priorityTriangleCounts = null;
 		priorityTriangles = null;
 		normalTrianglePriority = null;
 		highTrianglePriority = null;
@@ -145,6 +150,8 @@ public class Model extends CacheLink {
 	}
 
 	public static void load(Archive a) {
+		int lastIndex = -1;
+
 		try {
 			obhead = new Buffer(a.get("ob_head.dat"));
 			obface1 = new Buffer(a.get("ob_face1.dat"));
@@ -181,7 +188,7 @@ public class Model extends CacheLink {
 			int triangleSkinDataOffset = 0;
 
 			for (int n = 0; n < count; n++) {
-				int index = obhead.readUShort();
+				int index = lastIndex = obhead.readUShort();
 				ModelContext c = contexts[index] = new ModelContext();
 
 				c.vertexCount = obhead.readUShort();
@@ -270,8 +277,7 @@ public class Model extends CacheLink {
 				vertexTextureDataOffset += c.texturedCount;
 			}
 		} catch (Exception e) {
-			System.out.println("Error loading model index");
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error loading model index " + lastIndex, e);
 		}
 	}
 
@@ -310,7 +316,7 @@ public class Model extends CacheLink {
 				}
 
 				if (h.trianglePriorityDataOffset >= 0) {
-					trianglePriority = new int[triangleCount];
+					trianglePriorities = new int[triangleCount];
 				} else {
 					priority = -h.trianglePriorityDataOffset - 1;
 				}
@@ -377,8 +383,8 @@ public class Model extends CacheLink {
 						triangleInfo[n] = obface2.read();
 					}
 
-					if (trianglePriority != null) {
-						trianglePriority[n] = obface3.read();
+					if (trianglePriorities != null) {
+						trianglePriorities[n] = obface3.read();
 					}
 
 					if (triangleAlpha != null) {
@@ -480,7 +486,7 @@ public class Model extends CacheLink {
 				texturedCount += m.texturedCount;
 				keepInfo = keepInfo | m.triangleInfo != null;
 
-				if (m.trianglePriority != null) {
+				if (m.trianglePriorities != null) {
 					keepPriorities = true;
 				} else {
 					if (priority == -1) {
@@ -513,7 +519,7 @@ public class Model extends CacheLink {
 		}
 
 		if (keepPriorities) {
-			trianglePriority = new int[triangleCount];
+			trianglePriorities = new int[triangleCount];
 		}
 
 		if (keepAlpha) {
@@ -543,10 +549,10 @@ public class Model extends CacheLink {
 					}
 
 					if (keepPriorities) {
-						if (m.trianglePriority == null) {
-							trianglePriority[triangleCount] = m.priority;
+						if (m.trianglePriorities == null) {
+							trianglePriorities[triangleCount] = m.priority;
 						} else {
-							trianglePriority[triangleCount] = m.trianglePriority[t];
+							trianglePriorities[triangleCount] = m.trianglePriorities[t];
 						}
 					}
 
@@ -601,7 +607,7 @@ public class Model extends CacheLink {
 				texturedCount += m.texturedCount;
 				keepInfo = keepInfo | m.triangleInfo != null;
 
-				if (m.trianglePriority != null) {
+				if (m.trianglePriorities != null) {
 					keepPriorities = true;
 				} else {
 					if (priority == -1) {
@@ -638,7 +644,7 @@ public class Model extends CacheLink {
 		}
 
 		if (keepPriorities) {
-			trianglePriority = new int[triangleCount];
+			trianglePriorities = new int[triangleCount];
 		}
 
 		if (keepAlpha) {
@@ -684,10 +690,10 @@ public class Model extends CacheLink {
 					}
 
 					if (keepPriorities) {
-						if (m.trianglePriority == null) {
-							trianglePriority[triangleCount] = m.priority;
+						if (m.trianglePriorities == null) {
+							trianglePriorities[triangleCount] = m.priority;
 						} else {
-							trianglePriority[triangleCount] = m.trianglePriority[t];
+							trianglePriorities[triangleCount] = m.trianglePriorities[t];
 						}
 					}
 
@@ -742,9 +748,7 @@ public class Model extends CacheLink {
 			unmodifiedTriangleColor = from.unmodifiedTriangleColor;
 		} else {
 			unmodifiedTriangleColor = new int[triangleCount];
-			for (int t = 0; t < triangleCount; t++) {
-				unmodifiedTriangleColor[t] = from.unmodifiedTriangleColor[t];
-			}
+			System.arraycopy(from.unmodifiedTriangleColor, 0, unmodifiedTriangleColor, 0, triangleCount);
 		}
 
 		if (keepAlpha) {
@@ -756,9 +760,7 @@ public class Model extends CacheLink {
 					triangleAlpha[t] = 0;
 				}
 			} else {
-				for (int t = 0; t < triangleCount; t++) {
-					triangleAlpha[t] = from.triangleAlpha[t];
-				}
+				System.arraycopy(from.triangleAlpha, 0, triangleAlpha, 0, triangleCount);
 			}
 		}
 
@@ -772,9 +774,7 @@ public class Model extends CacheLink {
 					triangleInfo[t] = 0;
 				}
 			} else {
-				for (int t = 0; t < triangleCount; t++) {
-					triangleInfo[t] = from.triangleInfo[t];
-				}
+				System.arraycopy(from.triangleInfo, 0, triangleInfo, 0, triangleCount);
 			}
 		}
 
@@ -783,7 +783,7 @@ public class Model extends CacheLink {
 		triangleVertexA = from.triangleVertexA;
 		triangleVertexB = from.triangleVertexB;
 		triangleVertexC = from.triangleVertexC;
-		trianglePriority = from.trianglePriority;
+		trianglePriorities = from.trianglePriorities;
 		priority = from.priority;
 		textureVertexA = from.textureVertexA;
 		textureVertexB = from.textureVertexB;
@@ -813,15 +813,13 @@ public class Model extends CacheLink {
 					triangleAlpha[i] = 0;
 				}
 			} else {
-				for (int i = 0; i < triangleCount; i++) {
-					triangleAlpha[i] = m.triangleAlpha[i];
-				}
+				System.arraycopy(m.triangleAlpha, 0, triangleAlpha, 0, triangleCount);
 			}
 		}
 
 		triangleInfo = m.triangleInfo;
 		unmodifiedTriangleColor = m.unmodifiedTriangleColor;
-		trianglePriority = m.trianglePriority;
+		trianglePriorities = m.trianglePriorities;
 		priority = m.priority;
 		skinTriangle = m.skinTriangle;
 		labelVertices = m.labelVertices;
@@ -839,7 +837,7 @@ public class Model extends CacheLink {
 		textureVertexC = m.textureVertexC;
 	}
 
-	private final int copyVertex(Model from, int i) {
+	private int copyVertex(Model from, int i) {
 		int selected = -1;
 		int x = from.vertexX[i];
 		int y = from.vertexY[i];
@@ -866,7 +864,7 @@ public class Model extends CacheLink {
 		return selected;
 	}
 
-	public void setupBBoxDepth() {
+	public final void setupBBoxDepth() {
 		minBoundY = 0;
 		boundHeight = 0;
 		maxBoundY = 0;
@@ -1644,7 +1642,7 @@ public class Model extends CacheLink {
 		}
 	}
 
-	private final void draw(int bitset, boolean projected, boolean hasInput) {
+	private void draw(int bitset, boolean projected, boolean hasInput) {
 		for (int d = 0; d < maxDepth; d++) {
 			depthTriangleCount[d] = 0;
 		}
@@ -1670,13 +1668,7 @@ public class Model extends CacheLink {
 
 					if (((x0 - x1) * (vertexScreenY[c] - vertexScreenY[b]) - ((vertexScreenY[a] - vertexScreenY[b]) * (x2 - x1))) > 0) {
 						projectTriangle[t] = false;
-
-						if (x0 < 0 || x1 < 0 || x2 < 0 || x0 > Canvas2D.dstXBound || x1 > Canvas2D.dstXBound || x2 > Canvas2D.dstXBound) {
-							verifyTriangleBounds[t] = true;
-						} else {
-							verifyTriangleBounds[t] = false;
-						}
-
+						verifyTriangleBounds[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Canvas2D.dstXBound || x1 > Canvas2D.dstXBound || x2 > Canvas2D.dstXBound;
 						int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + minDepth);
 						depthTriangles[depth][depthTriangleCount[depth]++] = t;
 					}
@@ -1684,7 +1676,7 @@ public class Model extends CacheLink {
 			}
 		}
 
-		if (trianglePriority == null) {
+		if (trianglePriorities == null) {
 			for (int d = maxDepth - 1; d >= 0; d--) {
 				int n = depthTriangleCount[d];
 				if (n > 0) {
@@ -1696,7 +1688,7 @@ public class Model extends CacheLink {
 			}
 		} else {
 			for (int p = 0; p < 12; p++) {
-				priorityTriangleCount[p] = 0;
+				priorityTriangleCounts[p] = 0;
 				lowPriorityDepth[p] = 0;
 			}
 
@@ -1706,13 +1698,13 @@ public class Model extends CacheLink {
 					int[] triangles = depthTriangles[d];
 					for (int m = 0; m < n; m++) {
 						int t = triangles[m];
-						int priority = trianglePriority[t];
-						int priorityTriangle = priorityTriangleCount[priority]++;
-						priorityTriangles[priority][priorityTriangle] = t;
+						int trianglePriority = trianglePriorities[t];
+						int priorityTriangle = priorityTriangleCounts[trianglePriority]++;
+						priorityTriangles[trianglePriority][priorityTriangle] = t;
 
-						if (priority < 10) {
-							lowPriorityDepth[priority] += d;
-						} else if (priority == 10) {
+						if (trianglePriority < 10) {
+							lowPriorityDepth[trianglePriority] += d;
+						} else if (trianglePriority == 10) {
 							normalTrianglePriority[priorityTriangle] = d;
 						} else {
 							highTrianglePriority[priorityTriangle] = d;
@@ -1722,99 +1714,99 @@ public class Model extends CacheLink {
 			}
 
 			int minPriority = 0;
-			if (priorityTriangleCount[1] > 0 || priorityTriangleCount[2] > 0) {
-				minPriority = ((lowPriorityDepth[1] + lowPriorityDepth[2]) / (priorityTriangleCount[1] + priorityTriangleCount[2]));
+			if (priorityTriangleCounts[1] > 0 || priorityTriangleCounts[2] > 0) {
+				minPriority = ((lowPriorityDepth[1] + lowPriorityDepth[2]) / (priorityTriangleCounts[1] + priorityTriangleCounts[2]));
 			}
 
 			int halfPriority = 0;
-			if (priorityTriangleCount[3] > 0 || priorityTriangleCount[4] > 0) {
-				halfPriority = ((lowPriorityDepth[3] + lowPriorityDepth[4]) / (priorityTriangleCount[3] + priorityTriangleCount[4]));
+			if (priorityTriangleCounts[3] > 0 || priorityTriangleCounts[4] > 0) {
+				halfPriority = ((lowPriorityDepth[3] + lowPriorityDepth[4]) / (priorityTriangleCounts[3] + priorityTriangleCounts[4]));
 			}
 
 			int maxPriority = 0;
-			if (priorityTriangleCount[6] > 0 || priorityTriangleCount[8] > 0) {
-				maxPriority = ((lowPriorityDepth[6] + lowPriorityDepth[8]) / (priorityTriangleCount[6] + priorityTriangleCount[8]));
+			if (priorityTriangleCounts[6] > 0 || priorityTriangleCounts[8] > 0) {
+				maxPriority = ((lowPriorityDepth[6] + lowPriorityDepth[8]) / (priorityTriangleCounts[6] + priorityTriangleCounts[8]));
 			}
 
 			int t = 0;
-			int triangleCount = priorityTriangleCount[10];
+			int priorityTriangleCount = priorityTriangleCounts[10];
 			int[] triangles = priorityTriangles[10];
 			int[] priorities = normalTrianglePriority;
 
-			if (t == triangleCount) {
+			if (t == priorityTriangleCount) {
 				t = 0;
-				triangleCount = priorityTriangleCount[11];
+				priorityTriangleCount = priorityTriangleCounts[11];
 				triangles = priorityTriangles[11];
 				priorities = highTrianglePriority;
 			}
 
-			int priority;
+			int pri;
 
-			if (t < triangleCount) {
-				priority = priorities[t];
+			if (t < priorityTriangleCount) {
+				pri = priorities[t];
 			} else {
-				priority = -1000;
+				pri = -1000;
 			}
 
 			for (int p = 0; p < 10; p++) {
 				while (p == 0) {
-					if (priority <= minPriority) {
+					if (pri <= minPriority) {
 						break;
 					}
 
 					drawTriangle(triangles[t++]);
-					if (t == triangleCount && triangles != priorityTriangles[11]) {
+					if (t == priorityTriangleCount && triangles != priorityTriangles[11]) {
 						t = 0;
-						triangleCount = priorityTriangleCount[11];
+						priorityTriangleCount = priorityTriangleCounts[11];
 						triangles = priorityTriangles[11];
 						priorities = highTrianglePriority;
 					}
-					if (t < triangleCount) {
-						priority = priorities[t];
+					if (t < priorityTriangleCount) {
+						pri = priorities[t];
 					} else {
-						priority = -1000;
+						pri = -1000;
 					}
 				}
 
 				while (p == 3) {
-					if (priority <= halfPriority) {
+					if (pri <= halfPriority) {
 						break;
 					}
 
 					drawTriangle(triangles[t++]);
 
-					if (t == triangleCount && triangles != priorityTriangles[11]) {
+					if (t == priorityTriangleCount && triangles != priorityTriangles[11]) {
 						t = 0;
-						triangleCount = priorityTriangleCount[11];
+						priorityTriangleCount = priorityTriangleCounts[11];
 						triangles = priorityTriangles[11];
 						priorities = highTrianglePriority;
 					}
 
-					if (t < triangleCount) {
-						priority = priorities[t];
+					if (t < priorityTriangleCount) {
+						pri = priorities[t];
 					} else {
-						priority = -1000;
+						pri = -1000;
 					}
 				}
 
-				while (p == 5 && priority > maxPriority) {
+				while (p == 5 && pri > maxPriority) {
 					drawTriangle(triangles[t++]);
 
-					if (t == triangleCount && triangles != priorityTriangles[11]) {
+					if (t == priorityTriangleCount && triangles != priorityTriangles[11]) {
 						t = 0;
-						triangleCount = priorityTriangleCount[11];
+						priorityTriangleCount = priorityTriangleCounts[11];
 						triangles = priorityTriangles[11];
 						priorities = highTrianglePriority;
 					}
 
-					if (t < triangleCount) {
-						priority = priorities[t];
+					if (t < priorityTriangleCount) {
+						pri = priorities[t];
 					} else {
-						priority = -1000;
+						pri = -1000;
 					}
 				}
 
-				int n = priorityTriangleCount[p];
+				int n = priorityTriangleCounts[p];
 				int[] tris = priorityTriangles[p];
 
 				for (int m = 0; m < n; m++) {
@@ -1822,26 +1814,26 @@ public class Model extends CacheLink {
 				}
 			}
 
-			while (priority != -1000) {
+			while (pri != -1000) {
 				drawTriangle(triangles[t++]);
 
-				if (t == triangleCount && triangles != priorityTriangles[11]) {
+				if (t == priorityTriangleCount && triangles != priorityTriangles[11]) {
 					t = 0;
 					triangles = priorityTriangles[11];
-					triangleCount = priorityTriangleCount[11];
+					priorityTriangleCount = priorityTriangleCounts[11];
 					priorities = highTrianglePriority;
 				}
 
-				if (t < triangleCount) {
-					priority = priorities[t];
+				if (t < priorityTriangleCount) {
+					pri = priorities[t];
 				} else {
-					priority = -1000;
+					pri = -1000;
 				}
 			}
 		}
 	}
 
-	private final void drawTriangle(int index) {
+	private void drawTriangle(int index) {
 		if (projectTriangle[index]) {
 			drawProjectedTriangle(index);
 		} else {
@@ -1887,7 +1879,7 @@ public class Model extends CacheLink {
 		}
 	}
 
-	private final void drawProjectedTriangle(int index) {
+	private void drawProjectedTriangle(int index) {
 		int centerX = Canvas3D.centerX;
 		int centerY = Canvas3D.centerY;
 		int n = 0;
@@ -2069,9 +2061,6 @@ public class Model extends CacheLink {
 		if (x < x0 && x < x1 && x < x2) {
 			return false;
 		}
-		if (x > x0 && x > x1 && x > x2) {
-			return false;
-		}
-		return true;
+		return !(x > x0 && x > x1 && x > x2);
 	}
 }

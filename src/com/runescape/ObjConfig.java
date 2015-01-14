@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class ObjConfig {
+public class ObjConfig {
 
 	public static int count;
 	private static int[] pointers;

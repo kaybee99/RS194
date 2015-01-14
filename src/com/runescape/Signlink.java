@@ -14,12 +14,16 @@ import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import javax.swing.JFileChooser;
 
 public final class Signlink implements Runnable {
+
+	private static final Logger logger = Logger.getLogger(Signlink.class.toString());
 
 	public static Applet mainapp;
 	public static boolean sunjava;
@@ -79,8 +83,9 @@ public final class Signlink implements Runnable {
 				if (socketreq != 0) {
 					try {
 						socket = new Socket(socketip, socketreq);
-					} catch (Exception exception) {
+					} catch (Exception e) {
 						socket = null;
+						logger.log(Level.WARNING, "Error opening socket", e);
 					}
 					socketreq = 0;
 				}
@@ -97,7 +102,7 @@ public final class Signlink implements Runnable {
 					try {
 						InetAddress.getByName(dnsreq).getHostName();
 					} catch (Exception e) {
-						e.printStackTrace();
+						logger.log(Level.WARNING, "Error getting host name", e);
 					}
 					dnsreq = null;
 				}
@@ -109,6 +114,7 @@ public final class Signlink implements Runnable {
 						loadbuf = new byte[is.available()];
 						is.read(loadbuf, 0, loadbuf.length);
 					} catch (Exception e) {
+						logger.log(Level.WARNING, "Error loading file as stream", e);
 					}
 
 					File f = new File(path, loadreq);
@@ -119,7 +125,7 @@ public final class Signlink implements Runnable {
 						try (DataInputStream dis = new DataInputStream(new FileInputStream(f))) {
 							dis.readFully(loadbuf, 0, i);
 						} catch (Exception e) {
-							e.printStackTrace();
+							logger.log(Level.WARNING, "Error loading file", e);
 						}
 					}
 
@@ -130,7 +136,7 @@ public final class Signlink implements Runnable {
 					try (FileOutputStream fos = new FileOutputStream(new File(path, savereq))) {
 						fos.write(savebuf, 0, savebuf.length);
 					} catch (Exception e) {
-						e.printStackTrace();
+						logger.log(Level.WARNING, "Error saving file", e);
 					}
 					savereq = null;
 				}
@@ -140,14 +146,14 @@ public final class Signlink implements Runnable {
 						urlstream = new DataInputStream(new URL(mainapp.getCodeBase(), urlreq).openStream());
 					} catch (Exception e) {
 						urlstream = null;
-						e.printStackTrace();
+						logger.log(Level.WARNING, "Error opening url", e);
 					}
 					urlreq = null;
 				}
 
 				try {
 					Thread.sleep((long) looprate);
-				} catch (Exception exception) {
+				} catch (Exception e) {
 					/* empty */
 				}
 			}
@@ -176,7 +182,7 @@ public final class Signlink implements Runnable {
 					return f;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				logger.log(Level.WARNING, "Error finding cache path", e);
 			}
 		}
 		return null;
@@ -201,7 +207,7 @@ public final class Signlink implements Runnable {
 			try {
 				return f.toURI().toURL();
 			} catch (MalformedURLException e) {
-				e.printStackTrace();
+				logger.log(Level.WARNING, "Malformed url", e);
 			}
 		}
 
@@ -235,8 +241,7 @@ public final class Signlink implements Runnable {
 			return null;
 		}
 
-		// loadreq = String.valueOf(gethash(s));
-		// System.out.println("loadreq: " + loadreq + " (" + s + ')');
+		// TODO: loadreq = String.valueOf(gethash(s));
 		loadreq = s;
 		while (loadreq != null) {
 			try {
@@ -256,7 +261,7 @@ public final class Signlink implements Runnable {
 			while (savereq != null) {
 				try {
 					Thread.sleep(1L);
-				} catch (Exception exception) {
+				} catch (Exception e) {
 					/* empty */
 				}
 			}
@@ -268,7 +273,7 @@ public final class Signlink implements Runnable {
 		while (socketreq != 0) {
 			try {
 				Thread.sleep(50L);
-			} catch (Exception exception) {
+			} catch (Exception e) {
 				/* empty */
 			}
 		}

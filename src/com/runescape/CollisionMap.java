@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class CollisionMap {
+public final class CollisionMap {
 
 	public static final int OPEN = 0x0;
 	public static final int CLOSED = 0xFFFFFF;
@@ -557,10 +557,6 @@ public class CollisionMap {
 			return true;
 		}
 
-		if (srcY == maxY + 1 && srcX >= dstX && srcX <= maxX && ((flags[srcX][srcY] & WALL_SOUTH) == 0) && (faceflags & 0x1) == 0) {
-			return true;
-		}
-
-		return false;
+		return srcY == maxY + 1 && srcX >= dstX && srcX <= maxX && ((flags[srcX][srcY] & WALL_SOUTH) == 0) && (faceflags & 0x1) == 0;
 	}
 }

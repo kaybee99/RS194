@@ -10,9 +10,14 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.zip.CRC32;
 
-public class Game extends GameShell {
+class Game extends GameShell {
+
+	private static final Logger logger = Logger.getLogger(Game.class.getName());
 
 	/* Constants */
 	public static final long serialVersionUID = -1412785310365267985L;
@@ -148,15 +153,15 @@ public class Game extends GameShell {
 	public int npcCount;
 	public int playerCount;
 
-	public NPC[] npcs = new NPC[MAX_ENTITY_COUNT];
-	public Player[] players = new Player[MAX_ENTITY_COUNT];
+	private NPC[] npcs = new NPC[MAX_ENTITY_COUNT];
+	private Player[] players = new Player[MAX_ENTITY_COUNT];
 
 	public int[] npcIndices = new int[MAX_ENTITY_COUNT];
 	public int[] playerIndices = new int[MAX_ENTITY_COUNT];
 
 	public Buffer[] playerBuffers = new Buffer[MAX_ENTITY_COUNT];
 
-	public Player localPlayer;
+	private Player localPlayer;
 	public int localPlayerIndex = -1;
 
 	public int deadEntityCount;
@@ -177,6 +182,7 @@ public class Game extends GameShell {
 	public ISAAC isaac;
 	public int packetSize;
 	public int packetType;
+	public int lastPacketType;
 
 	// used for spawning stuff
 	public int netTileX, netTileZ;
@@ -449,8 +455,8 @@ public class Game extends GameShell {
 			}
 
 			g.initFrame(789, 532);
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (UnknownHostException | NumberFormatException e) {
+			logger.log(Level.SEVERE, "Error creating game instance", e);
 		}
 	}
 
@@ -508,17 +514,16 @@ public class Game extends GameShell {
 		while (archiveCRC[7] > 0) {
 			drawProgress("Connecting to fileserver", 10);
 			try {
-				DataInputStream in = openURL("crc" + (int) (Math.random() * 99999999));
-				Buffer b = new Buffer(new byte[32]);
-				in.readFully(b.data, 0, 32);
+				try (DataInputStream dis = openURL("crc" + (int) (Math.random() * 99999999))) {
+					Buffer b = new Buffer(new byte[32]);
+					dis.readFully(b.data, 0, 32);
 
-				for (int n = 0; n < 8; n++) {
-					archiveCRC[n] = b.readInt();
+					for (int n = 0; n < 8; n++) {
+						archiveCRC[n] = b.readInt();
+					}
 				}
-
-				in.close();
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.log(Level.WARNING, "Error reading CRC", e);
 
 				for (int s = wait; s > 0; s--) {
 					drawProgress(("Error loading - Will retry in " + s + " secs."), 10);
@@ -798,7 +803,7 @@ public class Game extends GameShell {
 			Landscape.init(512, 334, 500, 800);
 		} catch (Exception e) {
 			errorLoading = true;
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error starting game", e);
 		}
 	}
 
@@ -824,44 +829,41 @@ public class Game extends GameShell {
 
 			try {
 				int lastPercent = 0;
-				DataInputStream in = openURL(archiveFile + crc);
-				byte[] header = new byte[6];
-				in.readFully(header, 0, 6);
 
-				Buffer b = new Buffer(header);
-				b.pos = 3;
+				try (DataInputStream dis = openURL(archiveFile + crc)) {
+					byte[] header = new byte[6];
+					dis.readFully(header, 0, 6);
 
-				int size = b.readInt24() + 6;
-				int read = 6;
+					Buffer b = new Buffer(header);
+					b.pos = 3;
 
-				data = new byte[size];
+					int size = b.readInt24() + 6;
+					int read = 6;
 
-				for (int i = 0; i < 6; i++) {
-					data[i] = header[i];
-				}
+					data = new byte[size];
 
-				while (read < size) {
-					int available = size - read;
+					System.arraycopy(header, 0, data, 0, 6);
 
-					if (available > 1000) {
-						available = 1000;
+					while (read < size) {
+						int available = size - read;
+
+						if (available > 1000) {
+							available = 1000;
+						}
+
+						read += dis.read(data, read, available);
+
+						int percent = read * 100 / size;
+
+						if (percent != lastPercent) {
+							drawProgress("Loading " + archiveName + " - " + percent + "%", loadPercent);
+						}
+
+						lastPercent = percent;
 					}
-
-					read += in.read(data, read, available);
-
-					int percent = read * 100 / size;
-
-					if (percent != lastPercent) {
-						drawProgress("Loading " + archiveName + " - " + percent + "%", loadPercent);
-					}
-
-					lastPercent = percent;
 				}
-				in.close();
 			} catch (IOException e) {
 				data = null;
-
-				e.printStackTrace();
 
 				for (int s = wait; s > 0; s--) {
 					drawProgress(("Error loading - Will retry in " + s + " secs."), loadPercent);
@@ -916,9 +918,7 @@ public class Game extends GameShell {
 			for (int x = 0; x < b.width; x++) {
 				line[x] = (b.pixels[(b.width - x - 1 + b.width * y)]);
 			}
-			for (int x = 0; x < b.width; x++) {
-				b.pixels[x + b.width * y] = line[x];
-			}
+			System.arraycopy(line, 0, b.pixels, b.width * y, b.width);
 		}
 
 		titleLeft.prepare();
@@ -1088,6 +1088,7 @@ public class Game extends GameShell {
 		}
 	}
 
+	@Override
 	public void refresh() {
 		redraw = true;
 	}
@@ -1293,13 +1294,8 @@ public class Game extends GameShell {
 		flameLeft = new Bitmap(128, 265);
 		flameRight = new Bitmap(128, 265);
 
-		for (int i = 0; i < 33920; i++) {
-			flameLeft.pixels[i] = titleLeft.pixels[i];
-		}
-
-		for (int i = 0; i < 33920; i++) {
-			flameRight.pixels[i] = titleRight.pixels[i];
-		}
+		System.arraycopy(titleLeft.pixels, 0, flameLeft.pixels, 0, 33920);
+		System.arraycopy(titleRight.pixels, 0, flameRight.pixels, 0, 33920);
 
 		flameGradientRed = new int[256];
 
@@ -1441,7 +1437,7 @@ public class Game extends GameShell {
 	}
 
 	public final void updateFlameDissolve(IndexedBitmap image) {
-		int height = 256;
+		int flameHeight = 256;
 
 		for (int n = 0; n < flameBuffer1.length; n++) {
 			flameBuffer1[n] = 0;
@@ -1449,13 +1445,13 @@ public class Game extends GameShell {
 
 		// toss 5000 disolves into that map yo
 		for (int n = 0; n < 5000; n++) {
-			int i = (int) (Math.random() * 128.0 * (double) height);
+			int i = (int) (Math.random() * 128.0 * (double) flameHeight);
 			flameBuffer1[i] = (int) (Math.random() * 256.0);
 		}
 
 		// blur dissolve map in 20 iterations
 		for (int n = 0; n < 20; n++) {
-			for (int y = 1; y < height - 1; y++) {
+			for (int y = 1; y < flameHeight - 1; y++) {
 				for (int x = 1; x < 127; x++) {
 					int i = x + (y << 7);
 					flameBuffer2[i] = (flameBuffer1[i - 1] + flameBuffer1[i + 1] + flameBuffer1[i - 128] + flameBuffer1[i + 128]) / 4;
@@ -1482,13 +1478,13 @@ public class Game extends GameShell {
 	}
 
 	public final void updateFlames() {
-		int height = 0x100;
+		int flameHeight = 256;
 
 		// generate more flame
 		for (int x = 10; x < 117; x++) {
 			int n = (int) (Math.random() * 100.0);
 			if (n < 50) {
-				flameIntensity[x + (height - 2 << 7)] = 0xFF;
+				flameIntensity[x + (flameHeight - 2 << 7)] = 0xFF;
 			}
 		}
 
@@ -1501,7 +1497,7 @@ public class Game extends GameShell {
 		}
 
 		// blur flame intensity
-		for (int y = 1; y < height - 1; y++) {
+		for (int y = 1; y < flameHeight - 1; y++) {
 			for (int x = 1; x < 127; x++) {
 				int i = x + (y << 7);
 				flameIntensityBuffer[i] = (flameIntensity[i - 1] + flameIntensity[i + 1] + flameIntensity[i - 128] + flameIntensity[i + 128]) / 4;
@@ -1516,7 +1512,7 @@ public class Game extends GameShell {
 		}
 
 		// shift flame pixels up and dissolve
-		for (int y = 1; y < height - 1; y++) {
+		for (int y = 1; y < flameHeight - 1; y++) {
 			for (int x = 1; x < 127; x++) {
 				int i = x + (y << 7);
 				int n = flameIntensityBuffer[i + 128] - (flameBuffer1[i + flameOffset & flameBuffer1.length - 1] / 5);
@@ -1529,11 +1525,11 @@ public class Game extends GameShell {
 			}
 		}
 
-		for (int y = 0; y < height - 1; y++) {
+		for (int y = 0; y < flameHeight - 1; y++) {
 			flameShiftX[y] = flameShiftX[y + 1];
 		}
 
-		flameShiftX[height - 1] = (int) (Math.sin((double) cycle / 14.0) * 16.0 + Math.sin((double) cycle / 15.0) * 14.0 + Math.sin((double) cycle / 16.0) * 12.0);
+		flameShiftX[flameHeight - 1] = (int) (Math.sin((double) cycle / 14.0) * 16.0 + Math.sin((double) cycle / 15.0) * 14.0 + Math.sin((double) cycle / 16.0) * 12.0);
 
 		if (flameCycle1 > 0) {
 			flameCycle1 -= 2;
@@ -1562,7 +1558,7 @@ public class Game extends GameShell {
 	}
 
 	public final void drawFlames() {
-		int height = 256;
+		int flameHeight = 256;
 
 		if (flameCycle1 > 0) {
 			for (int n = 0; n < 256; n++) {
@@ -1585,20 +1581,16 @@ public class Game extends GameShell {
 				}
 			}
 		} else {
-			for (int n = 0; n < 256; n++) {
-				flameGradient[n] = flameGradientRed[n];
-			}
+			System.arraycopy(flameGradientRed, 0, flameGradient, 0, 256);
 		}
 
-		for (int n = 0; n < 33920; n++) {
-			titleLeft.pixels[n] = flameLeft.pixels[n];
-		}
+		System.arraycopy(flameLeft.pixels, 0, titleLeft.pixels, 0, 33920);
 
 		int srcOff = 0;
 		int dstOff = 0 + (9 * 128);
 
-		for (int y = 1; y < height - 1; y++) {
-			int shiftx = flameShiftX[y] * (height - y) / height;
+		for (int y = 1; y < flameHeight - 1; y++) {
+			int shiftx = flameShiftX[y] * (flameHeight - y) / flameHeight;
 			int dstStep = shiftx + 22;
 
 			if (dstStep < 0) {
@@ -1623,15 +1615,13 @@ public class Game extends GameShell {
 		}
 		titleLeft.draw(graphics, 0, 0);
 
-		for (int n = 0; n < 33920; n++) {
-			titleRight.pixels[n] = flameRight.pixels[n];
-		}
+		System.arraycopy(flameRight.pixels, 0, titleRight.pixels, 0, 33920);
 
 		srcOff = 0;
 		dstOff = 24 + (9 * 128);
 
-		for (int y = 1; y < height - 1; y++) {
-			int shiftX = flameShiftX[y] * (height - y) / height;
+		for (int y = 1; y < flameHeight - 1; y++) {
+			int shiftX = flameShiftX[y] * (flameHeight - y) / flameHeight;
 			int dstStep = 103 - shiftX;
 
 			dstOff += shiftX;
@@ -1924,8 +1914,8 @@ public class Game extends GameShell {
 
 			out.pos = 0;
 			out.write(10);
-			out.writeInt((int) Math.random() * 99999999);
-			out.writeInt((int) Math.random() * 99999999);
+			out.writeInt((int) (Math.random() * 99999999));
+			out.writeInt((int) (Math.random() * 99999999));
 			out.writeLong(gameSessionKey);
 			out.writeInt(uid);
 			out.writeString(user);
@@ -2186,10 +2176,10 @@ public class Game extends GameShell {
 			netHeartbeatCycle = 0;
 		} catch (IOException e) {
 			reconnect();
-			e.printStackTrace();
+			logger.log(Level.WARNING, "IO Error flushing connection", e);
 		} catch (Exception e) {
 			logout();
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error flushing connection", e);
 		}
 	}
 
@@ -2895,21 +2885,21 @@ public class Game extends GameShell {
 	}
 
 	public void updateOrbitCamera() {
-		int cameraX = localPlayer.sceneX + cameraOffsetX;
-		int cameraZ = localPlayer.sceneZ + cameraOffsetZ;
+		int x = localPlayer.sceneX + cameraOffsetX;
+		int z = localPlayer.sceneZ + cameraOffsetZ;
 
-		if (cameraOrbitX - cameraX < -500 || cameraOrbitX - cameraX > 500 || cameraOrbitZ - cameraZ < -500 || cameraOrbitZ - cameraZ > 500) {
-			cameraOrbitX = cameraX;
-			cameraOrbitZ = cameraZ;
+		if (cameraOrbitX - x < -500 || cameraOrbitX - x > 500 || cameraOrbitZ - z < -500 || cameraOrbitZ - z > 500) {
+			cameraOrbitX = x;
+			cameraOrbitZ = z;
 		}
 
 		// rate = distance / time
-		if (cameraOrbitX != cameraX) {
-			cameraOrbitX += (cameraX - cameraOrbitX) / 16;
+		if (cameraOrbitX != x) {
+			cameraOrbitX += (x - cameraOrbitX) / 16;
 		}
 
-		if (cameraOrbitZ != cameraZ) {
-			cameraOrbitZ += (cameraZ - cameraOrbitZ) / 16;
+		if (cameraOrbitZ != z) {
+			cameraOrbitZ += (z - cameraOrbitZ) / 16;
 		}
 
 		if (keyDown[1]) {
@@ -2947,16 +2937,16 @@ public class Game extends GameShell {
 		int maxY = 0;
 
 		if (tileX > 3 && tileY > 3 && tileX < 100 && tileY < 100) {
-			for (int x = tileX - 4; x <= tileX + 4; x++) {
-				for (int z = tileY - 4; z <= tileY + 4; z++) {
+			for (int tx = tileX - 4; tx <= tileX + 4; tx++) {
+				for (int ty = tileY - 4; ty <= tileY + 4; ty++) {
 					int p = currentPlane;
 
 					// is bridge
-					if (p < 3 && ((renderflags[1][x][z] & 0x2) == 2)) {
+					if (p < 3 && ((renderflags[1][tx][ty] & 0x2) == 2)) {
 						p++;
 					}
 
-					int y = landY - planeHeightmaps[p][x][z];
+					int y = landY - planeHeightmaps[p][tx][ty];
 
 					if (y > maxY) {
 						maxY = y;
@@ -3055,9 +3045,7 @@ public class Game extends GameShell {
 		}
 
 		if (chatInterfaceIndex != -1) {
-			boolean redraw = updateInterfaceSequence(chatInterfaceIndex, sceneDelta);
-
-			if (redraw) {
+			if (updateInterfaceSequence(chatInterfaceIndex, sceneDelta)) {
 				chatRedraw = true;
 			}
 		}
@@ -3603,11 +3591,11 @@ public class Game extends GameShell {
 			return;
 		}
 
-		int mapX = (localPlayer.sceneX >> 7) + mapBaseX;
-		int mapY = (localPlayer.sceneZ >> 7) + mapBaseY;
+		int x = (localPlayer.sceneX >> 7) + mapBaseX;
+		int y = (localPlayer.sceneZ >> 7) + mapBaseY;
 
-		if (mapX >= 2944 && mapX < 3392 && mapY >= 3520 && mapY < 6400) {
-			gameWildernessLevel = (mapY - 3520) / 8 + 1;
+		if (x >= 2944 && x < 3392 && y >= 3520 && y < 6400) {
+			gameWildernessLevel = (y - 3520) / 8 + 1;
 		} else {
 			gameWildernessLevel = 0;
 		}
@@ -3799,7 +3787,7 @@ public class Game extends GameShell {
 				addLoc(l.locIndex, l.tileY, l.tileX, l.tileZ, l.type, l.classtype, l.rotation);
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error creating scene", e);
 		}
 
 		LocConfig.unmodifiedModelCache.clear();
@@ -4696,6 +4684,7 @@ public class Game extends GameShell {
 			in.pos = 0;
 			stream.read(in.data, 0, packetSize);
 			netIdleCycles = 0;
+			lastPacketType = packetType;
 
 			if (packetType == 232) {
 				viewport.prepare();
@@ -4879,14 +4868,14 @@ public class Game extends GameShell {
 					}
 				}
 			} else if (packetType == 5) {
-				for (int n = 0; n < players.length; n++) {
-					if (players[n] != null) {
-						players[n].primarySeqIndex = -1;
+				for (Player player : players) {
+					if (player != null) {
+						player.primarySeqIndex = -1;
 					}
 				}
-				for (int n = 0; n < npcs.length; n++) {
-					if (npcs[n] != null) {
-						npcs[n].primarySeqIndex = -1;
+				for (NPC npc : npcs) {
+					if (npc != null) {
+						npc.primarySeqIndex = -1;
 					}
 				}
 			} else if (packetType == 47) {
@@ -5331,10 +5320,10 @@ public class Game extends GameShell {
 			packetType = -1;
 		} catch (IOException e) {
 			reconnect();
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "IO error handling packet", e);
 		} catch (Exception e) {
 			logout();
-			e.printStackTrace();
+			logger.log(Level.SEVERE, "Error handling packet: " + lastPacketType, e);
 		}
 		return true;
 	}
@@ -5355,7 +5344,7 @@ public class Game extends GameShell {
 	public final void addLoc(int index, int plane, int tileX, int tileZ, int type, int classtype, int rotation) {
 		if (!lowmemory || plane == currentPlane) {
 			int bitset = 0;
-			int lastIndex = -1;
+			int lastIndex;
 
 			if (classtype == Loc.CLASS_WALL) {
 				bitset = landscape.getWallBitset(tileX, tileZ, plane);
@@ -5702,8 +5691,10 @@ public class Game extends GameShell {
 				}
 			}
 
-			int bitset = x + (y << 7) + 0x60000000;
-			landscape.addObj(topObject.getModel(), currentPlane, x, y, getLandY(x * 128 + 64, y * 128 + 64, currentPlane), bitset);
+			if (topObject != null) {
+				int bitset = x + (y << 7) + 0x60000000;
+				landscape.addObj(topObject.getModel(), currentPlane, x, y, getLandY(x * 128 + 64, y * 128 + 64, currentPlane), bitset);
+			}
 		}
 	}
 
@@ -6280,7 +6271,7 @@ public class Game extends GameShell {
 
 				maxWidth += 8;
 
-				int height = (optionCount * 15) + 21;
+				int h = (optionCount * 15) + 21;
 
 				if (clickX > 8 && clickY > 11 && clickX < 520 && clickY < 345) {
 					int x = clickX - 8 - maxWidth / 2;
@@ -6295,8 +6286,8 @@ public class Game extends GameShell {
 
 					int y = clickY - 11;
 
-					if (y + height > 334) {
-						y = 334 - height;
+					if (y + h > 334) {
+						y = 334 - h;
 					}
 
 					if (y < 0) {
@@ -6324,8 +6315,8 @@ public class Game extends GameShell {
 
 					if (y < 0) {
 						y = 0;
-					} else if (y + height > 261) {
-						y = 261 - height;
+					} else if (y + h > 261) {
+						y = 261 - h;
 					}
 
 					optionMenuVisible = true;
@@ -6433,13 +6424,13 @@ public class Game extends GameShell {
 
 			String prefix = i.optionPrefix;
 
-			if (prefix.indexOf(" ") != -1) {
+			if (prefix.contains(" ")) {
 				prefix = prefix.substring(0, prefix.indexOf(" "));
 			}
 
 			String suffix = i.optionPrefix;
 
-			if (suffix.indexOf(" ") != -1) {
+			if (suffix.contains(" ")) {
 				suffix = suffix.substring(suffix.indexOf(" ") + 1);
 			}
 
@@ -6557,6 +6548,7 @@ public class Game extends GameShell {
 
 				if (type == 730) {
 					Player p = players[a];
+
 					if (p != null) {
 						moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), p.pathX[0], p.pathY[0], 1, 1, 0, 0, 0, false);
 						crossX = clickX;
@@ -6570,10 +6562,8 @@ public class Game extends GameShell {
 				}
 
 				if (type == 917 || type == 14 || type == 401 || type == 514 || type == 164) {
-					boolean moved = moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 0, 0, 0, 0, 0, false);
-
-					if (!moved) {
-						moved = moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 1, 1, 0, 0, 0, false);
+					if (!moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 0, 0, 0, 0, 0, false)) {
+						moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 1, 1, 0, 0, 0, false);
 					}
 
 					crossX = clickX;
@@ -6698,10 +6688,8 @@ public class Game extends GameShell {
 				}
 
 				if (type == 160) {
-					boolean bool = moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 0, 0, 0, 0, 0, false);
-
-					if (!bool) {
-						bool = moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 1, 1, 0, 0, 0, false);
+					if (!moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 0, 0, 0, 0, 0, false)) {
+						moveTo((localPlayer.pathX[0]), (localPlayer.pathY[0]), b, c, 1, 1, 0, 0, 0, false);
 					}
 
 					crossX = clickX;
@@ -6796,10 +6784,8 @@ public class Game extends GameShell {
 				}
 
 				if (type == 504) {
-					boolean canMove = moveTo(localPlayer.pathX[0], localPlayer.pathY[0], b, c, 0, 0, 0, 0, 0, false);
-
-					if (!canMove) {
-						canMove = moveTo(localPlayer.pathX[0], localPlayer.pathY[0], b, c, 1, 1, 0, 0, 0, false);
+					if (!moveTo(localPlayer.pathX[0], localPlayer.pathY[0], b, c, 0, 0, 0, 0, 0, false)) {
+						moveTo(localPlayer.pathX[0], localPlayer.pathY[0], b, c, 1, 1, 0, 0, 0, false);
 					}
 
 					crossX = clickX;
@@ -7133,7 +7119,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void parsePlayerOptions(Player p, int tileX, int tileY, int index) {
+	public void parsePlayerOptions(Player p, int tileX, int tileY, int index) {
 		if (p != localPlayer && optionCount < 400) {
 			String string = p.name + getLevelColorTag(localPlayer.level, p.level) + " (level-" + p.level + ")";
 
@@ -7311,7 +7297,7 @@ public class Game extends GameShell {
 					}
 
 					while (message.length() > 0) {
-						if (message.indexOf("%") != -1) {
+						if (message.contains("%")) {
 							for (;;) {
 								int j = message.indexOf("%1");
 								if (j == -1) {
@@ -7387,8 +7373,8 @@ public class Game extends GameShell {
 					Canvas3D.centerX = x + (i.width / 2);
 					Canvas3D.centerY = y + (i.height / 2);
 
-					int cameraY = (Canvas3D.sin[i.modelCameraPitch] * i.modelZoom) >> 16;
-					int cameraZ = (Canvas3D.cos[i.modelCameraPitch] * i.modelZoom) >> 16;
+					int camY = (Canvas3D.sin[i.modelCameraPitch] * i.modelZoom) >> 16;
+					int camZ = (Canvas3D.cos[i.modelCameraPitch] * i.modelZoom) >> 16;
 					Model m;
 
 					if (i.seqIndexDisabled == -1) {
@@ -7399,7 +7385,7 @@ public class Game extends GameShell {
 					}
 
 					if (m != null) {
-						m.draw(0, i.modelYaw, 0, 0, cameraY, cameraZ, i.modelCameraPitch);
+						m.draw(0, i.modelYaw, 0, 0, camY, camZ, i.modelCameraPitch);
 					}
 
 					Canvas3D.centerX = centerX;
@@ -7626,7 +7612,7 @@ public class Game extends GameShell {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error executing clientscript", e);
 			return -1;
 		}
 	}
@@ -7641,7 +7627,7 @@ public class Game extends GameShell {
 			if (!selectedSpell) {
 				String s = i.optionPrefix;
 
-				if (s.indexOf(" ") != -1) {
+				if (s.contains(" ")) {
 					s = s.substring(0, s.indexOf(" "));
 				}
 
@@ -8388,11 +8374,7 @@ public class Game extends GameShell {
 			}
 		}
 
-		if (s.equalsIgnoreCase(localPlayer.name)) {
-			return true;
-		}
-
-		return false;
+		return s.equalsIgnoreCase(localPlayer.name);
 	}
 
 	public final void drawSidebar() {
@@ -8424,7 +8406,7 @@ public class Game extends GameShell {
 		try {
 			return new URL("http://" + address + ":" + (portoff + 80));
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error getting codebase", e);
 		}
 
 		return super.getCodeBase();
@@ -8446,6 +8428,7 @@ public class Game extends GameShell {
 		}
 	}
 
+	@Override
 	public final String getParameter(String s) {
 		if (Signlink.mainapp != null) {
 			return Signlink.mainapp.getParameter(s);
@@ -8453,6 +8436,7 @@ public class Game extends GameShell {
 		return super.getParameter(s);
 	}
 
+	@Override
 	public final void startThread(Runnable r, int priority) {
 		if (Signlink.mainapp != null) {
 			Signlink.startThread(r, priority);

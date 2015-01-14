@@ -1,13 +1,13 @@
 package com.runescape;
 
-public final class NPCConfig {
+public class NPCConfig {
 
 	public static int count;
 	private static int[] pointers;
 	private static Buffer data;
 	private static NPCConfig[] cache;
 	private static int cachepos;
-	private int index = -1;
+	public int index;
 	public String name;
 	public byte[] description;
 	public byte size = 1;
@@ -72,6 +72,10 @@ public final class NPCConfig {
 		n.index = i;
 		n.read(data);
 		return n;
+	}
+
+	public NPCConfig() {
+		this.index = -1;
 	}
 
 	private void read(Buffer b) {
