@@ -77,7 +77,7 @@ public final class Signlink implements Runnable {
 
 			File path = findCachePath();
 
-			System.out.println("Cache path: " + path);
+			logger.log(Level.INFO, "Cache path: {0}", path);
 
 			for (;;) {
 				if (socketreq != 0) {
