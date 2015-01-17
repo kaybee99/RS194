@@ -7,8 +7,8 @@ public class ObjConfig {
 	private static Buffer buffer;
 	private static ObjConfig[] cache;
 	private static int cachepos;
-	public static List uniqueModelCache = new List(50);
-	static List uniqueBitmapCache = new List(200);
+	public static Table uniqueModelCache = new Table(50);
+	static Table uniqueBitmapCache = new Table(200);
 
 	public int index = -1;
 	public int modelIndex;

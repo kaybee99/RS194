@@ -18,8 +18,8 @@ public class UserInterface {
 
 	public static UserInterface[] instances = new UserInterface[0];
 
-	private static List bitmapCache;
-	private static List modelCache;
+	private static Table bitmapCache;
+	private static Table modelCache;
 
 	private static Bitmap getBitmap(String name, Archive media, int index) {
 		long l = (StringUtil.getHash(name) << 4) + (long) index;
@@ -47,8 +47,8 @@ public class UserInterface {
 	}
 
 	public static void load(BitmapFont[] fonts, Archive media, Archive interfaces) {
-		bitmapCache = new List(50000);
-		modelCache = new List(50000);
+		bitmapCache = new Table(50000);
+		modelCache = new Table(50000);
 
 		Buffer b = new Buffer(interfaces.get("data", null));
 		instances = new UserInterface[b.readUShort()];

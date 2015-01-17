@@ -29,7 +29,7 @@ public class NPCConfig {
 	public int level = -1;
 	private int scaleX = 128;
 	private int scaleY = 128;
-	public static List uniqueModelCache = new List(30);
+	public static Table uniqueModelCache = new Table(30);
 
 	public static final int getCount() {
 		return count;

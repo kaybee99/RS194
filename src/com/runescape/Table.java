@@ -1,13 +1,13 @@
 package com.runescape;
 
-public final class List {
+public final class Table {
 
 	private final int size;
 	private int available;
 	private final Array array = new Array(1024);
 	private final Deque deque = new Deque();
 
-	public List(int length) {
+	public Table(int length) {
 		size = length;
 		available = length;
 	}

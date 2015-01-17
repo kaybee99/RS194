@@ -13,3 +13,6 @@ hs_err_pid*
 /nbproject/private/
 /build/
 /dist/
+/build.xml
+/manifest.mf
+/nbproject/

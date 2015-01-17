@@ -1,5 +1,6 @@
 package com.runescape;
 
+import com.runescape.event.ShellListener;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -13,9 +14,9 @@ import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
-
 import javax.swing.JApplet;
 import javax.swing.JFrame;
+import javax.swing.event.EventListenerList;
 
 public abstract class GameShell extends JApplet implements Runnable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener {
 
@@ -45,76 +46,166 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	public static final int KEY_F11 = KEY_F10 + 1;
 	public static final int KEY_F12 = KEY_F11 + 1;
 
+	/**
+	 * The state of the game loop. List of meanings and values:<br/>
+	 * <b>-2</b> Has been shutdown<br/>
+	 * <b>-1</b> Shutting down<br/>
+	 * <b>0</b>	Running<br/>
+	 * <b>>0</b> Shutdown in x cycles
+	 */
 	public int state;
+	/**
+	 * The goal amount of time the game loop wants to sleep.
+	 */
 	public int deltime = 20;
+	/**
+	 * The minimum amount of time the game loop can sleep.
+	 */
 	public int minDelay = 1;
-
-	public double ft;
+	/**
+	 * Used to track listeners.
+	 */
+	protected final EventListenerList listeners = new EventListenerList();
+	/**
+	 * How long it took for the last frame to draw in milliseconds.
+	 */
+	public double frameTime;
+	/**
+	 * An array of operation times in milliseconds for the last 10 frames.
+	 */
 	private final long[] optim = new long[10];
+	/**
+	 * How many frames were drawn in the last second.
+	 */
 	public int fps;
+	/**
+	 * The width of the shell.
+	 */
 	public int width;
+	/**
+	 * The height of the shell.
+	 */
 	public int height;
+	/**
+	 * The destination graphics object all image producers will draw to.
+	 */
 	public Graphics graphics;
+	/**
+	 * The frame used if the shell is initialized via <code>initFrame</code>.
+	 */
 	public JFrame frame;
+	/**
+	 * Set to true when focus is gained, or either of these methods are called:
+	 * <code>update(g)</code>, <code>paint(g)</code>.
+	 */
 	public boolean refresh = true;
+	/**
+	 * How many cycles the game loop has gone through since the last input
+	 * event.
+	 */
 	public int idleCycles;
+	/**
+	 * The mouse button currently being held down.
+	 */
 	public int dragButton;
+	/**
+	 * The current horizontal mouse position.
+	 */
 	public int mouseX;
+	/**
+	 * The current vertical mouse position.
+	 */
 	public int mouseY;
+	/**
+	 * The mouse button pressed in the last frame.
+	 */
 	public int mouseButton;
+	/**
+	 * The amount the mouse wheel rotated in the last frame.
+	 */
 	public int mouseWheel;
+	/**
+	 * The x position the mouse was pressed in the last frame.
+	 */
 	public int clickX;
+	/**
+	 * The y position the mouse was pressed in the last frame.
+	 */
 	public int clickY;
+	/**
+	 * An array of booleans describing whether an action key is pressed.
+	 */
 	public boolean[] keyDown = new boolean[128];
-
+	/**
+	 * A buffer of pressed keys.
+	 */
 	private final int[] keyBuffer = new int[128];
+	/**
+	 * The last position the key buffer has reached.
+	 */
 	private int lastKeyBufferPos;
+	/**
+	 * The current position the key buffer is at.
+	 */
 	private int keyBufferPos;
 
-	public void initFrame(int w, int h) {
-		width = w;
-		height = h;
-		frame = new GameFrame(this, width, height);
-		graphics = getGraphics();
-		startThread(this, 1);
+	/**
+	 * Initializes and wraps the shell in a JFrame.
+	 *
+	 * @param width the width.
+	 * @param height the height.
+	 */
+	public void initFrame(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.frame = new GameFrame(this, this.width, this.height);
+		this.graphics = this.getGraphics();
+		this.startThread(this, 1);
 	}
 
-	public void initApplet(int w, int h) {
-		width = w;
-		height = h;
-		graphics = getGraphics();
-		startThread(this, 1);
+	/**
+	 * Initializes the shell.
+	 *
+	 * @param width the width.
+	 * @param height the height.
+	 */
+	public void initApplet(int width, int height) {
+		this.width = width;
+		this.height = height;
+		this.graphics = getGraphics();
+		this.startThread(this, 1);
 	}
 
 	@Override
 	public void run() {
 		System.out.println("Registering event listeners");
-		setBackground(Color.BLACK);
+		this.setBackground(Color.BLACK);
 
-		addMouseListener(this);
-		addMouseMotionListener(this);
-		addMouseWheelListener(this);
-		addKeyListener(this);
-		addFocusListener(this);
+		this.addMouseListener(this);
+		this.addMouseMotionListener(this);
+		this.addMouseWheelListener(this);
+		this.addKeyListener(this);
+		this.addFocusListener(this);
 
-		drawProgress("Loading...", 0);
-		startup();
+		this.fireStartup();
+		this.drawProgress("Loading...", 0);
+		this.startup();
 
-		int curFrame = 0;
+		int currentFrame = 0;
 		int ratio = 256;
 		int delay = 1;
 		int cycle = 0;
 
 		for (int n = 0; n < 10; n++) {
-			optim[n] = System.currentTimeMillis();
+			this.optim[n] = System.currentTimeMillis();
 		}
 
 		long currentTime;
 
-		while (state >= 0) {
-			if (state > 0) {
-				state--;
-				if (state == 0) {
+		while (this.state >= 0) {
+			if (this.state > 0) {
+				this.state--;
+				if (this.state == 0) {
 					forceShutdown();
 					return;
 				}
@@ -127,11 +218,11 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 			delay = 1;
 			currentTime = System.currentTimeMillis();
 
-			if (optim[curFrame] == 0L) {
+			if (this.optim[currentFrame] == 0L) {
 				ratio = lastRatio;
 				delay = lastDelta;
-			} else if (currentTime > optim[curFrame]) {
-				ratio = (int) ((long) (deltime * 2560) / (currentTime - optim[curFrame]));
+			} else if (currentTime > this.optim[currentFrame]) {
+				ratio = (int) ((long) (this.deltime * 2560) / (currentTime - this.optim[currentFrame]));
 			}
 
 			if (ratio < 25) {
@@ -140,22 +231,22 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 
 			if (ratio > 256) {
 				ratio = 256;
-				delay = (int) ((long) deltime - (currentTime - optim[curFrame]) / 10L);
+				delay = (int) ((long) this.deltime - (currentTime - this.optim[currentFrame]) / 10L);
 			}
 
-			optim[curFrame] = currentTime;
-			curFrame = (curFrame + 1) % 10;
+			this.optim[currentFrame] = currentTime;
+			currentFrame = (currentFrame + 1) % 10;
 
 			if (delay > 1) {
 				for (int n = 0; n < 10; n++) {
-					if (optim[n] != 0L) {
-						optim[n] += (long) delay;
+					if (this.optim[n] != 0L) {
+						this.optim[n] += (long) delay;
 					}
 				}
 			}
 
-			if (delay < minDelay) {
-				delay = minDelay;
+			if (delay < this.minDelay) {
+				delay = this.minDelay;
 			}
 
 			try {
@@ -165,38 +256,109 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 			}
 
 			for (/**/; cycle < 256; cycle += ratio) {
-				update();
+				this.update();
+				this.fireUpdate(); // send listeners notification
 
-				mouseWheel = 0;
-				mouseButton = 0;
-				lastKeyBufferPos = keyBufferPos;
+				this.mouseWheel = 0;
+				this.mouseButton = 0;
+				this.lastKeyBufferPos = this.keyBufferPos;
 			}
 
 			cycle &= 0xFF;
 
-			if (deltime > 0) {
-				fps = (ratio * 1000) / (deltime * 256);
+			if (this.deltime > 0) {
+				this.fps = (ratio * 1000) / (this.deltime * 256);
 			}
 
 			long nano = System.nanoTime();
-			draw();
-			ft = (System.nanoTime() - nano) / 1_000_000.0;
+			this.draw();
+			this.fireDraw(); // send listeners notification
+			this.frameTime = (System.nanoTime() - nano) / 1_000_000.0;
 		}
 
-		if (state == -1) {
-			forceShutdown();
+		if (this.state == -1) {
+			this.forceShutdown();
 		}
 	}
 
+	/**
+	 * Returns an array list of shell listeners.
+	 *
+	 * @return the shell listeners.
+	 */
+	public ShellListener[] getShellListeners() {
+		return this.listeners.getListeners(ShellListener.class);
+	}
+
+	/**
+	 * Notifies all listeners of a startup.
+	 */
+	protected void fireStartup() {
+		for (ShellListener l : this.getShellListeners()) {
+			l.onShellStartup();
+		}
+	}
+
+	/**
+	 * Notifies all listeners of an update.
+	 */
+	protected void fireUpdate() {
+		for (ShellListener l : this.getShellListeners()) {
+			l.onShellUpdate();
+		}
+	}
+
+	/**
+	 * Notifies all listeners of a draw.
+	 */
+	protected void fireDraw() {
+		for (ShellListener l : this.getShellListeners()) {
+			l.onShellDraw();
+		}
+	}
+
+	/**
+	 * Notifies all listeners of a shutdown.
+	 */
+	protected void fireShutdown() {
+		for (ShellListener l : this.getShellListeners()) {
+			l.onShellShutdown();
+		}
+	}
+
+	/**
+	 * Adds a shell listener.
+	 *
+	 * @param l the listener.
+	 */
+	public void addShellListener(ShellListener l) {
+		this.listeners.add(ShellListener.class, l);
+	}
+
+	/**
+	 * Removes a shell listener.
+	 *
+	 * @param l the listener.
+	 */
+	public void removeShellListener(ShellListener l) {
+		this.listeners.remove(ShellListener.class, l);
+	}
+
+	/**
+	 * Notifies all listeners of a shutdown, invokes the shutdown method, and
+	 * forces the application to shut down after one second.
+	 */
 	public void forceShutdown() {
-		state = -2;
+		this.state = -2;
 		System.out.println("Closing program");
-		shutdown();
+
+		this.fireShutdown();
+		this.shutdown();
 
 		try {
 			Thread.sleep(1000L);
 		} catch (Exception e) {
-			// nothing
+
 		}
 		try {
 			System.exit(0);
@@ -205,6 +367,11 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		}
 	}
 
+	/**
+	 * Sets the goal delta.
+	 *
+	 * @param fps the goal frames per second.
+	 */
 	public void setLoopRate(int fps) {
 		deltime = 1000 / fps;
 	}
@@ -439,6 +606,11 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 
 	}
 
+	/**
+	 * Polls the next available character in the key buffer.
+	 *
+	 * @return the key or -1 if no new keys have been pushed.
+	 */
 	public int pollKey() {
 		int i = -1;
 		if (keyBufferPos != lastKeyBufferPos) {
@@ -458,44 +630,58 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 
 	public abstract void refresh();
 
-	public void startThread(Runnable r, int i) {
+	/**
+	 * Starts a thread.
+	 *
+	 * @param r the runnable.
+	 * @param pri the priority.
+	 */
+	public void startThread(Runnable r, int pri) {
 		Thread t = new Thread(r);
 		t.start();
-		t.setPriority(i);
+		t.setPriority(pri);
 	}
 
+	/**
+	 * Draws the progress.
+	 *
+	 * @param caption the caption.
+	 * @param percent the percent (0-100).
+	 */
 	public void drawProgress(String caption, int percent) {
-		if (graphics == null) {
+		if (this.graphics == null) {
 			return;
 		}
 
-		if (refresh) {
-			graphics.setColor(Color.BLACK);
-			graphics.fillRect(0, 0, width, height);
-			refresh = false;
+		if (this.refresh) {
+			this.graphics.setColor(Color.BLACK);
+			this.graphics.fillRect(0, 0, this.width, this.height);
+			this.refresh = false;
 		}
 
 		Font f = new Font("Helvetica", Font.BOLD, 13);
 		FontMetrics fm = getFontMetrics(f);
 
-		int centerX = width / 2;
-		int centerY = height / 2;
+		int cx = this.width / 2; //center x
+		int cy = this.height / 2;// center y
 
 		int w = 304;
 		int h = 34;
 
-		int x = centerX - (w / 2);
-		int y = centerY - (h / 2);
+		int x = cx - (w / 2);
+		int y = cy - (h / 2);
 
-		graphics.setColor(Color.BLACK);
-		graphics.fillRect(x, y, w, h);
+		this.graphics.setColor(Color.BLACK);
+		this.graphics.fillRect(x, y, w, h);
 
-		graphics.setColor(new Color(140, 17, 17));
-		graphics.drawRect(x, y, w - 1, h - 1);
-		graphics.fillRect(x + 2, y + 2, ((w - 4) * percent) / 100, h - 4);
+		this.graphics.setColor(new Color(140, 17, 17));
+		this.graphics.drawRect(x, y, w - 1, h - 1);
+		this.graphics.fillRect(x + 2, y + 2, ((w - 4) * percent) / 100, h - 4);
 
-		graphics.setFont(f);
-		graphics.setColor(Color.WHITE);
-		graphics.drawString(caption, centerX - (fm.stringWidth(caption) / 2), y + 22);
+		this.graphics.setFont(f);
+		this.graphics.setColor(Color.WHITE);
+		this.graphics.drawString(caption, cx - (fm.stringWidth(caption) / 2), y + 22);
+
+		this.fireDraw(); // let listeners know we've drawn something
 	}
 }

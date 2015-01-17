@@ -41,8 +41,8 @@ public class LocConfig {
 	private int scaleY;
 	private int scaleZ;
 	public int interactionSideFlags;
-	public static List unmodifiedModelCache = new List(500);
-	public static List uniqueModelCache = new List(30);
+	public static Table unmodifiedModelCache = new Table(500);
+	public static Table uniqueModelCache = new Table(30);
 
 	public static final void load(Archive a) {
 		data = new Buffer(a.get("loc.dat"));
