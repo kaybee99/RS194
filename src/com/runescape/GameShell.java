@@ -1,6 +1,6 @@
 package com.runescape;
 
-import com.runescape.event.ShellListener;
+import dane.runescape.mapeditor.event.ShellListener;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;

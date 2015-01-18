@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package com.runescape.event;
+package dane.runescape.mapeditor.event;
 
 import java.util.EventListener;
 
