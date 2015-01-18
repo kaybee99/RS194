@@ -7,7 +7,7 @@ public final class Landscape {
 	public int planeCount;
 	public int tileCountX;
 	public int tileCountZ;
-	public int[][][] levelHeightmap;
+	public int[][][] heightmap;
 	public Tile[][][] planeTiles;
 	public int minPlane;
 	public int locCount;
@@ -171,7 +171,7 @@ public final class Landscape {
 		tileCountZ = length;
 		planeTiles = new Tile[height][width][length];
 		levelTileCycle = new int[height][width + 1][length + 1];
-		levelHeightmap = heightmap;
+		this.heightmap = heightmap;
 		reset();
 	}
 
@@ -772,16 +772,16 @@ public final class Landscape {
 		}
 	}
 
-	private void mergeLocNormals(Model m, int tileX, int tileZ, int tileY, int locSizeX, int locSizeZ) {
+	private void mergeLocNormals(Model m, int tileX, int tileZ, int tileY, int locTileSizeX, int locTileSizeZ) {
 		boolean hideTriangles = true;
 
 		int minTileX = tileX;
-		int maxTileX = tileX + locSizeX;
+		int maxTileX = tileX + locTileSizeX;
 
 		int minTileZ = tileZ - 1;
-		int maxTileZ = tileZ + locSizeZ;
+		int maxTileZ = tileZ + locTileSizeZ;
 
-		int baseAverageY = (levelHeightmap[tileY][tileX][tileZ] + levelHeightmap[tileY][tileX + 1][tileZ] + levelHeightmap[tileY][tileX][tileZ + 1] + levelHeightmap[tileY][tileX + 1][tileZ + 1]) / 4;
+		int baseAverageY = (heightmap[tileY][tileX][tileZ] + heightmap[tileY][tileX + 1][tileZ] + heightmap[tileY][tileX][tileZ + 1] + heightmap[tileY][tileX + 1][tileZ + 1]) / 4;
 
 		for (int y = tileY; y <= tileY + 1; y++) {
 			if (y == planeCount) {
@@ -797,25 +797,25 @@ public final class Landscape {
 							Tile t = planeTiles[y][x][z];
 
 							if (t != null) {
-								int averageY = ((levelHeightmap[y][x][z] + levelHeightmap[y][x + 1][z] + levelHeightmap[y][x][z + 1] + levelHeightmap[y][x + 1][z + 1]) / 4) - baseAverageY;
+								int averageY = ((heightmap[y][x][z] + heightmap[y][x + 1][z] + heightmap[y][x][z + 1] + heightmap[y][x + 1][z + 1]) / 4) - baseAverageY;
 
 								WallLoc wall = t.wall;
 
 								if (wall != null && wall.model1 != null && wall.model1.normals != null) {
-									mergeNormals(m, wall.model1, ((x - tileX) * 128 + (1 - locSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locSizeZ) * 64), hideTriangles);
+									mergeNormals(m, wall.model1, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
 								}
 
 								if (wall != null && wall.model2 != null && wall.model2.normals != null) {
-									mergeNormals(m, wall.model2, ((x - tileX) * 128 + (1 - locSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locSizeZ) * 64), hideTriangles);
+									mergeNormals(m, wall.model2, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
 								}
 
 								for (int n = 0; n < t.locN; n++) {
-									Loc l = (t.locs[n]);
+									Loc l = t.locs[n];
 
 									if (l != null && l.model != null && l.model.normals != null) {
 										int tileSizeX = (l.maxTileX - l.minTileX + 1);
 										int tileSizeZ = (l.maxTileZ - l.minTileZ + 1);
-										mergeNormals(m, l.model, (((l.minTileX - tileX) * 128) + (tileSizeX - locSizeX) * 64), averageY, (((l.minTileZ - tileZ) * 128) + (tileSizeZ - locSizeZ) * 64), hideTriangles);
+										mergeNormals(m, l.model, (((l.minTileX - tileX) * 128) + (tileSizeX - locTileSizeX) * 64), averageY, (((l.minTileZ - tileZ) * 128) + (tileSizeZ - locTileSizeZ) * 64), hideTriangles);
 									}
 								}
 							}
@@ -829,42 +829,43 @@ public final class Landscape {
 		}
 	}
 
-	private void mergeNormals(Model m1, Model m2, int relativeX, int relativeY, int relativeZ, boolean hideTriangles) {
-		normalMergeIndex++;
+	private void mergeNormals(Model a, Model b, int offsetX, int offsetY, int offsetZ, boolean hideTriangles) {
+		this.normalMergeIndex++;
 		int counter = 0;
 
-		for (int i = 0; i < m1.vertexCount; i++) {
-			Normal a1 = m1.normals[i];
-			Normal a2 = m1.originalNormals[i];
+		for (int vertexA = 0; vertexA < a.vertexCount; vertexA++) {
+			Normal normalA = a.normals[vertexA];
+			Normal unmodifiedNormalA = a.unmodifiedNormals[vertexA];
 
-			if (a2.magnitude != 0) {
-				int y = m1.vertexY[i] - relativeY;
+			if (unmodifiedNormalA.magnitude != 0) {
+				int vertexYA = a.vertexY[vertexA] - offsetY;
 
-				if (y <= m2.maxBoundY) {
-					int x = m1.vertexX[i] - relativeX;
+				if (vertexYA <= b.maxBoundY) {
+					int vertexXA = a.vertexX[vertexA] - offsetX;
 
-					if (x >= m2.minBoundX && x <= m2.maxBoundX) {
-						int z = m1.vertexZ[i] - relativeZ;
+					if (vertexXA >= b.minBoundX && vertexXA <= b.maxBoundX) {
+						int vertexZA = a.vertexZ[vertexA] - offsetZ;
 
-						if (z >= m2.minBoundZ && z <= m2.maxBoundZ) {
-							for (int j = 0; j < m2.vertexCount; j++) {
-								Normal b1 = m2.normals[j];
-								Normal b2 = m2.originalNormals[j];
+						if (vertexZA >= b.minBoundZ && vertexZA <= b.maxBoundZ) {
+							for (int vertexB = 0; vertexB < b.vertexCount; vertexB++) {
 
-								if (x == m2.vertexX[j] && z == m2.vertexZ[j] && y == m2.vertexY[j] && b2.magnitude != 0) {
-									a1.x += b2.x;
-									a1.y += b2.y;
-									a1.z += b2.z;
-									a1.magnitude += b2.magnitude;
+								Normal normalB = b.normals[vertexB];
+								Normal unmodifiedNormalB = b.unmodifiedNormals[vertexB];
 
-									b1.x += a2.x;
-									b1.y += a2.y;
-									b1.z += a2.z;
-									b1.magnitude += a2.magnitude;
+								if (vertexXA == b.vertexX[vertexB] && vertexZA == b.vertexZ[vertexB] && vertexYA == b.vertexY[vertexB] && unmodifiedNormalB.magnitude != 0) {
+									normalA.x += unmodifiedNormalB.x;
+									normalA.y += unmodifiedNormalB.y;
+									normalA.z += unmodifiedNormalB.z;
+									normalA.magnitude += unmodifiedNormalB.magnitude;
+
+									normalB.x += unmodifiedNormalA.x;
+									normalB.y += unmodifiedNormalA.y;
+									normalB.z += unmodifiedNormalA.z;
+									normalB.magnitude += unmodifiedNormalA.magnitude;
 
 									counter++;
-									vertexAMergeIndex[i] = normalMergeIndex;
-									vertexBMergeIndex[j] = normalMergeIndex;
+									this.vertexAMergeIndex[vertexA] = this.normalMergeIndex;
+									this.vertexBMergeIndex[vertexB] = this.normalMergeIndex;
 								}
 							}
 						}
@@ -874,15 +875,15 @@ public final class Landscape {
 		}
 
 		if (counter >= 3 && hideTriangles) {
-			for (int t = 0; t < m1.triangleCount; t++) {
-				if (vertexAMergeIndex[m1.triangleVertexA[t]] == normalMergeIndex && vertexAMergeIndex[m1.triangleVertexB[t]] == normalMergeIndex && vertexAMergeIndex[m1.triangleVertexC[t]] == normalMergeIndex) {
-					m1.triangleInfo[t] = -1;
+			for (int t = 0; t < a.triangleCount; t++) {
+				if (this.vertexAMergeIndex[a.triangleVertexA[t]] == this.normalMergeIndex && this.vertexAMergeIndex[a.triangleVertexB[t]] == this.normalMergeIndex && this.vertexAMergeIndex[a.triangleVertexC[t]] == this.normalMergeIndex) {
+					a.triangleInfo[t] = -1; // do not draw this triangle
 				}
 			}
 
-			for (int t = 0; t < m2.triangleCount; t++) {
-				if (vertexBMergeIndex[m2.triangleVertexA[t]] == normalMergeIndex && vertexBMergeIndex[m2.triangleVertexB[t]] == normalMergeIndex && vertexBMergeIndex[m2.triangleVertexC[t]] == normalMergeIndex) {
-					m2.triangleInfo[t] = -1;
+			for (int t = 0; t < b.triangleCount; t++) {
+				if (this.vertexBMergeIndex[b.triangleVertexA[t]] == this.normalMergeIndex && this.vertexBMergeIndex[b.triangleVertexB[t]] == this.normalMergeIndex && this.vertexBMergeIndex[b.triangleVertexC[t]] == this.normalMergeIndex) {
+					b.triangleInfo[t] = -1;// do not draw this triangle
 				}
 			}
 		}
@@ -1124,7 +1125,7 @@ public final class Landscape {
 					Tile t = tiles[x][z];
 
 					if (t != null) {
-						if (t.drawY > topY || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][z - cameraTileZ + Scene.VIEW_RADIUS] && levelHeightmap[y][x][z] - cameraY < 2000) {
+						if (t.drawY > topY || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][z - cameraTileZ + Scene.VIEW_RADIUS] && heightmap[y][x][z] - cameraY < 2000) {
 							t.draw = false;
 							t.update = false;
 							t.anInt985 = 0;
@@ -1791,10 +1792,10 @@ public final class Landscape {
 		int sceneZ3;
 		int sceneZ2 = sceneZ3 = sceneZ0 + 128;
 
-		int sceneY0 = levelHeightmap[plane][tileX][tileZ] - cameraY;
-		int sceneY1 = levelHeightmap[plane][tileX + 1][tileZ] - cameraY;
-		int sceneY2 = levelHeightmap[plane][tileX + 1][tileZ + 1] - cameraY;
-		int sceneY3 = levelHeightmap[plane][tileX][tileZ + 1] - cameraY;
+		int sceneY0 = heightmap[plane][tileX][tileZ] - cameraY;
+		int sceneY1 = heightmap[plane][tileX + 1][tileZ] - cameraY;
+		int sceneY2 = heightmap[plane][tileX + 1][tileZ + 1] - cameraY;
+		int sceneY3 = heightmap[plane][tileX][tileZ + 1] - cameraY;
 
 		int w = sceneZ0 * yawSin + sceneX0 * yawCos >> 16;
 		sceneZ0 = sceneZ0 * yawCos - sceneX0 * yawSin >> 16;
@@ -2256,7 +2257,7 @@ public final class Landscape {
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		if (culled(sceneX + 1, levelHeightmap[plane][tileX][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, levelHeightmap[plane][tileX + 1][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, levelHeightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && culled(sceneX + 1, levelHeightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
+		if (culled(sceneX + 1, heightmap[plane][tileX][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && culled(sceneX + 1, heightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
 			levelTileCycle[plane][tileX][tileY] = cullCycle;
 			return true;
 		}
@@ -2272,7 +2273,7 @@ public final class Landscape {
 
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
-		int sceneY = levelHeightmap[plane][tileX][tileY] - 1;
+		int sceneY = heightmap[plane][tileX][tileY] - 1;
 
 		int planeY0 = sceneY - 120;
 		int planeY1 = sceneY - 230;
@@ -2394,7 +2395,7 @@ public final class Landscape {
 		} else if (type == 128) {
 			return culled(sceneX, planeY1, sceneZ);
 		}
-		
+
 		System.out.println("Warning unsupported wall type");
 		return true;
 	}
@@ -2407,7 +2408,7 @@ public final class Landscape {
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		return culled(sceneX + 1, levelHeightmap[plane][tileX][tileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][tileX + 1][tileY + 1] - minY), sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][tileX][tileY + 1] - minY), sceneZ + 128 - 1);
+		return culled(sceneX + 1, heightmap[plane][tileX][tileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY + 1] - minY), sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][tileX][tileY + 1] - minY), sceneZ + 128 - 1);
 	}
 
 	private boolean culledArea(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int minY) {
@@ -2419,7 +2420,7 @@ public final class Landscape {
 			int sceneX = minTileX << 7;
 			int sceneZ = minTileY << 7;
 
-			return culled(sceneX + 1, levelHeightmap[plane][minTileX][minTileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (levelHeightmap[plane][minTileX + 1][minTileY + 1]) - minY, sceneZ + 128 - 1) && culled(sceneX + 1, (levelHeightmap[plane][minTileX][minTileY + 1] - minY), sceneZ + 128 - 1);
+			return culled(sceneX + 1, heightmap[plane][minTileX][minTileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY + 1]) - minY, sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][minTileX][minTileY + 1] - minY), sceneZ + 128 - 1);
 		}
 
 		for (int x = minTileX; x <= maxTileX; x++) {
@@ -2432,7 +2433,7 @@ public final class Landscape {
 
 		int minSceneX = (minTileX << 7) + 1;
 		int minSceneZ = (minTileY << 7) + 2;
-		int minSceneY = levelHeightmap[plane][minTileX][minTileY] - minY;
+		int minSceneY = heightmap[plane][minTileX][minTileY] - minY;
 
 		if (!culled(minSceneX, minSceneY, minSceneZ)) {
 			return false;

@@ -36,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * A utility to help keep track of searchable objects.
  *
  * @author Dane
  */
@@ -44,6 +45,7 @@ public class SearchManager {
 	private static final Map<SearchMode, List<Searchable>> searchables = new HashMap<>();
 
 	static {
+		// create those lists homie
 		for (SearchMode m : SearchMode.values()) {
 			searchables.put(m, new ArrayList<>());
 		}

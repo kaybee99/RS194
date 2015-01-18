@@ -4,6 +4,11 @@ import java.awt.Polygon;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used to create {@link Polygon} objects for specific tile shapes.
+ *
+ * @author Dane
+ */
 public class TileShape {
 
 	public static final int SHAPE_VERTICES[][] = {{1, 3, 5, 7}, {1, 3, 5, 7}, {1, 3, 5, 7}, {1, 3, 5, 7, 6}, {1, 3, 5, 7, 6}, {1, 3, 5, 7, 6}, {1, 3, 5, 7, 6}, {1, 3, 5, 7, 2, 6}, {1, 3, 5, 7, 2, 8}, {1, 3, 5, 7, 2, 8}, {1, 3, 5, 7, 11, 12}, {1, 3, 5, 7, 11, 12}, {1, 3, 5, 7, 13, 14}};

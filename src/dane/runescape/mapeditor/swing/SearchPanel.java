@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Dane.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package dane.runescape.mapeditor.swing;
 
 import java.awt.BorderLayout;
@@ -22,19 +45,25 @@ import dane.runescape.mapeditor.event.SearchEventListener;
 import dane.runescape.mapeditor.search.SearchMode;
 import dane.runescape.mapeditor.search.Searchable;
 
+/**
+ * The panel containing all the search components.
+ *
+ * @author Dane
+ */
 public class SearchPanel extends JPanel implements ListSelectionListener, ActionListener {
 
 	private static final long serialVersionUID = -2861032783438108415L;
 
-	public SearchMode mode = null;
-	public JPanel panelTop = new JPanel(new BorderLayout());
-	public JLabel lblSearch = new JLabel("search");
-	public DefaultComboBoxModel<SearchMode> cmbModel = new DefaultComboBoxModel<>(SearchMode.values());
-	public JComboBox<SearchMode> cmbSearch = new JComboBox<>(cmbModel);
+	private SearchMode currentMode = null;
+	
+	private JPanel panelTop;
+	private JLabel lblSearch;
+	private DefaultComboBoxModel<SearchMode> cmbModel;
+	private JComboBox<SearchMode> cmbSearch;
 
-	public DefaultListModel<Searchable> listModel = new DefaultListModel<>();
-	public JList<Searchable> list = new JList<>(listModel);
-	public JScrollPane paneList = new JScrollPane(list);
+	private DefaultListModel<Searchable> listModel;
+	private JList<Searchable> list;
+	private JScrollPane paneList;
 
 	public SearchPanel() {
 		setSize(256, 256);
@@ -43,6 +72,16 @@ public class SearchPanel extends JPanel implements ListSelectionListener, Action
 	}
 
 	public void assemble() {
+		panelTop = new JPanel(new BorderLayout());
+		lblSearch = new JLabel("search");
+		
+		cmbModel = new DefaultComboBoxModel<>(SearchMode.values());
+		cmbSearch = new JComboBox<>(cmbModel);
+		
+		listModel = new DefaultListModel<>();
+		list = new JList<>(listModel);
+		paneList = new JScrollPane(list);
+		
 		cmbSearch.setEditable(true);
 		cmbSearch.addActionListener(this);
 		cmbSearch.setSelectedItem(null);
@@ -73,14 +112,14 @@ public class SearchPanel extends JPanel implements ListSelectionListener, Action
 	protected void fireSearchEvent(String string) {
 		SearchEventListener[] listeners = getSearchListeners();
 		for (SearchEventListener listener : listeners) {
-			listener.onSearchEvent(new SearchEvent(this, mode, string));
+			listener.onSearchEvent(new SearchEvent(this, currentMode, string));
 		}
 	}
 
 	protected void fireSelectEvent(Searchable value) {
 		SearchEventListener[] listeners = getSearchListeners();
 		for (SearchEventListener listener : listeners) {
-			listener.onSearchEvent(new SearchEvent(this, mode, value));
+			listener.onSearchEvent(new SearchEvent(this, currentMode, value));
 		}
 	}
 
@@ -116,13 +155,13 @@ public class SearchPanel extends JPanel implements ListSelectionListener, Action
 				SearchMode type = (SearchMode) o;
 
 				// only do something if it's a new type
-				if (mode != type) {
+				if (currentMode != type) {
 					// reset selected so it doesn't show up in combobox
 					cmbModel.setSelectedItem(null);
 					// scroll up all the way
 					paneList.getVerticalScrollBar().setValue(0);
 					// apply
-					mode = (SearchMode) o;
+					currentMode = (SearchMode) o;
 					// notify listeners
 					fireModeChange(type);
 				}

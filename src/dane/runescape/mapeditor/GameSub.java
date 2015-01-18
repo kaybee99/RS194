@@ -31,8 +31,8 @@ import com.runescape.Scene;
 import dane.runescape.mapeditor.event.GameListener;
 
 /**
- * An extension of the game class. Used for handling the drawing and updating of
- * the 3d scene.
+ * An extension of the {@link Game} class. Used for handling the drawing and
+ * updating of the 3d scene.
  *
  * @author Dane
  */

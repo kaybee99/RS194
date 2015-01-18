@@ -1,3 +1,26 @@
+/*
+ * The MIT License
+ *
+ * Copyright 2015 Dane.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 package dane.runescape.mapeditor;
 
 import com.runescape.Landscape;
@@ -65,49 +88,44 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		m.assemble();
 	}
 
-	public OrbitCamera orbitCamera = new OrbitCamera();
+	private OrbitCamera orbitCamera = new OrbitCamera();
 
-	public JMenuBar menubar = new JMenuBar();
-	public JMenu menuFile = new JMenu("File");
-	public JMenu menuEdit = new JMenu("Edit");
-	public JMenu menuModes = new JMenu("Modes");
-	public JMenu menuMapControls = new JMenu("Map Controls");
-	public JMenu menu3DControls = new JMenu("3D Controls");
-	public JMenu menuOptions = new JMenu("Options");
+	private JMenuBar menubar;
+	private JMenu menuFile, menuEdit, menuModes, menuMapControls, menu3DControls, menuOptions;
 
-	public JPanel panel = new JPanel(new BorderLayout());
+	private JPanel panel;
 
-	public JPanel panel2d = new JPanel(new BorderLayout());
-	public JPanel panel3d = new JPanel(null);
+	private JPanel panel2d;
+	private JPanel panel3d;
 
-	public GameSub game = new GameSub();
-	public MapPanel panelMap = new MapPanel();
-	public GamePanel gamePanel = new GamePanel(game);
+	private GameSub game;
+	private MapPanel panelMap;
+	private GamePanel gamePanel;
 
-	public JScrollPane pane2d = new JScrollPane(panel2d);
-	public JScrollPane pane3d = new JScrollPane(panel3d);
+	private JScrollPane pane2d;
+	private JScrollPane pane3d;
 
-	public JPanel panelPreview = new JPanel();
-	public JScrollPane panePreview = new JScrollPane(panelPreview);
+	private JPanel panelPreview;
+	private JScrollPane panePreview;
 
-	public JPanel panelLeft = new JPanel(new BorderLayout());
-	public JPanel panelRight = new JPanel(new BorderLayout());
-	public JSplitPane splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelLeft, panelRight);
+	private JPanel panelLeft;
+	private JPanel panelRight;
+	public JSplitPane splitLeft;
 
-	public JPanel panelTop = new JPanel(new BorderLayout());
-	public JPanel panelCenter = new JPanel(new BorderLayout());
-	public JSplitPane splitTop = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelTop, panelCenter);
+	private JPanel panelTop;
+	private JPanel panelCenter;
+	private JSplitPane splitTop;
 
-	public JPanel panelCenterTop = new JPanel(new BorderLayout());
-	public JPanel panelCenterBottom = new JPanel(new BorderLayout());
-	public JSplitPane splitCenter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelCenterTop, panelCenterBottom);
+	private JPanel panelCenterTop;
+	private JPanel panelCenterBottom;
+	private JSplitPane splitCenter;
 
-	public SearchPanel searchPanel = new SearchPanel();
-	public LocationPanel locTypePanel = new LocationPanel();
+	private SearchPanel searchPanel;
+	private LocationPanel locTypePanel;
 
-	public JPanel panelBottomLeft = new JPanel(new BorderLayout());
-	public JPanel panelBottomRight = new JPanel(new BorderLayout());
-	public JSplitPane splitBottom = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelBottomLeft, panelBottomRight);
+	private JPanel panelBottomLeft;
+	private JPanel panelBottomRight;
+	private JSplitPane splitBottom;
 
 	public MapEditor(int w, int h) {
 		setMinimumSize(new Dimension(w, h));
@@ -127,7 +145,7 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		gamePanel.setMinimumSize(gamePanel.getSize());
 		gamePanel.setMaximumSize(gamePanel.getSize());
 		gamePanel.init();
-		
+
 		addListeners();
 		setColorCoated();
 		setVisible(true);
@@ -144,39 +162,92 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 	}
 
 	public void assemblePanels() {
+		panel = new JPanel(new BorderLayout());
+
+		panel2d = new JPanel(new BorderLayout());
+		panel3d = new JPanel(null);
+
+		game = new GameSub();
+
+		pane2d = new JScrollPane(panel2d);
+		pane3d = new JScrollPane(panel3d);
+
+		panelPreview = new JPanel();
+		panePreview = new JScrollPane(panelPreview);
+
+		/* Splits */
+		panelLeft = new JPanel(new BorderLayout());
+		panelRight = new JPanel(new BorderLayout());
+		splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelLeft, panelRight);
 		panel.add(splitLeft);
+
+		panelCenterTop = new JPanel(new BorderLayout());
+		panelCenterBottom = new JPanel(new BorderLayout());
+		splitCenter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelCenterTop, panelCenterBottom);
 		panelRight.add(splitCenter);
+
+		panelTop = new JPanel(new BorderLayout());
+		panelCenter = new JPanel(new BorderLayout());
+		splitTop = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelTop, panelCenter);
 		panelCenterTop.add(splitTop);
+
+		panelBottomLeft = new JPanel(new BorderLayout());
+		panelBottomRight = new JPanel(new BorderLayout());
+		splitBottom = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelBottomLeft, panelBottomRight);
 		panelCenterBottom.add(splitBottom);
 
+		/* Special panels */
+		// Search Panel
+		searchPanel = new SearchPanel();
 		searchPanel.assemble();
 		panelBottomLeft.add(searchPanel);
 
+		// LOC Hotkey Panel
+		locTypePanel = new LocationPanel();
 		locTypePanel.assemble();
 		panelBottomRight.add(locTypePanel);
 
+		// 2D Map Panel
+		panelMap = new MapPanel();
 		panelMap.assemble();
 		panel2d.add(panelMap, BorderLayout.CENTER);
 		pane2d.getVerticalScrollBar().setUnitIncrement(16);
 		pane2d.getHorizontalScrollBar().setUnitIncrement(16);
 
+		// Game Panel
+		gamePanel = new GamePanel(game);
 		panel3d.add(gamePanel);
 		panelLeft.add(pane2d, BorderLayout.CENTER);
 		panelTop.add(pane3d, BorderLayout.CENTER);
+
 		add(panel);
 	}
 
-	@SuppressWarnings("serial")
 	public void assembleMenubar() {
-		setJMenuBar(menubar);
+		setJMenuBar(menubar = new JMenuBar());
 
+		menuFile = new JMenu("File");
 		menuFile.add(new JMenuItem(new AbstractAction("Exit") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				MapEditor.this.dispose();
 			}
 		}));
+		menubar.add(menuFile);
 
+		menuEdit = new JMenu("Edit");
+		//menubar.add(menuEdit);
+
+		menuModes = new JMenu("Modes");
+		//menubar.add(menuModes);
+
+		menuMapControls = new JMenu("Map Controls");
+		//menubar.add(menuMapControls);
+
+		menu3DControls = new JMenu("3D Controls");
+		//menubar.add(menu3DControls);
+
+		menuOptions = new JMenu("Options");
 		menuOptions.add(new JMenuItem(new AbstractAction("About") {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -208,12 +279,6 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 				}
 			}
 		}));
-
-		menubar.add(menuFile);
-		//menubar.add(menuEdit);
-		//menubar.add(menuModes);
-		//menubar.add(menuMapControls);
-		//menubar.add(menu3DControls);
 		menubar.add(menuOptions);
 	}
 

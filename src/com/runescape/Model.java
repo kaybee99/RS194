@@ -110,7 +110,7 @@ public class Model extends CacheLink {
 	public int[][] labelVertices;
 	public int[][] skinTriangle;
 	public Normal[] normals;
-	public Normal[] originalNormals;
+	public Normal[] unmodifiedNormals;
 
 	public static void unload() {
 		contexts = null;
@@ -1359,11 +1359,11 @@ public class Model extends CacheLink {
 		if (calculateLighting) {
 			calculateLighting(baseLightness, lightIntensity, x, y, z);
 		} else {
-			originalNormals = new Normal[vertexCount];
+			unmodifiedNormals = new Normal[vertexCount];
 
 			for (int v = 0; v < vertexCount; v++) {
 				Normal current = normals[v];
-				Normal original = originalNormals[v] = new Normal();
+				Normal original = unmodifiedNormals[v] = new Normal();
 				original.x = current.x;
 				original.y = current.y;
 				original.z = current.z;
@@ -1417,7 +1417,7 @@ public class Model extends CacheLink {
 		}
 
 		normals = null;
-		originalNormals = null;
+		unmodifiedNormals = null;
 		vertexLabel = null;
 		triangleSkin = null;
 
