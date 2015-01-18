@@ -77,7 +77,7 @@ public class ObjConfig {
 		}
 		cachepos = (cachepos + 1) % 10;
 		ObjConfig o = cache[cachepos];
-		buffer.pos = pointers[i];
+		buffer.position = pointers[i];
 		o.index = i;
 		o.reset();
 		o.read(buffer);

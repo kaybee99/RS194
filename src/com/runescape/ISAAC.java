@@ -16,10 +16,6 @@ public final class ISAAC {
 	}
 
 	public final int nextInt() {
-		if (anInt490 != -2) {
-			return 0;
-		}
-
 		if (anInt490-- == 0) {
 			method256();
 			anInt490 = 255;

@@ -9,7 +9,7 @@ public final class GameFrame extends JFrame {
 
 	private static final long serialVersionUID = -2056000718285277925L;
 
-	GameShell shell;
+	private GameShell shell;
 
 	public GameFrame(GameShell shell, int w, int h) {
 		this.shell = shell;

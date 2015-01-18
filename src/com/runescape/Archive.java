@@ -34,7 +34,7 @@ public final class Archive {
 		filePackedSize = new int[fileCount];
 		fileOffset = new int[fileCount];
 
-		int pos = b.pos + fileCount * 10;
+		int pos = b.position + fileCount * 10;
 		for (int n = 0; n < fileCount; n++) {
 			fileHash[n] = b.readInt();
 			fileUnpackedSize[n] = b.readInt24();

@@ -45,57 +45,58 @@ public class Flo {
 		}
 	}
 
+	// someone needs to enlighten me
 	private void setColor(int rgb) {
 		double r = (double) (rgb >> 16 & 0xff) / 256.0;
 		double g = (double) (rgb >> 8 & 0xff) / 256.0;
 		double b = (double) (rgb & 0xff) / 256.0;
 
+		double r1 = r;
+
+		if (g < r1) {
+			r1 = g;
+		}
+
+		if (b < r1) {
+			r1 = b;
+		}
+
 		double r2 = r;
 
-		if (g < r2) {
+		if (g > r2) {
 			r2 = g;
 		}
 
-		if (b < r2) {
+		if (b > r2) {
 			r2 = b;
 		}
 
-		double r3 = r;
+		double hue1 = 0.0;
+		double sat1 = 0.0;
+		double light1 = (r1 + r2) / 2.0;
 
-		if (g > r3) {
-			r3 = g;
-		}
-
-		if (b > r3) {
-			r3 = b;
-		}
-
-		double hue = 0.0;
-		double saturation = 0.0;
-		double lightness = (r2 + r3) / 2.0;
-
-		if (r2 != r3) {
-			if (lightness < 0.5) {
-				saturation = (r3 - r2) / (r3 + r2);
+		if (r1 != r2) {
+			if (light1 < 0.5) {
+				sat1 = (r2 - r1) / (r2 + r1);
 			}
-			if (lightness >= 0.5) {
-				saturation = (r3 - r2) / (2.0 - r3 - r2);
+			if (light1 >= 0.5) {
+				sat1 = (r2 - r1) / (2.0 - r2 - r1);
 			}
 
-			if (r == r3) {
-				hue = (g - b) / (r3 - r2);
-			} else if (g == r3) {
-				hue = 2.0 + (b - r) / (r3 - r2);
-			} else if (b == r3) {
-				hue = 4.0 + (r - g) / (r3 - r2);
+			if (r == r2) {
+				hue1 = (g - b) / (r2 - r1);
+			} else if (g == r2) {
+				hue1 = 2.0 + (b - r) / (r2 - r1);
+			} else if (b == r2) {
+				hue1 = 4.0 + (r - g) / (r2 - r1);
 			}
 		}
 
-		hue /= 6.0;
+		hue1 /= 6.0;
 
-		this.hue = (int) (hue * 256.0);
-		this.saturation = (int) (saturation * 256.0);
-		this.lightness = (int) (lightness * 256.0);
+		this.hue = (int) (hue1 * 256.0);
+		this.saturation = (int) (sat1 * 256.0);
+		this.lightness = (int) (light1 * 256.0);
 
 		if (this.saturation < 0) {
 			this.saturation = 0;
@@ -109,17 +110,17 @@ public class Flo {
 			this.lightness = 255;
 		}
 
-		if (lightness > 0.5) {
-			this.hueDivisor = (int) ((1.0 - lightness) * saturation * 512.0);
+		if (light1 > 0.5) {
+			this.hueDivisor = (int) ((1.0 - light1) * sat1 * 512.0);
 		} else {
-			this.hueDivisor = (int) (lightness * saturation * 512.0);
+			this.hueDivisor = (int) (light1 * sat1 * 512.0);
 		}
 
 		if (this.hueDivisor < 1) {
 			this.hueDivisor = 1;
 		}
 
-		this.hue2 = (int) (hue * (double) this.hueDivisor);
+		this.hue2 = (int) (hue1 * (double) this.hueDivisor);
 	}
 
 	public void read(Buffer b) {

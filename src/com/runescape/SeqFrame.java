@@ -44,6 +44,7 @@ public class SeqFrame {
 
 				if (flags > 0) {
 					if (t.types[n] != 0) {
+						// group?? label?? group??
 						for (int group = n - 1; group > lastGroup; group--) {
 							if (t.types[group] == 0) {
 								groups[count] = group;

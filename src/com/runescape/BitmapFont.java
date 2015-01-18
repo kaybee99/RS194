@@ -16,12 +16,12 @@ public final class BitmapFont extends Canvas2D {
 	public BitmapFont(String name, Archive archive) {
 		Buffer dat = new Buffer(archive.get(name + ".dat", null));
 		Buffer idx = new Buffer(archive.get("index.dat", null));
-		idx.pos = dat.readUShort() + 4;
+		idx.position = dat.readUShort() + 4;
 
 		int off = idx.read();
 
 		if (off > 0) {
-			idx.pos += (off - 1) * 3;
+			idx.position += (off - 1) * 3;
 		}
 
 		for (int n = 0; n < 94; n++) {

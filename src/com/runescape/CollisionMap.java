@@ -173,10 +173,10 @@ public final class CollisionMap {
 	}
 
 	public void setLoc(int tileX, int tileY, int sizeX, int sizeY, int rotation, boolean solid) {
-		int flags = OCCUPIED_TILE;
+		int flag = OCCUPIED_TILE;
 
 		if (solid) {
-			flags += SOLID;
+			flag += SOLID;
 		}
 
 		if (rotation == 1 || rotation == 3) {
@@ -189,7 +189,7 @@ public final class CollisionMap {
 			if (x >= 0 && x < wide) {
 				for (int y = tileY; y < tileY + sizeY; y++) {
 					if (y >= 0 && y < tall) {
-						add(x, y, flags);
+						add(x, y, flag);
 					}
 				}
 			}
@@ -326,10 +326,10 @@ public final class CollisionMap {
 	}
 
 	public void removeLoc(int tileX, int tileY, int sizeX, int sizeY, int rotation, boolean solid) {
-		int flags = OCCUPIED_TILE;
+		int flag = OCCUPIED_TILE;
 
 		if (solid) {
-			flags += SOLID;
+			flag += SOLID;
 		}
 
 		if (rotation == 1 || rotation == 3) {
@@ -342,7 +342,7 @@ public final class CollisionMap {
 			if (x >= 0 && x < sizeX) {
 				for (int y = tileY; y < tileY + sizeY; y++) {
 					if (y >= 0 && y < tall) {
-						remove(x, y, flags);
+						remove(x, y, flag);
 					}
 				}
 			}

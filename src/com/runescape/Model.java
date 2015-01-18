@@ -168,13 +168,13 @@ public class Model extends CacheLink {
 			obvertex2 = new Buffer(a.get("ob_vertex2.dat"));
 			obaxis = new Buffer(a.get("ob_axis.dat"));
 
-			obhead.pos = 0;
-			obpoint1.pos = 0;
-			obpoint2.pos = 0;
-			obpoint3.pos = 0;
-			obpoint4.pos = 0;
-			obvertex1.pos = 0;
-			obvertex2.pos = 0;
+			obhead.position = 0;
+			obpoint1.position = 0;
+			obpoint2.position = 0;
+			obpoint3.position = 0;
+			obpoint4.position = 0;
+			obvertex1.position = 0;
+			obvertex2.position = 0;
 
 			int count = obhead.readUShort();
 			contexts = new ModelContext[count + 100];
@@ -195,12 +195,12 @@ public class Model extends CacheLink {
 				c.triangleCount = obhead.readUShort();
 				c.texturedCount = obhead.read();
 
-				c.vertexFlagDataOffset = obpoint1.pos;
-				c.vertexXDataOffset = obpoint2.pos;
-				c.vertexYDataOffset = obpoint3.pos;
-				c.vertexZDataOffset = obpoint4.pos;
-				c.vertexIndexDataOffset = obvertex1.pos;
-				c.triangleTypeDataOffset = obvertex2.pos;
+				c.vertexFlagDataOffset = obpoint1.position;
+				c.vertexXDataOffset = obpoint2.position;
+				c.vertexYDataOffset = obpoint3.position;
+				c.vertexZDataOffset = obpoint4.position;
+				c.vertexIndexDataOffset = obvertex1.position;
+				c.triangleTypeDataOffset = obvertex2.position;
 
 				int hasInfo = obhead.read();
 				int hasPriorities = obhead.read();
@@ -331,11 +331,11 @@ public class Model extends CacheLink {
 
 				unmodifiedTriangleColor = new int[triangleCount];
 
-				obpoint1.pos = h.vertexFlagDataOffset;
-				obpoint2.pos = h.vertexXDataOffset;
-				obpoint3.pos = h.vertexYDataOffset;
-				obpoint4.pos = h.vertexZDataOffset;
-				obpoint5.pos = h.vertexLabelDataOffset;
+				obpoint1.position = h.vertexFlagDataOffset;
+				obpoint2.position = h.vertexXDataOffset;
+				obpoint3.position = h.vertexYDataOffset;
+				obpoint4.position = h.vertexZDataOffset;
+				obpoint5.position = h.vertexLabelDataOffset;
 
 				int x = 0;
 				int y = 0;
@@ -370,11 +370,11 @@ public class Model extends CacheLink {
 					}
 				}
 
-				obface1.pos = h.triangleColorDataOffset;
-				obface2.pos = h.triangleInfoDataOffset;
-				obface3.pos = h.trianglePriorityDataOffset;
-				obface4.pos = h.triangleAlphaDataOffset;
-				obface5.pos = h.triangleSkinDataOffset;
+				obface1.position = h.triangleColorDataOffset;
+				obface2.position = h.triangleInfoDataOffset;
+				obface3.position = h.trianglePriorityDataOffset;
+				obface4.position = h.triangleAlphaDataOffset;
+				obface5.position = h.triangleSkinDataOffset;
 
 				for (int n = 0; n < triangleCount; n++) {
 					unmodifiedTriangleColor[n] = obface1.readUShort();
@@ -396,8 +396,8 @@ public class Model extends CacheLink {
 					}
 				}
 
-				obvertex1.pos = h.vertexIndexDataOffset;
-				obvertex2.pos = h.triangleTypeDataOffset;
+				obvertex1.position = h.vertexIndexDataOffset;
+				obvertex2.position = h.triangleTypeDataOffset;
 
 				int a = 0;
 				int b = 0;
@@ -455,7 +455,7 @@ public class Model extends CacheLink {
 					}
 				}
 
-				obaxis.pos = h.triangleTextureDataOffset * 6;
+				obaxis.position = h.triangleTextureDataOffset * 6;
 
 				for (int t = 0; t < texturedCount; t++) {
 					textureVertexA[t] = obaxis.readUShort();

@@ -2,8 +2,8 @@ package com.runescape;
 
 public final class Array {
 
-	private int length;
-	private Link[] array;
+	private final int length;
+	private final Link[] array;
 
 	public Array(int size) {
 		length = size;

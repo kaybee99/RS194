@@ -89,7 +89,7 @@ public class LocConfig {
 
 		cachePosition = (cachePosition + 1) % 10;
 		LocConfig c = cache[cachePosition];
-		data.pos = pointers[index];
+		data.position = pointers[index];
 		c.index = index;
 		c.reset();
 		c.read(data);

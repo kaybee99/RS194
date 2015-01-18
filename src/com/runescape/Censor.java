@@ -75,9 +75,9 @@ public class Censor {
 
 			byte combo[][] = new byte[b.read()][2];
 
-			for (int l = 0; l < combo.length; l++) {
-				combo[l][0] = (byte) b.read();
-				combo[l][1] = (byte) b.read();
+			for (byte[] ba : combo) {
+				ba[0] = (byte) b.read();
+				ba[1] = (byte) b.read();
 			}
 
 			if (combo.length > 0) {
@@ -141,12 +141,10 @@ public class Censor {
 
 		String lowercase = trimmed.toLowerCase();
 
-		for (int n = 0; n < WHITELIST.length; n++) {
-			for (int index = -1; (index = lowercase.indexOf(WHITELIST[n], index + 1)) != -1;) {
-				char wchars[] = WHITELIST[n].toCharArray();
-				for (int i = 0; i < wchars.length; i++) {
-					chars[i + index] = wchars[i];
-				}
+		for (String word : WHITELIST) {
+			for (int index = -1; (index = lowercase.indexOf(word, index + 1)) != -1;) {
+				char[] wchars = word.toCharArray();
+				System.arraycopy(wchars, 0, chars, index, wchars.length);
 			}
 		}
 

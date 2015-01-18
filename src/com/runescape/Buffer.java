@@ -5,7 +5,7 @@ import java.math.BigInteger;
 public final class Buffer extends CacheLink {
 
 	public byte[] data;
-	public int pos;
+	public int position;
 	public int bitPos;
 	public ISAAC isaac;
 
@@ -36,13 +36,13 @@ public final class Buffer extends CacheLink {
 			}
 
 			if (b != null) {
-				b.pos = 0;
+				b.position = 0;
 				return b;
 			}
 		}
 
 		Buffer b = new Buffer();
-		b.pos = 0;
+		b.position = 0;
 
 		if (type == 0) {
 			b.data = new byte[100];
@@ -64,92 +64,92 @@ public final class Buffer extends CacheLink {
 
 	public Buffer(byte[] src) {
 		data = src;
-		pos = 0;
+		position = 0;
 	}
 
 	public void startVarSize(int opcode, int bytes) {
 		writeOpcode(opcode);
-		pos += bytes;
-		start = pos;
+		position += bytes;
+		start = position;
 		varSize = bytes;
 	}
 
 	public void endVarSize() {
-		final int length = pos - start;
+		final int length = position - start;
 		final int bytes = varSize + 1;
 
 		for (int i = 1; i < bytes; i++) {
-			data[pos - length - i] = (byte) (length >> ((i - 1) * 8));
+			data[position - length - i] = (byte) (length >> ((i - 1) * 8));
 		}
 	}
 
 	public void writeOpcode(int opcode) {
 		if (isaac != null) {
-			data[pos++] = (byte) (opcode + isaac.nextInt());
+			data[position++] = (byte) (opcode + isaac.nextInt());
 		} else {
 			write(opcode);
 		}
 	}
 
 	public void write(int i) {
-		data[pos++] = (byte) i;
+		data[position++] = (byte) i;
 	}
 
 	public void writeShort(int i) {
-		data[pos++] = (byte) (i >> 8);
-		data[pos++] = (byte) i;
+		data[position++] = (byte) (i >> 8);
+		data[position++] = (byte) i;
 	}
 
 	public void writeInt(int i) {
-		data[pos++] = (byte) (i >> 24);
-		data[pos++] = (byte) (i >> 16);
-		data[pos++] = (byte) (i >> 8);
-		data[pos++] = (byte) i;
+		data[position++] = (byte) (i >> 24);
+		data[position++] = (byte) (i >> 16);
+		data[position++] = (byte) (i >> 8);
+		data[position++] = (byte) i;
 	}
 
 	public void writeLong(long l) {
-		data[pos++] = (byte) (int) (l >> 56);
-		data[pos++] = (byte) (int) (l >> 48);
-		data[pos++] = (byte) (int) (l >> 40);
-		data[pos++] = (byte) (int) (l >> 32);
-		data[pos++] = (byte) (int) (l >> 24);
-		data[pos++] = (byte) (int) (l >> 16);
-		data[pos++] = (byte) (int) (l >> 8);
-		data[pos++] = (byte) (int) l;
+		data[position++] = (byte) (int) (l >> 56);
+		data[position++] = (byte) (int) (l >> 48);
+		data[position++] = (byte) (int) (l >> 40);
+		data[position++] = (byte) (int) (l >> 32);
+		data[position++] = (byte) (int) (l >> 24);
+		data[position++] = (byte) (int) (l >> 16);
+		data[position++] = (byte) (int) (l >> 8);
+		data[position++] = (byte) (int) l;
 	}
 
 	public void writeString(String s) {
-		System.arraycopy(s.getBytes(), 0, data, pos, s.length());
-		pos += s.length();
-		data[pos++] = (byte) 10;
+		System.arraycopy(s.getBytes(), 0, data, position, s.length());
+		position += s.length();
+		data[position++] = (byte) 10;
 	}
 
 	public void write(byte[] src, int off, int len) {
 		for (int i = off; i < off + len; i++) {
-			data[pos++] = src[i];
+			data[position++] = src[i];
 		}
 	}
 
 	public void writeLength(int length) {
-		data[pos - length - 1] = (byte) length;
+		data[position - length - 1] = (byte) length;
 	}
 
 	public int read() {
-		return data[pos++] & 0xff;
+		return data[position++] & 0xff;
 	}
 
 	public byte readByte() {
-		return data[pos++];
+		return data[position++];
 	}
 
 	public int readUShort() {
-		pos += 2;
-		return (((data[pos - 2] & 0xff) << 8) + (data[pos - 1] & 0xff));
+		position += 2;
+		return (((data[position - 2] & 0xff) << 8) + (data[position - 1] & 0xff));
 	}
 
 	public int readShort() {
-		pos += 2;
-		int i = (((data[pos - 2] & 0xff) << 8) + (data[pos - 1] & 0xff));
+		position += 2;
+		int i = (((data[position - 2] & 0xff) << 8) + (data[position - 1] & 0xff));
 		if (i > 32767) {
 			i -= 65536;
 		}
@@ -157,13 +157,13 @@ public final class Buffer extends CacheLink {
 	}
 
 	public int readInt24() {
-		pos += 3;
-		return (((data[pos - 3] & 0xff) << 16) + ((data[pos - 2] & 0xff) << 8) + (data[pos - 1] & 0xff));
+		position += 3;
+		return (((data[position - 3] & 0xff) << 16) + ((data[position - 2] & 0xff) << 8) + (data[position - 1] & 0xff));
 	}
 
 	public int readInt() {
-		pos += 4;
-		return (((data[pos - 4] & 0xff) << 24) + ((data[pos - 3] & 0xff) << 16) + ((data[pos - 2] & 0xff) << 8) + (data[pos - 1] & 0xff));
+		position += 4;
+		return (((data[position - 4] & 0xff) << 24) + ((data[position - 3] & 0xff) << 16) + ((data[position - 2] & 0xff) << 8) + (data[position - 1] & 0xff));
 	}
 
 	public long readLong() {
@@ -173,33 +173,33 @@ public final class Buffer extends CacheLink {
 	}
 
 	public String readString() {
-		int start = pos;
-		while (data[pos++] != 10) {
+		int startPosition = position;
+		while (data[position++] != 10) {
 			/* empty */
 		}
-		return new String(data, start, pos - start - 1);
+		return new String(data, startPosition, position - startPosition - 1);
 	}
 
 	public byte[] readStringBytes() {
-		int start = pos;
-		while (data[pos++] != 10) {
+		int startPosition = position;
+		while (data[position++] != 10) {
 			/* empty */
 		}
-		byte[] bytes = new byte[pos - start - 1];
-		for (int i = start; i < pos - 1; i++) {
-			bytes[i - start] = data[i];
+		byte[] bytes = new byte[position - startPosition - 1];
+		for (int i = startPosition; i < position - 1; i++) {
+			bytes[i - startPosition] = data[i];
 		}
 		return bytes;
 	}
 
 	public void read(byte[] dst, int off, int len) {
 		for (int i = off; i < off + len; i++) {
-			dst[i] = data[pos++];
+			dst[i] = data[position++];
 		}
 	}
 
 	public void startBitAccess(int i) {
-		bitPos = pos * 8;
+		bitPos = position * 8;
 	}
 
 	public int readBits(int count) {
@@ -224,11 +224,11 @@ public final class Buffer extends CacheLink {
 	}
 
 	public void startByteAccess() {
-		pos = (bitPos + 7) / 8;
+		position = (bitPos + 7) / 8;
 	}
 
 	public int readSmart() {
-		int i = data[pos] & 0xff;
+		int i = data[position] & 0xff;
 		if (i < 128) {
 			return read() - 64;
 		}
@@ -236,7 +236,7 @@ public final class Buffer extends CacheLink {
 	}
 
 	public int readUSmart() {
-		int i = data[pos] & 0xff;
+		int i = data[position] & 0xff;
 		if (i < 128) {
 			return read();
 		}
@@ -244,11 +244,11 @@ public final class Buffer extends CacheLink {
 	}
 
 	public void encode(BigInteger exponent, BigInteger modulus) {
-		byte[] tmp = new byte[pos];
-		System.arraycopy(data, 0, tmp, 0, pos);
+		byte[] tmp = new byte[position];
+		System.arraycopy(data, 0, tmp, 0, position);
 		byte[] encoded = new BigInteger(tmp).toByteArray();// .modPow(exponent,
 		// modulus).toByteArray();
-		pos = 0;
+		position = 0;
 		write(encoded.length);
 		write(encoded, 0, encoded.length);
 	}

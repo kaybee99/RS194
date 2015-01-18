@@ -68,7 +68,7 @@ public class NPCConfig {
 		}
 		cachepos = (cachepos + 1) % 20;
 		NPCConfig n = cache[cachepos] = new NPCConfig();
-		data.pos = pointers[i];
+		data.position = pointers[i];
 		n.index = i;
 		n.read(data);
 		return n;

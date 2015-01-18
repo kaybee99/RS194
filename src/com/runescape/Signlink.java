@@ -47,9 +47,16 @@ public final class Signlink implements Runnable {
 	public static File cacheDirectory;
 
 	static {
+		// default it
 		cacheDirectory = findCachePath();
 	}
 
+	/**
+	 * Used to allow the user to manually select the path to load their cache
+	 * from.
+	 *
+	 * @param parent the parent component for the chooser.
+	 */
 	public static final void openCacheChooser(Component parent) {
 		JFileChooser fc = new JFileChooser(System.getProperty("user.dir"));
 		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);

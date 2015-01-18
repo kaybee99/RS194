@@ -15,7 +15,7 @@ public final class IndexedBitmap extends Canvas2D {
 		Buffer dat = new Buffer(archive.get(name + ".dat", null));
 		Buffer idx = new Buffer(archive.get("index.dat", null));
 
-		idx.pos = dat.readUShort();
+		idx.position = dat.readUShort();
 
 		clipWidth = idx.readUShort();
 		clipHeight = idx.readUShort();
@@ -27,9 +27,9 @@ public final class IndexedBitmap extends Canvas2D {
 		}
 
 		for (int n = 0; n < index; n++) {
-			idx.pos += 2;
-			dat.pos += (idx.readUShort() * idx.readUShort());
-			idx.pos++;
+			idx.position += 2;
+			dat.position += (idx.readUShort() * idx.readUShort());
+			idx.position++;
 		}
 
 		clipX = idx.read();

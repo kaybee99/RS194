@@ -5,6 +5,12 @@ import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.util.Arrays;
 
+/**
+ * Not the original image producer. This one is programmably identical to the one used in
+ * 400+.
+ *
+ * @author Dane
+ */
 public class ImageProducer extends Link {
 
 	public int[] pixels;

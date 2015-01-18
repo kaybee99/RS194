@@ -25,7 +25,7 @@ final class Player extends Entity {
 	static Table uniqueModelCache = new Table(200);
 
 	public final void read(Buffer b) {
-		b.pos = 0;
+		b.position = 0;
 		gender = b.read();
 		headicons = b.read();
 

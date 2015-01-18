@@ -471,24 +471,24 @@ public final class Scene {
 	}
 
 	public final void buildLandscape(CollisionMap[] planeCollisions, Landscape landscape) {
-		CollisionMap cm = null;
-
+		CollisionMap lastCollisionMap = null;
+		
 		for (int plane = 0; plane < 4; plane++) {
-			CollisionMap cm0 = planeCollisions[plane];
+			CollisionMap collisionMap = planeCollisions[plane];
 
 			for (int x = 0; x < 104; x++) {
 				for (int y = 0; y < 104; y++) {
 					if ((renderflags[plane][x][y] & 0x1) == 1) {
-						cm0.setBlocked(x, y);
+						collisionMap.setBlocked(x, y);
 					}
 
 					// it's a bridge!
 					if (plane > 0 && (renderflags[1][x][y] & 0x2) == 2) {
-						cm.flags[x][y] = cm0.flags[x][y];
+						lastCollisionMap.flags[x][y] = collisionMap.flags[x][y];
 					}
 				}
 			}
-			cm = cm0;
+			lastCollisionMap = collisionMap;
 		}
 
 		for (int y = 0; y < 4; y++) {

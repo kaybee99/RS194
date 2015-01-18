@@ -1,5 +1,6 @@
 package com.runescape;
 
+// should I call this something else?
 public final class TileOverlay {
 
 	public int[] vertexX;

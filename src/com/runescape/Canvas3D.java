@@ -21,7 +21,7 @@ public class Canvas3D extends Canvas2D {
 	public static int pixelpoolN;
 	public static int[][] pixelPool;
 	public static int[][] texelPool;
-	public static int[] textureCycle;
+	public static int[] textureCycles;
 	public static int cycle;
 	public static int[] palette;
 	public static int[][] originalTexels;
@@ -37,7 +37,7 @@ public class Canvas3D extends Canvas2D {
 		averageTextureRGB = null;
 		pixelPool = null;
 		texelPool = null;
-		textureCycle = null;
+		textureCycles = null;
 		palette = null;
 		originalTexels = null;
 	}
@@ -139,31 +139,31 @@ public class Canvas3D extends Canvas2D {
 	}
 
 	public static final int[] getTexels(int texture) {
-		textureCycle[texture] = cycle++;
+		textureCycles[texture] = cycle++;
 
 		if (texelPool[texture] != null) {
 			return texelPool[texture];
 		}
 
-		int[] dst;
+		int[] pool;
 
 		if (pixelpoolN > 0) {
-			dst = pixelPool[--pixelpoolN];
+			pool = pixelPool[--pixelpoolN];
 			pixelPool[pixelpoolN] = null;
 		} else {
-			int cycle = 0;
+			int tcycle = 0;
 			int t = -1;
 			for (int n = 0; n < textureN; n++) {
-				if (texelPool[n] != null && (textureCycle[n] < cycle || t == -1)) {
-					cycle = textureCycle[n];
+				if (texelPool[n] != null && (textureCycles[n] < tcycle || t == -1)) {
+					tcycle = textureCycles[n];
 					t = n;
 				}
 			}
-			dst = texelPool[t];
+			pool = texelPool[t];
 			texelPool[t] = null;
 		}
 
-		texelPool[texture] = dst;
+		texelPool[texture] = pool;
 
 		IndexedBitmap t = textures[texture];
 		int[] src = originalTexels[texture];
@@ -172,46 +172,46 @@ public class Canvas3D extends Canvas2D {
 			textureHasTransparency[texture] = false;
 
 			for (int n = 0; n < (64 * 64); n++) {
-				int rgb = (dst[n] = (src[t.data[n]] & 0xF8F8FF));
+				int rgb = (pool[n] = (src[t.data[n]] & 0xF8F8FF));
 
 				if (rgb == 0) {
 					textureHasTransparency[texture] = true;
 				}
 
-				dst[n + 4096] = rgb - (rgb >>> 3) & 0xF8F8FF;
-				dst[n + 8192] = rgb - (rgb >>> 2) & 0xF8F8FF;
-				dst[n + 12288] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
+				pool[n + 4096] = rgb - (rgb >>> 3) & 0xF8F8FF;
+				pool[n + 8192] = rgb - (rgb >>> 2) & 0xF8F8FF;
+				pool[n + 12288] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
 			}
 		} else {
 			if (t.width == 64) {
 				for (int y = 0; y < 128; y++) {
 					for (int x = 0; x < 128; x++) {
-						dst[x + (y << 7)] = src[(t.data[(x >> 1) + (y >> 1 << 6)])];
+						pool[x + (y << 7)] = src[(t.data[(x >> 1) + (y >> 1 << 6)])];
 					}
 				}
 			} else {
 				for (int n = 0; n < (128 * 128); n++) {
-					dst[n] = src[t.data[n]];
+					pool[n] = src[t.data[n]];
 				}
 			}
 
 			textureHasTransparency[texture] = false;
 
 			for (int n = 0; n < (128 * 128); n++) {
-				dst[n] &= 0xF8F8FF;
+				pool[n] &= 0xF8F8FF;
 
-				int rgb = dst[n];
+				int rgb = pool[n];
 
 				if (rgb == 0) {
 					textureHasTransparency[texture] = true;
 				}
 
-				dst[n + 16384] = rgb - (rgb >>> 3) & 0xF8F8FF;
-				dst[n + 32768] = rgb - (rgb >>> 2) & 0xF8F8FF;
-				dst[n + 49152] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
+				pool[n + 16384] = rgb - (rgb >>> 3) & 0xF8F8FF;
+				pool[n + 32768] = rgb - (rgb >>> 2) & 0xF8F8FF;
+				pool[n + 49152] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
 			}
 		}
-		return dst;
+		return pool;
 	}
 
 	public static final void generatePalette(double brightness) {
@@ -2743,7 +2743,7 @@ public class Canvas3D extends Canvas2D {
 		textureHasTransparency = new boolean[50];
 		averageTextureRGB = new int[50];
 		texelPool = new int[50][];
-		textureCycle = new int[50];
+		textureCycles = new int[50];
 		palette = new int[65536];
 		originalTexels = new int[50][];
 	}
