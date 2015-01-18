@@ -30,6 +30,8 @@ import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
 
 import dane.runescape.mapeditor.util.FileUtil;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 
 /**
  * Contains all the hotkey buttons for all the different location types.
@@ -40,6 +42,10 @@ import dane.runescape.mapeditor.util.FileUtil;
 public class LocationPanel extends JPanel {
 
 	private static final long serialVersionUID = -2913689793325251798L;
+
+	private static BufferedImage getHotkeyImage(String name) throws IOException {
+		return FileUtil.readImage("loctype/" + name + ".png");
+	}
 
 	public LocationPanel() {
 		setSize(258, 230);
@@ -53,31 +59,31 @@ public class LocationPanel extends JPanel {
 
 	public void assemble() {
 		try {
-			add(new HotkeyButton(FileUtil.readImage("loctype/wall.png"), KeyEvent.VK_1));
-			add(new HotkeyButton(FileUtil.readImage("loctype/wallcorner1.png"), KeyEvent.VK_2));
-			add(new HotkeyButton(FileUtil.readImage("loctype/wallcorner2.png"), KeyEvent.VK_3));
-			add(new HotkeyButton(FileUtil.readImage("loctype/wallcorner3.png"), KeyEvent.VK_4));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldiagonal.png"), KeyEvent.VK_5));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldecoration.png"), KeyEvent.VK_Q));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldecorationpadded.png"), KeyEvent.VK_W));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldecorationout.png"), KeyEvent.VK_E));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldecorationin.png"), KeyEvent.VK_R));
-			add(new HotkeyButton(FileUtil.readImage("loctype/walldecorationinout.png"), KeyEvent.VK_T));
-			add(new HotkeyButton(FileUtil.readImage("loctype/loc.png"), KeyEvent.VK_8));
-			add(new HotkeyButton(FileUtil.readImage("loctype/locdiagonal.png"), KeyEvent.VK_9));
-			add(new HotkeyButton(FileUtil.readImage("loctype/grounddecoration.png"), KeyEvent.VK_0));
-			add(new HotkeyButton(FileUtil.readImage("loctype/npc.png"), KeyEvent.VK_N));
-			add(new HotkeyButton(FileUtil.readImage("loctype/obj.png"), KeyEvent.VK_M));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofside.png"), KeyEvent.VK_A));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofdiagonalside.png"), KeyEvent.VK_S));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofdiagonal.png"), KeyEvent.VK_D));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofinner.png"), KeyEvent.VK_F));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofoutter.png"), KeyEvent.VK_G));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roof.png"), KeyEvent.VK_H));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofedge.png"), KeyEvent.VK_Z));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofedgecorner.png"), KeyEvent.VK_X));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofedgeinnercorner1.png"), KeyEvent.VK_C));
-			add(new HotkeyButton(FileUtil.readImage("loctype/roofedgeinnercorner2.png"), KeyEvent.VK_V));
+			add(new HotkeyButton(getHotkeyImage("wall"), KeyEvent.VK_1));
+			add(new HotkeyButton(getHotkeyImage("wallcorner1"), KeyEvent.VK_2));
+			add(new HotkeyButton(getHotkeyImage("wallcorner2"), KeyEvent.VK_3));
+			add(new HotkeyButton(getHotkeyImage("wallcorner3"), KeyEvent.VK_4));
+			add(new HotkeyButton(getHotkeyImage("walldiagonal"), KeyEvent.VK_5));
+			add(new HotkeyButton(getHotkeyImage("walldecoration"), KeyEvent.VK_Q));
+			add(new HotkeyButton(getHotkeyImage("walldecorationpadded"), KeyEvent.VK_W));
+			add(new HotkeyButton(getHotkeyImage("walldecorationout"), KeyEvent.VK_E));
+			add(new HotkeyButton(getHotkeyImage("walldecorationin"), KeyEvent.VK_R));
+			add(new HotkeyButton(getHotkeyImage("walldecorationinout"), KeyEvent.VK_T));
+			add(new HotkeyButton(getHotkeyImage("loc"), KeyEvent.VK_8));
+			add(new HotkeyButton(getHotkeyImage("locdiagonal"), KeyEvent.VK_9));
+			add(new HotkeyButton(getHotkeyImage("grounddecoration"), KeyEvent.VK_0));
+			add(new HotkeyButton(getHotkeyImage("npc"), KeyEvent.VK_N));
+			add(new HotkeyButton(getHotkeyImage("obj"), KeyEvent.VK_M));
+			add(new HotkeyButton(getHotkeyImage("roofside"), KeyEvent.VK_A));
+			add(new HotkeyButton(getHotkeyImage("roofdiagonalside"), KeyEvent.VK_S));
+			add(new HotkeyButton(getHotkeyImage("roofdiagonal"), KeyEvent.VK_D));
+			add(new HotkeyButton(getHotkeyImage("roofinner"), KeyEvent.VK_F));
+			add(new HotkeyButton(getHotkeyImage("roofoutter"), KeyEvent.VK_G));
+			add(new HotkeyButton(getHotkeyImage("roof"), KeyEvent.VK_H));
+			add(new HotkeyButton(getHotkeyImage("roofedge"), KeyEvent.VK_Z));
+			add(new HotkeyButton(getHotkeyImage("roofedgecorner"), KeyEvent.VK_X));
+			add(new HotkeyButton(getHotkeyImage("roofedgeinnercorner1"), KeyEvent.VK_C));
+			add(new HotkeyButton(getHotkeyImage("roofedgeinnercorner2"), KeyEvent.VK_V));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
