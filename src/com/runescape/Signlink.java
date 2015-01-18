@@ -117,11 +117,12 @@ public final class Signlink implements Runnable {
 				if (loadreq != null) {
 					loadbuf = null;
 
+					// attempt to load file relative to classpath (includes within .jar)
 					try (InputStream is = ClassLoader.getSystemResourceAsStream(loadreq)) {
 						loadbuf = new byte[is.available()];
 						is.read(loadbuf, 0, loadbuf.length);
 					} catch (Exception e) {
-						logger.log(Level.WARNING, "Error loading file as stream", e);
+						// ignore: logger.log(Level.WARNING, "Error loading file as stream", e);
 					}
 
 					File f = new File(path, loadreq);
