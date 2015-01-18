@@ -23,7 +23,7 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.event.ShellListener;
+import dane.runescape.mapeditor.event.ShellListener;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
