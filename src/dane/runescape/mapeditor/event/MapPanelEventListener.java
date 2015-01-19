@@ -29,7 +29,7 @@ import java.util.EventListener;
  *
  * @author Dane
  */
-public interface CameraUpdateListener extends EventListener {
+public interface MapPanelEventListener extends EventListener {
 
-	public void onCameraUpdate(CameraEvent e);
+	public void onMapPanelEvent(MapPanelEvent e);
 }

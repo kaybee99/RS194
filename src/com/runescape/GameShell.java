@@ -187,9 +187,10 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		this.addKeyListener(this);
 		this.addFocusListener(this);
 
-		this.fireStartup();
+		this.firePreStartup();
 		this.drawProgress("Loading...", 0);
 		this.startup();
+		this.firePostStartup();
 
 		int currentFrame = 0;
 		int ratio = 256;
@@ -291,16 +292,25 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	}
 
 	/**
-	 * Notifies all listeners of a startup.
+	 * Notifies all shell listeners that startup is about to be ran.
 	 */
-	protected void fireStartup() {
+	protected void firePreStartup() {
 		for (ShellListener l : this.getShellListeners()) {
 			l.onPreShellStartup();
 		}
 	}
 
 	/**
-	 * Notifies all listeners of an update.
+	 * Notifies all shell listeners that startup has been ran.
+	 */
+	protected void firePostStartup() {
+		for (ShellListener l : this.getShellListeners()) {
+			l.onPostShellStartup();
+		}
+	}
+
+	/**
+	 * Notifies all shell listeners of an update.
 	 */
 	protected void fireUpdate() {
 		for (ShellListener l : this.getShellListeners()) {
@@ -309,7 +319,7 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	}
 
 	/**
-	 * Notifies all listeners of a draw.
+	 * Notifies all shell listeners of a draw.
 	 */
 	protected void fireDraw() {
 		for (ShellListener l : this.getShellListeners()) {
@@ -318,7 +328,7 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	}
 
 	/**
-	 * Notifies all listeners of a shutdown.
+	 * Notifies all shell listeners of a shutdown.
 	 */
 	protected void fireShutdown() {
 		for (ShellListener l : this.getShellListeners()) {

@@ -55,7 +55,7 @@ public class SearchPanel extends JPanel implements ListSelectionListener, Action
 	private static final long serialVersionUID = -2861032783438108415L;
 
 	private SearchMode currentMode = null;
-	
+
 	private JPanel panelTop;
 	private JLabel lblSearch;
 	private DefaultComboBoxModel<SearchMode> cmbModel;
@@ -74,14 +74,14 @@ public class SearchPanel extends JPanel implements ListSelectionListener, Action
 	public void assemble() {
 		panelTop = new JPanel(new BorderLayout());
 		lblSearch = new JLabel("search");
-		
+
 		cmbModel = new DefaultComboBoxModel<>(SearchMode.values());
 		cmbSearch = new JComboBox<>(cmbModel);
-		
+
 		listModel = new DefaultListModel<>();
 		list = new JList<>(listModel);
 		paneList = new JScrollPane(list);
-		
+
 		cmbSearch.setEditable(true);
 		cmbSearch.addActionListener(this);
 		cmbSearch.setSelectedItem(null);

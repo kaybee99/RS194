@@ -29,7 +29,7 @@ import java.util.EventObject;
  *
  * @author Dane
  */
-public class CameraEvent extends EventObject {
+public class MapPanelEvent extends EventObject {
 
 	private static final long serialVersionUID = 7048208543452742955L;
 
@@ -43,23 +43,23 @@ public class CameraEvent extends EventObject {
 	private double angle;
 	private Type type;
 
-	public CameraEvent(Object source, int tileX, int tileY) {
+	public MapPanelEvent(Object source, int tileX, int tileY) {
 		this(source, Type.TILE_CHANGE);
 		this.tileX = tileX;
 		this.tileY = tileY;
 	}
 
-	public CameraEvent(Object source, int zoomAdjustment) {
+	public MapPanelEvent(Object source, int zoomAdjustment) {
 		this(source, Type.ZOOM_ADJUST);
 		this.zoomAdjustment = zoomAdjustment;
 	}
 
-	public CameraEvent(Object source, double angle) {
+	public MapPanelEvent(Object source, double angle) {
 		this(source, Type.ANGLE_CHANGE);
 		this.angle = angle;
 	}
 
-	private CameraEvent(Object source, Type type) {
+	private MapPanelEvent(Object source, Type type) {
 		super(source);
 		this.type = type;
 	}

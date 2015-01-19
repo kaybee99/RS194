@@ -56,6 +56,10 @@ public class GamePanel extends JComponent implements ShellListener {
 		this.graphics = this.image.getGraphics();
 	}
 
+	private void setGraphics() {
+		this.game.graphics = this.graphics;
+	}
+
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
@@ -68,22 +72,23 @@ public class GamePanel extends JComponent implements ShellListener {
 
 	@Override
 	public void onPreShellStartup() {
-		// override graphics
-		this.game.graphics = this.graphics;
+		this.setGraphics();
 	}
 
 	@Override
 	public void onPostShellStartup() {
+		this.setGraphics();
 	}
 
 	@Override
 	public void onShellDraw() {
+		this.setGraphics();
 		this.repaint();
 	}
 
 	@Override
 	public void onShellUpdate() {
-
+		this.game.camera.update();
 	}
 
 	@Override

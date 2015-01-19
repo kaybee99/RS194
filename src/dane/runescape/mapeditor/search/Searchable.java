@@ -34,7 +34,7 @@ public class Searchable implements Comparable<Searchable> {
 	private final SearchMode mode;
 
 	public Searchable(String name, int index, SearchMode mode) {
-		this.name = name;
+		this.name = name == null ? "null" : name;
 		this.index = index;
 		this.mode = mode;
 	}

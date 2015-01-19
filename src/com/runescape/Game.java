@@ -567,7 +567,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void unpackMedias(Archive media) {
+	public void loadMedia(Archive media) {
 		drawProgress("Unpacking media", 80);
 		invback = new IndexedBitmap(media, "invback", 0);
 		chatback = new IndexedBitmap(media, "chatback", 0);
@@ -683,21 +683,21 @@ public class Game extends GameShell {
 		b.drawOpaque(0, 0);
 	}
 
-	public void unpackTextures(Archive textures) {
+	public void loadTextures(Archive textures) {
 		drawProgress("Unpacking textures", 85);
 		Canvas3D.unpackTextures(textures);
 		Canvas3D.generatePalette(0.8);
 		Canvas3D.setupPools(20);
 	}
 
-	public void unpackModels(Archive models) {
+	public void loadModels(Archive models) {
 		drawProgress("Unpacking models", 85);
 		Model.load(models);
 		SequenceTransform.load(models);
 		SequenceFrame.load(models);
 	}
 
-	public void unpackConfigs(Archive config) {
+	public void loadConfigs(Archive config) {
 		drawProgress("Unpacking config", 85);
 		Sequence.load(config);
 		LocationInfo.load(config);
@@ -786,10 +786,10 @@ public class Game extends GameShell {
 
 			minimap = new Bitmap(512, 512);
 
-			unpackMedias(media);
-			unpackTextures(textures);
-			unpackModels(models);
-			unpackConfigs(config);
+			loadMedia(media);
+			loadTextures(textures);
+			loadModels(models);
+			loadConfigs(config);
 
 			drawProgress("Unpacking interfaces", 90);
 			GameInterface.load(new BitmapFont[]{fontSmall, fontNormal, fontBold, fontFancy}, media, interfaces);

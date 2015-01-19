@@ -33,7 +33,10 @@ import com.runescape.Landscape;
 import com.runescape.Model;
 import com.runescape.Scene;
 import com.runescape.Signlink;
+import dane.runescape.mapeditor.event.MapPanelEvent;
+import dane.runescape.mapeditor.event.MapPanelEventListener;
 import dane.runescape.mapeditor.event.GameListener;
+import dane.runescape.mapeditor.util.MathUtil;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -43,7 +46,7 @@ import java.util.logging.Logger;
  *
  * @author Dane
  */
-public class GameSub extends Game {
+public class GameSub extends Game implements MapPanelEventListener {
 
 	private static final Logger logger = Logger.getLogger(GameSub.class.getName());
 
@@ -62,6 +65,12 @@ public class GameSub extends Game {
 	@Override
 	public void startup() {
 		try {
+			Game.setHighMemory();
+
+			titleArchive = loadArchive("title", "title", 0, 10);
+
+			loadFonts(titleArchive);
+
 			Archive config = loadArchive("config", "config", archiveCRC[2], 20);
 			Archive media = loadArchive("2d graphics", "media", archiveCRC[4], 40);
 			Archive models = loadArchive("3d graphics", "models", archiveCRC[5], 50);
@@ -69,13 +78,15 @@ public class GameSub extends Game {
 
 			initSceneComponents();
 
-			unpackTextures(textures);
-			unpackModels(models);
-			unpackConfigs(config);
+			loadTextures(textures);
+			loadModels(models);
+			loadConfigs(config);
 
+			drawProgress("Preparing game engine", 95);
 			viewport = new ImageProducer(512, 334);
 			viewportOffsets = Canvas3D.prepareOffsets();
 
+			Landscape.init(512, 334, 500, 800);
 			loadRegion(50, 50);
 		} catch (Exception e) {
 			errorLoading = true;
@@ -123,8 +134,12 @@ public class GameSub extends Game {
 		int landY = getLandY(0, 0, currentPlane);
 
 		cameraPitch = camera.getCurrentPitch();
+		cameraOrbitPitch = cameraPitch;
 
-		updateCameraOrbit(camera.getCurrentX(), landY - 50, camera.getCurrentZ(), camera.getCurrentYaw(), camera.getCurrentPitch(), (camera.getCurrentPitch() * 3) + 600);
+		cameraYaw = camera.getCurrentYaw();
+		cameraOrbitYaw = cameraYaw;
+
+		updateCameraOrbit(camera.getCurrentX(), landY - 50, camera.getCurrentZ(), camera.getCurrentYaw(), cameraPitch, (cameraPitch * 3) + 1200);
 
 		try {
 			if ((renderflags[currentPlane][tileX][tileY] & 0x4) != 0) {
@@ -134,7 +149,12 @@ public class GameSub extends Game {
 
 		}
 
-		return getTopPlane(tileX, tileY);
+		try {
+			return getTopPlane(tileX, tileY);
+		} catch (Exception ignored) {
+
+		}
+		return currentPlane;
 	}
 
 	@Override
@@ -148,10 +168,10 @@ public class GameSub extends Game {
 	public void drawViewport() {
 		drawCycle++;
 
-		//drawPlayers();
-		//drawNPCs();
-		//drawProjectiles();
-		//drawSpotanims();
+		drawPlayers();
+		drawNPCs();
+		drawProjectiles();
+		drawSpotanims();
 		drawSequencedLocs();
 
 		int topPlane = updateCamera(camera.getCurrentX() >> 7, camera.getCurrentY() >> 7);
@@ -159,8 +179,8 @@ public class GameSub extends Game {
 		int startCycle = Canvas3D.cycle;
 		Model.allowInput = true;
 		Model.hoverCount = 0;
-		Model.mouseX = mouseX - 8;
-		Model.mouseY = mouseY - 11;
+		Model.mouseX = mouseX;
+		Model.mouseY = mouseY;
 
 		Canvas2D.clear();
 
@@ -181,6 +201,7 @@ public class GameSub extends Game {
 		}
 
 		updateAnimatedTextures(startCycle);
+		
 		viewport.draw(graphics, 0, 0);
 	}
 
@@ -213,5 +234,24 @@ public class GameSub extends Game {
 	 */
 	public void removeGameListener(GameListener l) {
 		this.listeners.remove(GameListener.class, l);
+	}
+
+	@Override
+	public void onMapPanelEvent(MapPanelEvent e) {
+		switch (e.getType()) {
+			case ANGLE_CHANGE: {
+				this.camera.setYaw(MathUtil.toRuneDegree(e.getAngle()) & 0x7FF);
+				break;
+			}
+			case TILE_CHANGE: {
+				this.camera.setX((e.getTileX() * 128) + 64);
+				this.camera.setZ((e.getTileY() * 128) + 64);
+				break;
+			}
+			case ZOOM_ADJUST: {
+				this.camera.setZoom(this.camera.getZoom() + e.getZoomAdjustment());
+				break;
+			}
+		}
 	}
 }

@@ -27,6 +27,7 @@ import com.runescape.FloorType;
 import com.runescape.LocationInfo;
 import com.runescape.NPCInfo;
 import com.runescape.ObjectInfo;
+import dane.runescape.mapeditor.MapEditor;
 import static dane.runescape.mapeditor.search.SearchMode.FLOOR;
 import static dane.runescape.mapeditor.search.SearchMode.ITEM;
 import static dane.runescape.mapeditor.search.SearchMode.LOCATION;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * A utility to help keep track of searchable objects.
@@ -41,9 +44,10 @@ import java.util.Map;
  * @author Dane
  */
 public class SearchManager {
-
+	
+	private static final Logger logger = Logger.getLogger(SearchManager.class.getName());
 	private static final Map<SearchMode, List<Searchable>> searchables = new HashMap<>();
-
+	
 	static {
 		// create those lists homie
 		for (SearchMode m : SearchMode.values()) {
@@ -72,13 +76,13 @@ public class SearchManager {
 	public static final List<Searchable> find(SearchMode mode, String s) {
 		List<Searchable> found = new ArrayList<>();
 		s = s.toLowerCase();
-
+		
 		List<Searchable> list = searchables.get(mode);
-
+		
 		if (list == null) {
 			return found;
 		}
-
+		
 		for (Searchable searchable : list) {
 			if (searchable.getName().toLowerCase().contains(s)) {
 				found.add(searchable);
@@ -88,7 +92,8 @@ public class SearchManager {
 	}
 
 	/**
-	 * Clears and then re-populates the specified mode's list.
+	 * Clears and then re-populates the specified mode's list. Populated at
+	 * {@link MapEditor#onPostShellStartup}.
 	 *
 	 * @param mode the mode to repopulate
 	 */
@@ -127,6 +132,8 @@ public class SearchManager {
 				break;
 			}
 		}
+		
+		logger.log(Level.INFO, "Populated {0} search with {1} indices.", new Object[]{mode, list.size()});
 	}
-
+	
 }
