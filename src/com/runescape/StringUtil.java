@@ -40,11 +40,11 @@ public final class StringUtil {
 		return new String(chars, 12 - len, len);
 	}
 
-	public static long getHash(String s) {
+	public static int getHash(String s) {
 		s = s.toLowerCase();
-		long l = 0L;
+		int l = 0;
 		for (int n = 0; n < s.length(); n++) {
-			l = l * 61L + (long) s.charAt(n) - ' ';
+			l = l * 61 + s.charAt(n) - ' ';
 		}
 		return l;
 	}

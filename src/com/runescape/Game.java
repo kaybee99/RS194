@@ -8231,7 +8231,7 @@ public class Game extends GameShell {
 
 		for (int n = 0; n < npcCount; n++) {
 			NPC npc = npcs[npcIndices[n]];
-			if (npc != null && npc.isValid() && npc.config.aBoolean602) {
+			if (npc != null && npc.isValid() && npc.config.showOnMinimap) {
 				x = ((npc.sceneX / 32) - playerX);
 				y = ((npc.sceneZ / 32) - playerY);
 				drawOntoMinimap(mapdot2, x, y);

@@ -104,9 +104,9 @@ public class Model extends CacheLink {
 	public int boundHeight;
 
 	/**
-	 * Seems inverted. Noticed a simularity in the landscape heightmap
+	 * Seems inverted. Noticed a simularity in the landscape heightmap.
 	 */
-	public int minBoundY, maxBoundY;
+	public int maxBoundY, minBoundY;
 
 	public int maxDepth;
 	public int minDepth;
@@ -727,7 +727,7 @@ public class Model extends CacheLink {
 			}
 		}
 
-		setupBBoxDepth();
+		calculateYBoundaries();
 	}
 
 	public Model(Model from, boolean keepVertices, boolean keepColors, boolean keepAlpha, boolean keepInfo) {
@@ -870,44 +870,50 @@ public class Model extends CacheLink {
 		return selected;
 	}
 
-	public final void setupBBoxDepth() {
-		minBoundY = 0;
-		boundHeight = 0;
+	/**
+	 * Used when normals are calculated and shading is applied.
+	 */
+	public final void calculateYBoundaries() {
 		maxBoundY = 0;
+		boundHeight = 0;
+		minBoundY = 0;
 
 		for (int v = 0; v < vertexCount; v++) {
 			int x = vertexX[v];
 			int y = vertexY[v];
 			int z = vertexZ[v];
 
-			if (-y > minBoundY) {
-				minBoundY = -y;
+			if (-y > maxBoundY) {
+				maxBoundY = -y;
 			}
 
-			if (y > maxBoundY) {
-				maxBoundY = y;
+			if (y > minBoundY) {
+				minBoundY = y;
 			}
 
-			int len = x * x + z * z;
+			int height = x * x + z * z;
 
-			if (len > boundHeight) {
-				boundHeight = len;
+			if (height > boundHeight) {
+				boundHeight = height;
 			}
 		}
 
 		boundHeight = (int) Math.sqrt((double) boundHeight);
-		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
-		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
+		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
+		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
 	}
 
-	public void setupBBox() {
+	/**
+	 * Used when normals are calculated, but no shading is applied.
+	 */
+	public void calculateBoundaries() {
 		boundHeight = 0;
 
 		minBoundX = 999999;
 		maxBoundX = -999999;
 
-		minBoundY = 0;
 		maxBoundY = 0;
+		minBoundY = 0;
 
 		maxBoundZ = -99999;
 		minBoundZ = 99999;
@@ -933,24 +939,24 @@ public class Model extends CacheLink {
 				maxBoundZ = z;
 			}
 
-			if (-y > minBoundY) {
-				minBoundY = -y;
+			if (-y > maxBoundY) {
+				maxBoundY = -y;
 			}
 
-			if (y > maxBoundY) {
-				maxBoundY = y;
+			if (y > minBoundY) {
+				minBoundY = y;
 			}
 
-			int h = x * x + z * z;
+			int height = x * x + z * z;
 
-			if (h > boundHeight) {
-				boundHeight = h;
+			if (height > boundHeight) {
+				boundHeight = height;
 			}
 		}
 
 		boundHeight = (int) Math.sqrt((double) boundHeight);
-		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
-		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
+		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
+		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
 	}
 
 	public void applyGroups() {
@@ -1284,8 +1290,8 @@ public class Model extends CacheLink {
 	}
 
 	public final void applyLighting(int baseLightness, int intensity, int x, int y, int z, boolean calculateLighting) {
-		int light_length = (int) Math.sqrt((double) (x * x + y * y + z * z));
-		int lightIntensity = intensity * light_length >> 8;
+		int lightLength = (int) Math.sqrt((double) (x * x + y * y + z * z));
+		int lightIntensity = intensity * lightLength >> 8;
 
 		if (triangleColorA == null) {
 			triangleColorA = new int[triangleCount];
@@ -1306,19 +1312,17 @@ public class Model extends CacheLink {
 			int b = triangleVertexB[t];
 			int c = triangleVertexC[t];
 
-			int deltaBAX = vertexX[b] - vertexX[a];
-			int deltaBAY = vertexY[b] - vertexY[a];
-			int deltaBAZ = vertexZ[b] - vertexZ[a];
+			int dxAB = vertexX[b] - vertexX[a];
+			int dyAB = vertexY[b] - vertexY[a];
+			int dzAB = vertexZ[b] - vertexZ[a];
 
-			int deltaCAX = vertexX[c] - vertexX[a];
-			int deltaCAY = vertexY[c] - vertexY[a];
-			int deltaCAZ = vertexZ[c] - vertexZ[a];
+			int dxCA = vertexX[c] - vertexX[a];
+			int dyCA = vertexY[c] - vertexY[a];
+			int dzCA = vertexZ[c] - vertexZ[a];
 
-			// crummy naming. They're just the differences between each point of
-			// the triangle.
-			int x0 = deltaBAY * deltaCAZ - deltaCAY * deltaBAZ;
-			int y0 = deltaBAZ * deltaCAX - deltaCAZ * deltaBAX;
-			int z0 = deltaBAX * deltaCAY - deltaCAX * deltaBAY;
+			int x0 = dyAB * dzCA - dyCA * dzAB;
+			int y0 = dzAB * dxCA - dzCA * dxAB;
+			int z0 = dxAB * dyCA - dxCA * dyAB;
 
 			// while it's too large, shrink it by half
 			for (; (x0 > 8192 || y0 > 8192 || z0 > 8192 || x0 < -8192 || y0 < -8192 || z0 < -8192);) {
@@ -1339,23 +1343,23 @@ public class Model extends CacheLink {
 			z0 = z0 * 256 / length;
 
 			if (triangleInfo == null || (triangleInfo[t] & 0x1) == 0) {
-				Normal v = normals[a];
-				v.x += x0;
-				v.y += y0;
-				v.z += z0;
-				v.magnitude++;
+				Normal n = normals[a];
+				n.x += x0;
+				n.y += y0;
+				n.z += z0;
+				n.magnitude++;
 
-				v = normals[b];
-				v.x += x0;
-				v.y += y0;
-				v.z += z0;
-				v.magnitude++;
+				n = normals[b];
+				n.x += x0;
+				n.y += y0;
+				n.z += z0;
+				n.magnitude++;
 
-				v = normals[c];
-				v.x += x0;
-				v.y += y0;
-				v.z += z0;
-				v.magnitude++;
+				n = normals[c];
+				n.x += x0;
+				n.y += y0;
+				n.z += z0;
+				n.magnitude++;
 			} else {
 				int lightness = baseLightness + (x * x0 + y * y0 + z * z0) / (lightIntensity + lightIntensity / 2);
 				triangleColorA[t] = adjustHSLLightness(unmodifiedTriangleColor[t], lightness, triangleInfo[t]);
@@ -1369,22 +1373,22 @@ public class Model extends CacheLink {
 
 			for (int v = 0; v < vertexCount; v++) {
 				Normal current = normals[v];
-				Normal original = unmodifiedNormals[v] = new Normal();
-				original.x = current.x;
-				original.y = current.y;
-				original.z = current.z;
-				original.magnitude = current.magnitude;
+				Normal copy = unmodifiedNormals[v] = new Normal();
+				copy.x = current.x;
+				copy.y = current.y;
+				copy.z = current.z;
+				copy.magnitude = current.magnitude;
 			}
 		}
 
 		if (calculateLighting) {
-			setupBBoxDepth();
+			calculateYBoundaries();
 		} else {
-			setupBBox();
+			calculateBoundaries();
 		}
 	}
 
-	public final void calculateLighting(int minLightness, int intensity, int x, int y, int z) {
+	public final void calculateLighting(int minIntensity, int intensity, int x, int y, int z) {
 		for (int t = 0; t < triangleCount; t++) {
 			int a = triangleVertexA[t];
 			int b = triangleVertexB[t];
@@ -1394,30 +1398,30 @@ public class Model extends CacheLink {
 				int color = unmodifiedTriangleColor[t];
 
 				Normal n = normals[a];
-				int lightness = minLightness + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
+				int lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
 				triangleColorA[t] = adjustHSLLightness(color, lightness, 0);
 
 				n = normals[b];
-				lightness = minLightness + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
+				lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
 				triangleColorB[t] = adjustHSLLightness(color, lightness, 0);
 
 				n = normals[c];
-				lightness = minLightness + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
+				lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
 				triangleColorC[t] = adjustHSLLightness(color, lightness, 0);
 			} else if ((triangleInfo[t] & 0x1) == 0) {
 				int color = unmodifiedTriangleColor[t];
 				int info = triangleInfo[t];
 
 				Normal v = normals[a];
-				int lightness = minLightness + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
+				int lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
 				triangleColorA[t] = adjustHSLLightness(color, lightness, info);
 
 				v = normals[b];
-				lightness = minLightness + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
+				lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
 				triangleColorB[t] = adjustHSLLightness(color, lightness, info);
 
 				v = normals[c];
-				lightness = minLightness + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
+				lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
 				triangleColorC[t] = adjustHSLLightness(color, lightness, info);
 			}
 		}
@@ -1541,11 +1545,11 @@ public class Model extends CacheLink {
 					int maxY = i_257_ + i_258_ << 9;
 
 					if (maxY / nearZ > -Canvas2D.centerY) {
-						int i_260_ = i_258_ + (minBoundY * cameraPitchCosine >> 16);
+						int i_260_ = i_258_ + (maxBoundY * cameraPitchCosine >> 16);
 						int minY = i_257_ - i_260_ << 9;
 
 						if (minY / nearZ < Canvas2D.centerY) {
-							int i_262_ = distanceZ + (minBoundY * cameraPitchSine >> 16);
+							int i_262_ = distanceZ + (maxBoundY * cameraPitchSine >> 16);
 							boolean project = false;
 
 							if (farZ - i_262_ <= Scene.NEAR_Z) {

@@ -340,7 +340,7 @@ public class LocationInfo {
 		m.applyLighting(brightness + 64, (specular * 5) + 768, -50, -10, -50, !flatShaded);
 
 		if (hasCollision) {
-			m.objectOffsetY = m.minBoundY;
+			m.objectOffsetY = m.maxBoundY;
 		}
 		return m;
 	}
@@ -497,7 +497,7 @@ public class LocationInfo {
 		m.applyLighting(brightness + 64, (specular * 5) + 768, -50, -10, -50, !flatShaded);
 
 		if (hasCollision) {
-			m.objectOffsetY = m.minBoundY;
+			m.objectOffsetY = m.maxBoundY;
 		}
 
 		if (!adjustToTerrain && !flatShaded) {

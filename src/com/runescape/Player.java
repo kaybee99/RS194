@@ -6,7 +6,7 @@ final class Player extends Entity {
 	boolean visible = false;
 	int gender;
 	int headicons;
-	int[] appearanceindex = new int[13];
+	int[] appearanceIndices = new int[13];
 	int[] appearanceColors = new int[5];
 	int level;
 	long uid;
@@ -33,10 +33,10 @@ final class Player extends Entity {
 			int msb = b.read();
 
 			if (msb == 0) {
-				appearanceindex[n] = 0;
+				appearanceIndices[n] = 0;
 			} else {
 				int lsb = b.read();
-				appearanceindex[n] = (msb << 8) + lsb;
+				appearanceIndices[n] = (msb << 8) + lsb;
 			}
 		}
 
@@ -62,8 +62,8 @@ final class Player extends Entity {
 		for (int n = 0; n < 12; n++) {
 			uid <<= 4;
 
-			if (appearanceindex[n] >= 256) {
-				uid += (long) (appearanceindex[n] - 256);
+			if (appearanceIndices[n] >= 256) {
+				uid += (long) (appearanceIndices[n] - 256);
 			}
 		}
 
@@ -84,7 +84,7 @@ final class Player extends Entity {
 
 		Model model = getModel();
 
-		height = model.minBoundY;
+		height = model.maxBoundY;
 
 		if (lowmemory) {
 			return model;
@@ -124,7 +124,7 @@ final class Player extends Entity {
 				}
 
 				// merge player model with loc model (like chris said lel)
-				model = new Model(new Model[]{model, m}, 2, true, 20525);
+				model = new Model(new Model[]{model, m}, 2, true, 0xFACEFAC);
 
 				if (dstYaw == 512) {
 					m.rotateCounterClockwise();
@@ -160,12 +160,12 @@ final class Player extends Entity {
 
 			if (s.shieldOverride >= 0) {
 				shieldOverride = s.shieldOverride;
-				bitset += (long) (shieldOverride - appearanceindex[5] << 8);
+				bitset += (long) (shieldOverride - appearanceIndices[5] << 8);
 			}
 
 			if (s.weaponOverride >= 0) {
 				weaponOverride = s.weaponOverride;
-				bitset += (long) (shieldOverride - appearanceindex[3] << 16);
+				bitset += (long) (shieldOverride - appearanceIndices[3] << 16);
 			}
 		} else if (secondarySeqIndex >= 0) {
 			primaryFrame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
@@ -174,44 +174,11 @@ final class Player extends Entity {
 		Model m = (Model) uniqueModelCache.get(bitset);
 
 		if (m == null) {
-			NPCInfo c = NPCInfo.get(666);
-
-			if (c != null) {
-				seqWalk = c.seqWalk;
-				seqRun = c.seqRun;
-				seqTurnLeft = c.seqTurnLeft;
-				seqTurnRight = c.seqTurnRight;
-				seqStand = c.seqStand;
-
-				Model[] models = new Model[c.modelIndices.length];
-				int n = 0;
-
-				for (int i = 0; i < models.length; i++) {
-					models[n++] = new Model(c.modelIndices[i]);
-				}
-
-				if (n > 0) {
-					m = new Model(models, n);
-
-					if (c.oldColors != null) {
-						for (int i = 0; i < c.oldColors.length; i++) {
-							m.recolor(c.oldColors[i], c.newColors[i]);
-						}
-					}
-
-					m.applyGroups();
-					m.applyLighting(64, 850, -30, -50, -30, true);
-					uniqueModelCache.put(m, bitset);
-				}
-			}
-		}
-
-		if (m == null) {
 			Model[] models = new Model[13];
 			int n = 0;
 
 			for (int i = 0; i < 13; i++) {
-				int index = appearanceindex[i];
+				int index = appearanceIndices[i];
 
 				if (weaponOverride >= 0 && i == 3) {
 					index = weaponOverride;
@@ -239,10 +206,10 @@ final class Player extends Entity {
 
 			for (int part = 0; part < 5; part++) {
 				if (appearanceColors[part] != 0) {
-					m.recolor((Game.APPEARANCE_COLORS[part][0]), (Game.APPEARANCE_COLORS[part][appearanceColors[part]]));
+					m.recolor(Game.APPEARANCE_COLORS[part][0], Game.APPEARANCE_COLORS[part][appearanceColors[part]]);
 
 					if (part == 1) {
-						m.recolor(Game.BEARD_COLORS[0], (Game.BEARD_COLORS[appearanceColors[part]]));
+						m.recolor(Game.BEARD_COLORS[0], Game.BEARD_COLORS[appearanceColors[part]]);
 					}
 				}
 			}
@@ -264,7 +231,7 @@ final class Player extends Entity {
 			m.applyFrame(primaryFrame);
 		}
 
-		m.setupBBoxDepth();
+		m.calculateYBoundaries();
 		m.skinTriangle = null;
 		m.labelVertices = null;
 		return m;
@@ -278,7 +245,7 @@ final class Player extends Entity {
 		Model[] models = new Model[13];
 		int count = 0;
 		for (int n = 0; n < 13; n++) {
-			int i = appearanceindex[n];
+			int i = appearanceIndices[n];
 
 			if (i >= 256 && i < 512) {
 				models[count++] = IdentityKit.instance[i - 256].getHeadModel();

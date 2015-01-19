@@ -840,7 +840,7 @@ public final class Landscape {
 			if (unmodifiedNormalA.magnitude != 0) {
 				int vertexYA = a.vertexY[vertexA] - offsetY;
 
-				if (vertexYA <= b.maxBoundY) {
+				if (vertexYA <= b.minBoundY) {
 					int vertexXA = a.vertexX[vertexA] - offsetX;
 
 					if (vertexXA >= b.minBoundX && vertexXA <= b.maxBoundX) {
@@ -1411,7 +1411,7 @@ public final class Landscape {
 						}
 					}
 
-					if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.minBoundY)) {
+					if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
 						if ((decoration.type & drawType) != 0) {
 							decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
 						} else if ((decoration.type & 0x300) != 0) {
@@ -1616,7 +1616,7 @@ public final class Landscape {
 							m = l.renderable.getDrawModel();
 						}
 
-						if (!culledArea(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.minBoundY)) {
+						if (!culledArea(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.maxBoundY)) {
 							m.draw(l.yaw, pitchSin, pitchCos, yawSin, yawCos, l.sceneX - cameraX, l.sceneY - cameraY, l.sceneZ - cameraZ, l.bitset);
 						}
 
@@ -1687,7 +1687,7 @@ public final class Landscape {
 					if (tile.anInt988 != 0) {
 						WallDecorationLocation decoration = tile.wallDecoration;
 
-						if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.minBoundY)) {
+						if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
 							if ((decoration.type & tile.anInt988) != 0) {
 								decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
 							} else if ((decoration.type & 0x300) != 0) {
@@ -2400,7 +2400,7 @@ public final class Landscape {
 		return true;
 	}
 
-	private boolean culled(int plane, int tileX, int tileY, int minY) {
+	private boolean culled(int plane, int tileX, int tileY, int height) {
 		if (!culledTile(plane, tileX, tileY)) {
 			return false;
 		}
@@ -2408,10 +2408,10 @@ public final class Landscape {
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		return culled(sceneX + 1, heightmap[plane][tileX][tileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY + 1] - minY), sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][tileX][tileY + 1] - minY), sceneZ + 128 - 1);
+		return culled(sceneX + 1, heightmap[plane][tileX][tileY] - height, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY] - height), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY + 1] - height), sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][tileX][tileY + 1] - height), sceneZ + 128 - 1);
 	}
 
-	private boolean culledArea(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int minY) {
+	private boolean culledArea(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int height) {
 		if (minTileX == maxTileX && minTileY == maxTileY) {
 			if (!culledTile(plane, minTileX, minTileY)) {
 				return false;
@@ -2420,7 +2420,7 @@ public final class Landscape {
 			int sceneX = minTileX << 7;
 			int sceneZ = minTileY << 7;
 
-			return culled(sceneX + 1, heightmap[plane][minTileX][minTileY] - minY, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY] - minY), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY + 1]) - minY, sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][minTileX][minTileY + 1] - minY), sceneZ + 128 - 1);
+			return culled(sceneX + 1, heightmap[plane][minTileX][minTileY] - height, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY] - height), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY + 1]) - height, sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][minTileX][minTileY + 1] - height), sceneZ + 128 - 1);
 		}
 
 		for (int x = minTileX; x <= maxTileX; x++) {
@@ -2433,7 +2433,7 @@ public final class Landscape {
 
 		int minSceneX = (minTileX << 7) + 1;
 		int minSceneZ = (minTileY << 7) + 2;
-		int minSceneY = heightmap[plane][minTileX][minTileY] - minY;
+		int minSceneY = heightmap[plane][minTileX][minTileY] - height;
 
 		if (!culled(minSceneX, minSceneY, minSceneZ)) {
 			return false;

@@ -241,7 +241,7 @@ public class ObjectInfo {
 		int cameraY = (Canvas3D.sin[c.iconCameraPitch] * c.iconZoom) >> 16;
 		int cameraZ = (Canvas3D.cos[c.iconCameraPitch] * c.iconZoom) >> 16;
 
-		m.draw(0, c.iconYaw, c.iconRoll, c.iconX, (cameraY + m.minBoundY / 2 + c.iconY), cameraZ + c.iconY, c.iconCameraPitch);
+		m.draw(0, c.iconYaw, c.iconRoll, c.iconX, (cameraY + (m.maxBoundY / 2) + c.iconY), cameraZ + c.iconY, c.iconCameraPitch);
 
 		for (int x = 31; x >= 0; x--) {
 			for (int y = 31; y >= 0; y--) {

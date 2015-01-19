@@ -6,7 +6,9 @@ public class NPCInfo {
 	private static int[] pointers;
 	private static Buffer data;
 	private static NPCInfo[] cache;
-	private static int cachepos;
+	private static int cachePosition;
+	public static Table uniqueModelCache = new Table(30);
+
 	public int index;
 	public String name;
 	public byte[] description;
@@ -22,14 +24,10 @@ public class NPCInfo {
 	public int[] oldColors;
 	public int[] newColors;
 	public String[] actions;
-	public int anInt599 = -1;
-	public int anInt600 = -1;
-	public int anInt601 = -1;
-	public boolean aBoolean602 = true;
+	public boolean showOnMinimap = true;
 	public int level = -1;
 	private int scaleX = 128;
 	private int scaleY = 128;
-	public static Table uniqueModelCache = new Table(30);
 
 	public static final int getCount() {
 		return count;
@@ -60,18 +58,18 @@ public class NPCInfo {
 		data = null;
 	}
 
-	public static final NPCInfo get(int i) {
+	public static final NPCInfo get(int index) {
 		for (int n = 0; n < 20; n++) {
-			if (cache[n].index == i) {
+			if (cache[n].index == index) {
 				return cache[n];
 			}
 		}
-		cachepos = (cachepos + 1) % 20;
-		NPCInfo n = cache[cachepos] = new NPCInfo();
-		data.position = pointers[i];
-		n.index = i;
-		n.read(data);
-		return n;
+		cachePosition = (cachePosition + 1) % 20;
+		NPCInfo i = cache[cachePosition] = new NPCInfo();
+		data.position = pointers[index];
+		i.index = index;
+		i.read(data);
+		return i;
 	}
 
 	public NPCInfo() {
@@ -81,14 +79,16 @@ public class NPCInfo {
 	private void read(Buffer b) {
 		for (;;) {
 			int opcode = b.read();
+			
 			if (opcode == 0) {
 				break;
 			}
+			
 			if (opcode == 1) {
-				int n = b.read();
-				modelIndices = new int[n];
-				for (int m = 0; m < n; m++) {
-					modelIndices[m] = b.readUShort();
+				int count = b.read();
+				modelIndices = new int[count];
+				for (int n = 0; n < count; n++) {
+					modelIndices[n] = b.readUShort();
 				}
 			} else if (opcode == 2) {
 				name = b.readString();
@@ -113,12 +113,12 @@ public class NPCInfo {
 				}
 				actions[opcode - 30] = b.readString();
 			} else if (opcode == 40) {
-				int n = b.read();
-				oldColors = new int[n];
-				newColors = new int[n];
-				for (int i_8_ = 0; i_8_ < n; i_8_++) {
-					oldColors[i_8_] = b.readUShort();
-					newColors[i_8_] = b.readUShort();
+				int count = b.read();
+				oldColors = new int[count];
+				newColors = new int[count];
+				for (int n = 0; n < count; n++) {
+					oldColors[n] = b.readUShort();
+					newColors[n] = b.readUShort();
 				}
 			} else if (opcode == 60) {
 				int n = b.read();
@@ -127,13 +127,13 @@ public class NPCInfo {
 					headModelIndices[m] = b.readUShort();
 				}
 			} else if (opcode == 90) {
-				anInt599 = b.readUShort();
+				b.readUShort();
 			} else if (opcode == 91) {
-				anInt600 = b.readUShort();
+				b.readUShort();
 			} else if (opcode == 92) {
-				anInt601 = b.readUShort();
+				b.readUShort();
 			} else if (opcode == 93) {
-				aBoolean602 = false;
+				showOnMinimap = false;
 			} else if (opcode == 95) {
 				level = b.readUShort();
 			} else if (opcode == 97) {
@@ -183,7 +183,7 @@ public class NPCInfo {
 			m.scale(scaleX, scaleY, scaleX);
 		}
 
-		m.setupBBoxDepth();
+		m.calculateYBoundaries();
 		m.skinTriangle = null;
 		m.labelVertices = null;
 		return m;

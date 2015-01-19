@@ -48,7 +48,7 @@ final class NPC extends Entity {
 		}
 
 		Model m = config.getModel(frame, -1, null);
-		height = m.minBoundY;
+		height = m.maxBoundY;
 		return m;
 	}
 
