@@ -1,13 +1,14 @@
 package com.runescape;
 
 import java.math.BigInteger;
+import net.burtleburtle.bob.rand.IsaacRandom;
 
 public final class Buffer extends CacheLink {
 
 	public byte[] data;
 	public int position;
 	public int bitPos;
-	public ISAAC isaac;
+	public IsaacRandom isaac;
 
 	private int start, varSize;
 

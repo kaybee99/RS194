@@ -67,9 +67,13 @@ public class GamePanel extends JComponent implements ShellListener {
 	}
 
 	@Override
-	public void onShellStartup() {
+	public void onPreShellStartup() {
 		// override graphics
 		this.game.graphics = this.graphics;
+	}
+
+	@Override
+	public void onPostShellStartup() {
 	}
 
 	@Override

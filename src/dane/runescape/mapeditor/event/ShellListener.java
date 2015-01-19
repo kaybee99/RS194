@@ -31,7 +31,9 @@ import java.util.EventListener;
  */
 public interface ShellListener extends EventListener {
 
-	void onShellStartup();
+	void onPreShellStartup();
+	
+	void onPostShellStartup();
 
 	void onShellDraw();
 

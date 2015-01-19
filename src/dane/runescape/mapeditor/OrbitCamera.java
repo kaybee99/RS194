@@ -35,15 +35,17 @@ public class OrbitCamera {
 	private int x;
 	private int y;
 	private int z;
-	private int zoom = 600;
+	private int pitch = 128;
 	private int yaw = 0;
+	private int zoom = 600;
 
 	// below are interpolated
 	private int currentX;
 	private int currentY;
 	private int currentZ;
-	private int currentZoom = 128;
+	private int currentPitch = 128;
 	private int currentYaw;
+	private int currentZoom = 128;
 
 	public void update() {
 		currentX += (x - currentX) / 8;
@@ -59,6 +61,8 @@ public class OrbitCamera {
 			dy += 2048;
 		}
 
+		// smoothness all around ;)
+		currentPitch += (pitch - currentPitch) / 4;
 		currentYaw = (currentYaw + (dy / 4)) & 0x7FF;
 		currentZoom += (zoom - currentZoom) / 8;
 	}
@@ -150,6 +154,22 @@ public class OrbitCamera {
 
 	public void setCurrentYaw(int yaw) {
 		this.currentYaw = yaw;
+	}
+
+	public int getPitch() {
+		return pitch;
+	}
+
+	public int getCurrentPitch() {
+		return currentPitch;
+	}
+
+	public void setPitch(int pitch) {
+		this.pitch = pitch;
+	}
+
+	public void setCurrentPitch(int currentPitch) {
+		this.currentPitch = currentPitch;
 	}
 
 	@Override

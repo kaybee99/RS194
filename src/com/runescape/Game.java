@@ -14,6 +14,7 @@ import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
+import net.burtleburtle.bob.rand.IsaacRandom;
 
 /**
  * The RuneScape game class for revision #194.
@@ -184,7 +185,7 @@ public class Game extends GameShell {
 	/* Networking */
 	public int netHeartbeatCycle;
 	public int netIdleCycles;
-	public ISAAC isaac;
+	public IsaacRandom isaac;
 	public int packetSize;
 	public int packetType;
 	public int lastPacketType;
@@ -1796,13 +1797,13 @@ public class Game extends GameShell {
 
 			login.write((out.data), 0, (out.position));
 
-			out.isaac = new ISAAC(seed);
+			out.isaac = new IsaacRandom(seed);
 
 			for (int n = 0; n < 4; n++) {
 				seed[n] += 50;
 			}
 
-			isaac = new ISAAC(seed);
+			isaac = new IsaacRandom(seed);
 			stream.write(login.data, 0, login.position);
 
 			int response = stream.read();

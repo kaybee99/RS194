@@ -23,10 +23,10 @@
  */
 package dane.runescape.mapeditor.search;
 
-import com.runescape.Flo;
-import com.runescape.LocConfig;
-import com.runescape.NPCConfig;
-import com.runescape.ObjConfig;
+import com.runescape.FloorType;
+import com.runescape.LocationInfo;
+import com.runescape.NPCInfo;
+import com.runescape.ObjectInfo;
 import static dane.runescape.mapeditor.search.SearchMode.FLOOR;
 import static dane.runescape.mapeditor.search.SearchMode.ITEM;
 import static dane.runescape.mapeditor.search.SearchMode.LOCATION;
@@ -100,28 +100,28 @@ public class SearchManager {
 		// The way I would: each mode points to a class that has an Object get(int index) an int getCount().
 		switch (mode) {
 			case FLOOR: {
-				for (Flo f : Flo.instances) {
+				for (FloorType f : FloorType.instances) {
 					list.add(new Searchable(f.name, f.index, FLOOR));
 				}
 				break;
 			}
 			case ITEM: {
-				for (int i = 0; i < ObjConfig.count; i++) {
-					ObjConfig c = ObjConfig.get(i);
+				for (int i = 0; i < ObjectInfo.count; i++) {
+					ObjectInfo c = ObjectInfo.get(i);
 					list.add(new Searchable(c.name, i, ITEM));
 				}
 				break;
 			}
 			case LOCATION: {
-				for (int i = 0; i < LocConfig.count; i++) {
-					LocConfig c = LocConfig.get(i);
+				for (int i = 0; i < LocationInfo.count; i++) {
+					LocationInfo c = LocationInfo.get(i);
 					list.add(new Searchable(c.name, i, LOCATION));
 				}
 				break;
 			}
 			case NPC: {
-				for (int i = 0; i < NPCConfig.count; i++) {
-					NPCConfig c = NPCConfig.get(i);
+				for (int i = 0; i < NPCInfo.count; i++) {
+					NPCInfo c = NPCInfo.get(i);
 					list.add(new Searchable(c.name, i, LOCATION));
 				}
 				break;

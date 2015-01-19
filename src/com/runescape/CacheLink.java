@@ -3,7 +3,7 @@ package com.runescape;
 /**
  * Couldn't think of a better name.
  *
- * @author Sven
+ * @author Dane
  *
  */
 public class CacheLink extends Link {

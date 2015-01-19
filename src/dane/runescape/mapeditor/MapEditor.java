@@ -23,15 +23,13 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.Landscape;
-import com.runescape.Scene;
 import com.runescape.Signlink;
-import dane.runescape.mapeditor.event.GameListener;
 import dane.runescape.mapeditor.event.SearchEvent;
 import static dane.runescape.mapeditor.event.SearchEvent.Type.MODE_CHANGED;
 import static dane.runescape.mapeditor.event.SearchEvent.Type.VALUE_SEARCHED;
 import static dane.runescape.mapeditor.event.SearchEvent.Type.VALUE_SELECTED;
 import dane.runescape.mapeditor.event.SearchEventListener;
+import dane.runescape.mapeditor.event.ShellListener;
 import dane.runescape.mapeditor.search.SearchManager;
 import dane.runescape.mapeditor.search.SearchMode;
 import dane.runescape.mapeditor.search.Searchable;
@@ -65,113 +63,120 @@ import java.util.logging.Logger;
 import javax.swing.JLabel;
 import javax.swing.UnsupportedLookAndFeelException;
 
-public final class MapEditor extends JFrame implements GameListener, SearchEventListener {
-
+public final class MapEditor extends JFrame implements ShellListener, SearchEventListener {
+	
 	private static final Logger logger = Logger.getLogger(MapEditor.class.getName());
 	private static final long serialVersionUID = -343522878080909782L;
-
+	
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
 			logger.log(Level.SEVERE, "Error setting look and feel", e);
 		}
-
+		
 		try {
 			// we need signlink to be in private mode
 			Signlink.startPrivate(InetAddress.getLocalHost());
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, null, e);
 		}
-
+		
 		MapEditor m = new MapEditor(1280, 800);
 		m.assemble();
 	}
-
-	private OrbitCamera orbitCamera = new OrbitCamera();
-
+	
+	private OrbitCamera camera = new OrbitCamera();
+	
 	private JMenuBar menubar;
 	private JMenu menuFile, menuEdit, menuModes, menuMapControls, menu3DControls, menuOptions;
-
+	
 	private JPanel panel;
-
 	private JPanel panel2d;
 	private JPanel panel3d;
-
+	
 	private GameSub game;
 	private MapPanel panelMap;
 	private GamePanel gamePanel;
-
+	
 	private JScrollPane pane2d;
 	private JScrollPane pane3d;
-
+	
 	private JPanel panelPreview;
 	private JScrollPane panePreview;
-
+	
 	private JPanel panelLeft;
 	private JPanel panelRight;
 	public JSplitPane splitLeft;
-
+	
 	private JPanel panelTop;
 	private JPanel panelCenter;
 	private JSplitPane splitTop;
-
+	
 	private JPanel panelCenterTop;
 	private JPanel panelCenterBottom;
 	private JSplitPane splitCenter;
-
+	
 	private SearchPanel searchPanel;
 	private LocationPanel locTypePanel;
-
+	
 	private JPanel panelBottomLeft;
 	private JPanel panelBottomRight;
 	private JSplitPane splitBottom;
-
+	
 	public MapEditor(int w, int h) {
 		setMinimumSize(new Dimension(w, h));
 	}
 
+	/**
+	 * Creates the map editor and shows it.
+	 */
 	private void assemble() {
 		setTitle("Suite");
 		setResizable(true);
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		setLocationRelativeTo(null);
-
+		
 		assemblePanels();
 		assembleMenubar();
-
+		
 		gamePanel.setSize(512, 334);
 		gamePanel.setPreferredSize(gamePanel.getSize());
 		gamePanel.setMinimumSize(gamePanel.getSize());
 		gamePanel.setMaximumSize(gamePanel.getSize());
 		gamePanel.init();
-
+		
 		addListeners();
 		setColorCoated();
 		setVisible(true);
 
-		// still doesn't work properly. Googled it, turns out JSplitPane's are
+		// still doesn't work properly. Googled it and it turns out JSplitPane's are
 		// just assholes.
 		SwingUtilities.invokeLater(() -> {
 			splitLeft.setDividerLocation(0.5);
+			splitBottom.setDividerLocation(0.5);
+			
 			splitTop.setDividerLocation(0.5);
 			splitCenter.setDividerLocation(0.5);
-			splitBottom.setDividerLocation(0.5);
 			panelMap.requestFocus();
 		});
 	}
 
+	/**
+	 * Creates all the components and adds them.
+	 */
 	public void assemblePanels() {
 		panel = new JPanel(new BorderLayout());
-
+		
 		panel2d = new JPanel(new BorderLayout());
 		panel3d = new JPanel(null);
-
+		
 		game = new GameSub();
-
+		game.camera = camera;
+		
 		pane2d = new JScrollPane(panel2d);
 		pane3d = new JScrollPane(panel3d);
-
+		
 		panelPreview = new JPanel();
 		panePreview = new JScrollPane(panelPreview);
 
@@ -180,17 +185,17 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		panelRight = new JPanel(new BorderLayout());
 		splitLeft = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelLeft, panelRight);
 		panel.add(splitLeft);
-
+		
 		panelCenterTop = new JPanel(new BorderLayout());
 		panelCenterBottom = new JPanel(new BorderLayout());
 		splitCenter = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelCenterTop, panelCenterBottom);
 		panelRight.add(splitCenter);
-
+		
 		panelTop = new JPanel(new BorderLayout());
 		panelCenter = new JPanel(new BorderLayout());
 		splitTop = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true, panelTop, panelCenter);
 		panelCenterTop.add(splitTop);
-
+		
 		panelBottomLeft = new JPanel(new BorderLayout());
 		panelBottomRight = new JPanel(new BorderLayout());
 		splitBottom = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, panelBottomLeft, panelBottomRight);
@@ -219,13 +224,16 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		panel3d.add(gamePanel);
 		panelLeft.add(pane2d, BorderLayout.CENTER);
 		panelTop.add(pane3d, BorderLayout.CENTER);
-
+		
 		add(panel);
 	}
 
+	/**
+	 * Creates all the menubar components and adds them.
+	 */
 	public void assembleMenubar() {
 		setJMenuBar(menubar = new JMenuBar());
-
+		
 		menuFile = new JMenu("File");
 		menuFile.add(new JMenuItem(new AbstractAction("Exit") {
 			@Override
@@ -234,7 +242,7 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 			}
 		}));
 		menubar.add(menuFile);
-
+		
 		menuEdit = new JMenu("Edit");
 		//menubar.add(menuEdit);
 
@@ -252,7 +260,7 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				Desktop desktop = Desktop.getDesktop();
-
+				
 				try {
 					JOptionPane.showMessageDialog(MapEditor.this, new Object[]{new JLabel("Skype: the.dane.effect"),
 						new JButton(new AbstractAction("Created by Dane") {
@@ -282,10 +290,13 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		menubar.add(menuOptions);
 	}
 
+	/**
+	 * Connects things together.
+	 */
 	public void addListeners() {
 		//panelMap.addCameraEventListener(appletGame);
+		game.addGameListener(panelMap);
 		panelMap.setScrollBars(pane2d.getVerticalScrollBar(), pane2d.getHorizontalScrollBar());
-		game.addGameListener(this);
 		searchPanel.addSearchListener(this);
 	}
 
@@ -299,25 +310,18 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 		panelBottomRight.setBackground(Color.blue);
 		panelLeft.setBackground(Color.gray);
 	}
-
+	
 	@Override
 	public void dispose() {
 		super.dispose();
-		gamePanel.getGame().forceShutdown();
+		gamePanel.getGame().destroy();
 	}
-
-	@Override
-	public void onSceneCreation(int plane, Scene s, Landscape l) {
-		for (SearchMode m : SearchMode.values()) {
-			SearchManager.populate(m);
-		}
-	}
-
+	
 	@Override
 	public void onSearchEvent(SearchEvent e) {
 		SearchEvent.Type type = e.getType();
 		SearchMode mode = e.getMode();
-
+		
 		switch (type) {
 			case MODE_CHANGED: {
 				searchPanel.clear();
@@ -336,5 +340,32 @@ public final class MapEditor extends JFrame implements GameListener, SearchEvent
 				break;
 			}
 		}
+	}
+	
+	@Override
+	public void onPreShellStartup() {
+		
+	}
+	
+	@Override
+	public void onPostShellStartup() {
+		for (SearchMode m : SearchMode.values()) {
+			SearchManager.populate(m);
+		}
+	}
+	
+	@Override
+	public void onShellDraw() {
+		
+	}
+	
+	@Override
+	public void onShellUpdate() {
+		
+	}
+	
+	@Override
+	public void onShellShutdown() {
+		
 	}
 }
