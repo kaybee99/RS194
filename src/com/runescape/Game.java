@@ -7028,8 +7028,8 @@ public class Game extends GameShell {
 							}
 						} else {
 							for (int n = 4; n >= 0; n--) {
-								if (c.groundactions != null && (c.groundactions[n] != null)) {
-									options[optionCount] = (c.groundactions[n] + " @lre@" + c.name);
+								if (c.groundActions != null && (c.groundActions[n] != null)) {
+									options[optionCount] = (c.groundActions[n] + " @lre@" + c.name);
 
 									if (n == 0) {
 										optionType[optionCount] = 917;

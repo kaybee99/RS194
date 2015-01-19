@@ -1882,7 +1882,7 @@ public final class Landscape {
 			if (u != null) {
 				if (u.textureIndex == -1) {
 					if (u.northeastColor != 12345678) {
-						Canvas3D.fillShadedTriangle(y2, y3, y1, x2, x3, x1, u.northeastColor, u.northwestColor, u.southeastColor);
+						Canvas3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, u.northeastColor, u.northwestColor, u.southeastColor);
 					}
 				} else if (!lowmemory) {
 					if (u.isFlat) {
@@ -1892,7 +1892,7 @@ public final class Landscape {
 					}
 				} else {
 					int hsl = TEXTURE_HSL[u.textureIndex];
-					Canvas3D.fillShadedTriangle(y2, y3, y1, x2, x3, x1, adjustHSLLightness(hsl, u.northeastColor), adjustHSLLightness(hsl, u.northwestColor), adjustHSLLightness(hsl, u.southeastColor));
+					Canvas3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, adjustHSLLightness(hsl, u.northeastColor), adjustHSLLightness(hsl, u.northwestColor), adjustHSLLightness(hsl, u.southeastColor));
 				}
 			}
 		}
@@ -1920,13 +1920,13 @@ public final class Landscape {
 			if (u != null) {
 				if (u.textureIndex == -1) {
 					if (u.southwestColor != 12345678) {
-						Canvas3D.fillShadedTriangle(y0, y1, y3, x0, x1, x3, u.southwestColor, u.southeastColor, u.northwestColor);
+						Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, u.southwestColor, u.southeastColor, u.northwestColor);
 					}
 				} else if (!lowmemory) {
 					Canvas3D.fillTexturedTriangle(y0, y1, y3, x0, x1, x3, u.southwestColor, u.southeastColor, u.northwestColor, sceneX0, sceneX1, sceneX3, sceneY0, sceneY1, sceneY3, sceneZ0, sceneZ1, sceneZ3, u.textureIndex);
 				} else {
 					int hsl = TEXTURE_HSL[u.textureIndex];
-					Canvas3D.fillShadedTriangle(y0, y1, y3, x0, x1, x3, adjustHSLLightness(hsl, u.southwestColor), adjustHSLLightness(hsl, u.southeastColor), adjustHSLLightness(hsl, u.northwestColor));
+					Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, adjustHSLLightness(hsl, u.southwestColor), adjustHSLLightness(hsl, u.southeastColor), adjustHSLLightness(hsl, u.northwestColor));
 				}
 			}
 		}
@@ -1941,8 +1941,8 @@ public final class Landscape {
 			if (hovered || a < Scene.hoverRadiusSquared) {
 				int alpha = Canvas3D.alpha;
 				Canvas3D.alpha = 150;
-				Canvas3D.fillTriangle(y2, y3, y1, x2, x3, x1, Scene.hoverColor);
-				Canvas3D.fillTriangle(y0, y1, y3, x0, x1, x3, Scene.hoverColor);
+				Canvas3D.fillTriangle(x2, y2, x3, y3, x1, y1, Scene.hoverColor);
+				Canvas3D.fillTriangle(x0, y0, x1, y1, x3, y3, Scene.hoverColor);
 				Canvas3D.alpha = alpha;
 			}
 		}
@@ -2017,7 +2017,7 @@ public final class Landscape {
 
 				if (o.triangleTexture == null || o.triangleTexture[t] == -1) {
 					if (o.triangleColorA[t] != 12345678) {
-						Canvas3D.fillShadedTriangle(y0, y1, y2, x0, x1, x2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t]);
+						Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t]);
 					}
 				} else if (!lowmemory) {
 					if (o.isFlat) {
@@ -2027,7 +2027,7 @@ public final class Landscape {
 					}
 				} else {
 					int hsl = TEXTURE_HSL[o.triangleTexture[t]];
-					Canvas3D.fillShadedTriangle(y0, y1, y2, x0, x1, x2, adjustHSLLightness(hsl, o.triangleColorA[t]), adjustHSLLightness(hsl, o.triangleColorB[t]), adjustHSLLightness(hsl, o.triangleColorC[t]));
+					Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, adjustHSLLightness(hsl, o.triangleColorA[t]), adjustHSLLightness(hsl, o.triangleColorB[t]), adjustHSLLightness(hsl, o.triangleColorC[t]));
 				}
 			}
 		}

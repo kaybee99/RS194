@@ -45,12 +45,12 @@ public class Canvas3D extends Canvas2D {
 	/**
 	 * Technically a lookup table for 17.15 fixed point fractions.
 	 */
-	public static int[] lightnessLerpArray = new int[512];
+	public static int[] oneOverFixed1715 = new int[512];
 
 	/**
 	 * Technically a lookup table for 16.16 fixed point fractions.
 	 */
-	public static int[] zLerpArray = new int[2048];
+	public static int[] oneOverFixed1616 = new int[2048];
 
 	/**
 	 * A sine lookup table. PI = 1024 (180 Degrees)
@@ -107,8 +107,8 @@ public class Canvas3D extends Canvas2D {
 	 * Nullifies all objects apart of this class.
 	 */
 	public static final void unload() {
-		lightnessLerpArray = null;
-		zLerpArray = null;
+		oneOverFixed1715 = null;
+		oneOverFixed1616 = null;
 		sin = null;
 		cos = null;
 		offsets = null;
@@ -986,7 +986,7 @@ public class Canvas3D extends Canvas2D {
 				length = xB - xA >> 2;
 
 				if (length > 0) {
-					lightnessSlope = (colorB - colorA) * lightnessLerpArray[length] >> 15;
+					lightnessSlope = (colorB - colorA) * oneOverFixed1715[length] >> 15;
 				} else {
 					lightnessSlope = 0;
 				}
@@ -2225,7 +2225,7 @@ public class Canvas3D extends Canvas2D {
 		} else {
 			if (xB - xA > 7) {
 				length = xB - xA >> 3;
-				lightnessSlope = (lB - lA) * lightnessLerpArray[length] >> 6;
+				lightnessSlope = (lB - lA) * oneOverFixed1715[length] >> 6;
 			} else {
 				length = 0;
 				lightnessSlope = 0;
@@ -2640,11 +2640,11 @@ public class Canvas3D extends Canvas2D {
 
 	static {
 		for (int i = 1; i < 512; i++) {
-			lightnessLerpArray[i] = 32768 / i;
+			oneOverFixed1715[i] = 32768 / i;
 		}
 
 		for (int i = 1; i < 2048; i++) {
-			zLerpArray[i] = 65536 / i;
+			oneOverFixed1616[i] = 65536 / i;
 		}
 
 		for (int i = 0; i < 2048; i++) {

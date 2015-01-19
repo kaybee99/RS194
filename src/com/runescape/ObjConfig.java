@@ -25,7 +25,7 @@ public class ObjConfig {
 	public boolean stackable;
 	public int priority;
 	public boolean members;
-	public String[] groundactions;
+	public String[] groundActions;
 	public String[] actions;
 	public int maleModel0;
 	public int maleModel1;
@@ -33,10 +33,10 @@ public class ObjConfig {
 	public int femaleModel0;
 	public int femaleModel1;
 	public byte femaleOffsetY;
-	public int maleHeadModel0;
-	public int maleHeadModel1;
-	public int femaleHeadModel0;
-	public int maleHeadModel2;
+	public int maleHeadModelA;
+	public int maleHeadModelB;
+	public int femaleHeadModelA;
+	public int femaleHeadModelB;
 
 	public static final int getCount() {
 		return count;
@@ -99,7 +99,7 @@ public class ObjConfig {
 		stackable = false;
 		priority = 1;
 		members = false;
-		groundactions = null;
+		groundActions = null;
 		actions = null;
 		maleModel0 = -1;
 		maleModel1 = -1;
@@ -107,10 +107,10 @@ public class ObjConfig {
 		femaleModel0 = -1;
 		femaleModel1 = -1;
 		femaleOffsetY = (byte) 0;
-		maleHeadModel0 = -1;
-		maleHeadModel1 = -1;
-		femaleHeadModel0 = -1;
-		maleHeadModel2 = -1;
+		maleHeadModelA = -1;
+		maleHeadModelB = -1;
+		femaleHeadModelA = -1;
+		femaleHeadModelB = -1;
 	}
 
 	public final void read(Buffer b) {
@@ -163,10 +163,10 @@ public class ObjConfig {
 			} else if (opcode == 26) {
 				femaleModel1 = b.readUShort();
 			} else if (opcode >= 30 && opcode < 35) {
-				if (groundactions == null) {
-					groundactions = new String[5];
+				if (groundActions == null) {
+					groundActions = new String[5];
 				}
-				groundactions[opcode - 30] = b.readString();
+				groundActions[opcode - 30] = b.readString();
 			} else if (opcode >= 35 && opcode < 40) {
 				if (actions == null) {
 					actions = new String[5];
@@ -181,13 +181,13 @@ public class ObjConfig {
 					newColors[i_5_] = b.readUShort();
 				}
 			} else if (opcode == 90) {
-				maleHeadModel0 = b.readUShort();
+				maleHeadModelA = b.readUShort();
 			} else if (opcode == 91) {
-				femaleHeadModel0 = b.readUShort();
+				femaleHeadModelA = b.readUShort();
 			} else if (opcode == 92) {
-				maleHeadModel1 = b.readUShort();
+				maleHeadModelB = b.readUShort();
 			} else if (opcode == 93) {
-				maleHeadModel2 = b.readUShort();
+				femaleHeadModelB = b.readUShort();
 			} else if (opcode == 95) {
 				iconRoll = b.readUShort();
 			}
@@ -325,26 +325,26 @@ public class ObjConfig {
 	}
 
 	public final Model getHeadModel(int gender) {
-		int model0 = maleHeadModel0;
+		int modelA = maleHeadModelA;
 
 		if (gender == 1) {
-			model0 = femaleHeadModel0;
+			modelA = femaleHeadModelA;
 		}
 
-		if (model0 == -1) {
+		if (modelA == -1) {
 			return null;
 		}
 
-		int model1 = maleHeadModel1;
+		int modelB = maleHeadModelB;
 
 		if (gender == 1) {
-			model1 = maleHeadModel2;
+			modelB = femaleHeadModelB;
 		}
 
-		Model m = new Model(model0);
+		Model m = new Model(modelA);
 
-		if (model1 != -1) {
-			m = new Model(new Model[]{m, new Model(model1)}, 2);
+		if (modelB != -1) {
+			m = new Model(new Model[]{m, new Model(modelB)}, 2);
 		}
 
 		if (oldColors != null) {

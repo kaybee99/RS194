@@ -43,10 +43,10 @@ public class SeqFrame {
 				int flags = tran1.read();
 
 				if (flags > 0) {
-					if (t.types[n] != 0) {
+					if (t.groupTypes[n] != Model.TRANSFORM_CENTRALIZE) {
 						// group?? label?? group??
 						for (int group = n - 1; group > lastGroup; group--) {
-							if (t.types[group] == 0) {
+							if (t.groupTypes[group] == Model.TRANSFORM_CENTRALIZE) {
 								groups[count] = group;
 								x[count] = 0;
 								y[count] = 0;
@@ -58,28 +58,29 @@ public class SeqFrame {
 					}
 
 					groups[count] = n;
-					int last = 0;
 
-					if (t.types[groups[count]] == 3) {
-						last = 128;
+					int defaultValue = 0;
+
+					if (t.groupTypes[groups[count]] == Model.TRANSFORM_SCALE) {
+						defaultValue = 128;
 					}
 
 					if ((flags & 0x1) != 0) {
 						x[count] = tran2.readSmart();
 					} else {
-						x[count] = last;
+						x[count] = defaultValue;
 					}
 
 					if ((flags & 0x2) != 0) {
 						y[count] = tran2.readSmart();
 					} else {
-						y[count] = last;
+						y[count] = defaultValue;
 					}
 
 					if ((flags & 0x4) != 0) {
 						z[count] = tran2.readSmart();
 					} else {
-						z[count] = last;
+						z[count] = defaultValue;
 					}
 
 					lastGroup = n;

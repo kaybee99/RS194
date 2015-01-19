@@ -670,7 +670,7 @@ public final class Scene {
 									int hsl;
 
 									if (texture >= 0) {
-										rgb = Canvas3D.getAverageTextureRGB(texture);
+										rgb = Canvas3D.getTextureColor(texture);
 										hsl = -1;
 									} else if (f.rgb == 0xFF00FF) {
 										rgb = 0;

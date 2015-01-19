@@ -4,8 +4,8 @@ public class SeqTransform {
 
 	public static SeqTransform[] instance;
 	public int length;
-	public int[] types;
-	public int[][] labels;
+	public int[] groupTypes;
+	public int[][] groups;
 
 	public static void load(Archive a) {
 		Buffer bhead = new Buffer(a.get("base_head.dat", null));
@@ -20,24 +20,24 @@ public class SeqTransform {
 			int index = bhead.readUShort();
 
 			int length = bhead.read();
-			int[] types = new int[length];
-			int[][] skins = new int[length][];
+			int[] groupTypes = new int[length];
+			int[][] groups = new int[length][];
 
-			for (int s = 0; s < length; s++) {
-				types[s] = btype.read();
+			for (int n = 0; n < length; n++) {
+				groupTypes[n] = btype.read();
 
-				int skinN = blabel.read();
-				skins[s] = new int[skinN];
+				int groupCount = blabel.read();
+				groups[n] = new int[groupCount];
 
-				for (int l = 0; l < skinN; l++) {
-					skins[s][l] = blabel.read();
+				for (int g = 0; g < groupCount; g++) {
+					groups[n][g] = blabel.read();
 				}
 			}
 
 			instance[index] = new SeqTransform();
 			instance[index].length = length;
-			instance[index].types = types;
-			instance[index].labels = skins;
+			instance[index].groupTypes = groupTypes;
+			instance[index].groups = groups;
 		}
 	}
 }
