@@ -41,12 +41,12 @@ public final class StringUtil {
 	}
 
 	public static int getHash(String s) {
-		s = s.toLowerCase();
-		int l = 0;
-		for (int n = 0; n < s.length(); n++) {
-			l = l * 61 + s.charAt(n) - ' ';
+		int hash = 0;
+		s = s.toUpperCase();
+		for (int i = 0; i < s.length(); i++) {
+			hash = hash * 61 + s.charAt(i) - 32;
 		}
-		return l;
+		return hash;
 	}
 
 	/**

@@ -78,7 +78,15 @@ public class FloorType {
 	 * @param archive the archive containing the floor data file.
 	 */
 	public static void unpack(Archive archive) {
-		Buffer b = new Buffer(archive.get("flo.dat", null));
+		Buffer b;
+		byte[] data = Signlink.loadFile("flo.dat");
+
+		if (data != null) {
+			b = new Buffer(data);
+		} else {
+			b = new Buffer(archive.get("flo.dat", null));
+		}
+
 		count = b.readUShort();
 
 		if (instances == null) {

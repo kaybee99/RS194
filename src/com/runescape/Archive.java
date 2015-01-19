@@ -49,7 +49,7 @@ public final class Archive {
 	}
 
 	public byte[] get(String name, byte[] dst) {
-		int hash = StringUtil.getHash(name.toLowerCase());
+		int hash = StringUtil.getHash(name);
 
 		for (int n = 0; n < fileCount; n++) {
 			if (fileHash[n] == hash) {
