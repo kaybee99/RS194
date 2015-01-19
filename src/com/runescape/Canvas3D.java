@@ -1,31 +1,111 @@
 package com.runescape;
 
+import java.util.logging.Logger;
+
 public class Canvas3D extends Canvas2D {
 
+	private static final Logger logger = Logger.getLogger(Canvas3D.class.getName());
+
+	/**
+	 * Whether to use less intensive procedures and memory storage.
+	 */
 	public static boolean lowmemory = true;
+
+	/**
+	 * Set to true when a point on a triangle is off screen. Used to clip
+	 * interpolation variables in case they go off screen.
+	 */
 	public static boolean verifyBounds;
+
+	/**
+	 * When set to true, the renderer ignores blending alpha composition.
+	 */
 	public static boolean opaque;
+
+	/**
+	 * Determines whether to use
+	 */
 	public static boolean texturedShading = true;
+
+	/**
+	 * The global alpha component for drawing triangles.
+	 */
 	public static int alpha;
+
+	/**
+	 * The horizontal center of the 3d canvas.
+	 */
 	public static int centerX;
+
+	/**
+	 * The vertical center of the 3d canvas.
+	 */
 	public static int centerY;
+
+	/**
+	 * Technically a lookup table for 17.15 fixed point fractions.
+	 */
 	public static int[] lightnessLerpArray = new int[512];
+
+	/**
+	 * Technically a lookup table for 16.16 fixed point fractions.
+	 */
 	public static int[] zLerpArray = new int[2048];
+
+	/**
+	 * A sine lookup table. PI = 1024 (180 Degrees)
+	 */
 	public static int[] sin = new int[2048];
+
+	/**
+	 * A cosine lookup table. PI = 1024 (180 Degrees)
+	 */
 	public static int[] cos = new int[2048];
+
+	/**
+	 * A temporary storage for vertical (y) pixel offsets.
+	 */
 	public static int[] offsets;
-	public static int textureN;
+
+	/**
+	 * The amount of textures loaded.
+	 */
+	public static int loadedTextureCount;
+
+	/**
+	 * Unmodified textures. These should never be written to.
+	 */
 	public static IndexedBitmap[] textures;
+
+	/**
+	 * Will be true if a texture contains a pixel with the value 0x00000000.
+	 */
 	public static boolean[] textureHasTransparency;
-	public static int[] averageTextureRGB;
-	public static int pixelpoolN;
-	public static int[][] pixelPool;
-	public static int[][] texelPool;
+
+	/**
+	 * Contains the average INT24_RGB of a texture.
+	 */
+	public static int[] textureColors;
+
+	public static int texelPoolPosition;
+	public static int[][] texelBuffer1, texelBuffer2;
 	public static int[] textureCycles;
 	public static int cycle;
-	public static int[] palette;
-	public static int[][] originalTexels;
 
+	/**
+	 * Stores RGB values that can be looked up in the HSL
+	 * format:<br/><code>(hue << 10) | (saturation << 7) | lightness</code>
+	 */
+	public static int[] palette;
+
+	/**
+	 * Contains the texture palettes.
+	 */
+	public static int[][] texturePalettes;
+
+	/**
+	 * Nullifies all objects apart of this class.
+	 */
 	public static final void unload() {
 		lightnessLerpArray = null;
 		zLerpArray = null;
@@ -34,62 +114,90 @@ public class Canvas3D extends Canvas2D {
 		offsets = null;
 		textures = null;
 		textureHasTransparency = null;
-		averageTextureRGB = null;
-		pixelPool = null;
-		texelPool = null;
+		textureColors = null;
+		texelBuffer2 = null;
+		texelBuffer1 = null;
 		textureCycles = null;
 		palette = null;
-		originalTexels = null;
+		texturePalettes = null;
 	}
 
-	public static final void prepareOffsets() {
+	/**
+	 * Generates the vertical pixel offsets using the width and height set in
+	 * {@link Canvas2D}.
+	 *
+	 * @return the int[] of y offsets.
+	 */
+	public static final int[] prepareOffsets() {
 		offsets = new int[Canvas2D.dstH];
 		for (int y = 0; y < Canvas2D.dstH; y++) {
 			offsets[y] = Canvas2D.dstW * y;
 		}
 		centerX = Canvas2D.dstW / 2;
 		centerY = Canvas2D.dstH / 2;
+		return offsets;
 	}
 
-	public static final void prepareOffsets(int w, int h) {
+	/**
+	 * Generates the vertical pixel offsets.
+	 *
+	 * @param w the width.
+	 * @param h the height.
+	 * @return the int[] of y offsets.
+	 */
+	public static final int[] prepareOffsets(int w, int h) {
 		offsets = new int[h];
 		for (int y = 0; y < h; y++) {
 			offsets[y] = w * y;
 		}
 		centerX = w / 2;
 		centerY = h / 2;
+		return offsets;
 	}
 
+	/**
+	 * Clears all temporary pixel and texel pools.
+	 */
 	public static final void clearPools() {
-		pixelPool = null;
+		texelBuffer2 = null;
 
 		for (int i = 0; i < 50; i++) {
-			texelPool[i] = null;
+			texelBuffer1[i] = null;
 		}
 	}
 
+	/**
+	 * Sets up the temporary pixel and texel pools.
+	 *
+	 * @param size
+	 */
 	public static final void setupPools(int size) {
-		if (pixelPool == null) {
-			pixelpoolN = size;
+		if (texelBuffer2 == null) {
+			texelPoolPosition = size;
 
 			if (lowmemory) {
-				pixelPool = new int[pixelpoolN][128 * 128];
+				texelBuffer2 = new int[texelPoolPosition][128 * 128];
 			} else {
-				pixelPool = new int[pixelpoolN][256 * 256];
+				texelBuffer2 = new int[texelPoolPosition][256 * 256];
 			}
 
 			for (int n = 0; n < 50; n++) {
-				texelPool[n] = null;
+				texelBuffer1[n] = null;
 			}
 		}
 	}
 
-	public static final void unpackTextures(Archive a) {
-		textureN = 0;
+	/**
+	 * Unpacks the textures as {@link IndexedBitmap}'s and stores them.
+	 *
+	 * @param archive the archive containing the textures.
+	 */
+	public static final void unpackTextures(Archive archive) {
+		loadedTextureCount = 0;
 
 		for (int n = 0; n < 50; n++) {
 			try {
-				textures[n] = new IndexedBitmap(a, String.valueOf(n), 0);
+				textures[n] = new IndexedBitmap(archive, String.valueOf(n), 0);
 
 				if (lowmemory && textures[n].clipWidth == 128) {
 					textures[n].shrink();
@@ -97,124 +205,160 @@ public class Canvas3D extends Canvas2D {
 					textures[n].crop();
 				}
 
-				textureN++;
+				loadedTextureCount++;
 			} catch (Exception e) {
 				/* empty */
 			}
 		}
 	}
 
-	public static final int getAverageTextureRGB(int texture) {
-		if (averageTextureRGB[texture] != 0) {
-			return averageTextureRGB[texture];
+	/**
+	 * Returns the average INT24_RGB of a texture.
+	 *
+	 * @param textureIndex the texture index.
+	 * @return the int24_rgb value.
+	 */
+	public static final int getTextureColor(int textureIndex) {
+		if (textureColors[textureIndex] != 0) {
+			return textureColors[textureIndex];
 		}
 
 		int r = 0;
 		int g = 0;
 		int b = 0;
-		int len = originalTexels[texture].length;
+		int length = texturePalettes[textureIndex].length;
 
-		for (int n = 0; n < len; n++) {
-			r += originalTexels[texture][n] >> 16 & 0xff;
-			g += originalTexels[texture][n] >> 8 & 0xff;
-			b += originalTexels[texture][n] & 0xff;
+		// sum all the color channels
+		for (int n = 0; n < length; n++) {
+			r += texturePalettes[textureIndex][n] >> 16 & 0xff;
+			g += texturePalettes[textureIndex][n] >> 8 & 0xff;
+			b += texturePalettes[textureIndex][n] & 0xff;
 		}
 
-		int rgb = (r / len << 16) + (g / len << 8) + b / len;
-		rgb = adjustRGBIntensity(rgb, 1.4);
+		// average each channel and bitpack
+		int rgb = adjustColorLightness((r / length << 16) + (g / length << 8) + b / length, 1.4);
 
+		// we use 0 to identify as unretrieved
 		if (rgb == 0) {
 			rgb = 1;
 		}
 
-		averageTextureRGB[texture] = rgb;
+		// store the value to avoid having to average again
+		textureColors[textureIndex] = rgb;
 		return rgb;
 	}
 
-	public static final void updateTexture(int texture) {
-		if (texelPool[texture] != null) {
-			pixelPool[pixelpoolN++] = texelPool[texture];
-			texelPool[texture] = null;
+	/**
+	 * Flips the current texture onto the next texel buffer.
+	 *
+	 * @param textureIndex the texture index.
+	 */
+	public static final void updateTexture(int textureIndex) {
+		if (texelBuffer1[textureIndex] != null) {
+			texelBuffer2[texelPoolPosition++] = texelBuffer1[textureIndex];
+			texelBuffer1[textureIndex] = null;
 		}
 	}
 
-	public static final int[] getTexels(int texture) {
-		textureCycles[texture] = cycle++;
+	public static final int[] getTexels(int textureIndex) {
+		textureCycles[textureIndex] = cycle++;
 
-		if (texelPool[texture] != null) {
-			return texelPool[texture];
+		if (texelBuffer1[textureIndex] != null) {
+			return texelBuffer1[textureIndex];
 		}
 
-		int[] pool;
+		int[] buffer;
 
-		if (pixelpoolN > 0) {
-			pool = pixelPool[--pixelpoolN];
-			pixelPool[pixelpoolN] = null;
+		// If we've updated a texture, use that one as our buffer.
+		if (texelPoolPosition > 0) {
+			buffer = texelBuffer2[--texelPoolPosition];
+			texelBuffer2[texelPoolPosition] = null;
 		} else {
-			int tcycle = 0;
-			int t = -1;
-			for (int n = 0; n < textureN; n++) {
-				if (texelPool[n] != null && (textureCycles[n] < tcycle || t == -1)) {
-					tcycle = textureCycles[n];
-					t = n;
+			// select the oldest pushed buffer
+
+			int oldestCycle = 0;
+			int index = -1;
+
+			// iterate through each texture
+			for (int n = 0; n < loadedTextureCount; n++) {
+				// if the buffer for this texture exists, and it hasn't updated in awhile or the current selected index is -1
+				if (texelBuffer1[n] != null && (textureCycles[n] < oldestCycle || index == -1)) {
+					oldestCycle = textureCycles[n];
+					index = n;
 				}
 			}
-			pool = texelPool[t];
-			texelPool[t] = null;
+
+			buffer = texelBuffer1[index];
+			texelBuffer1[index] = null;
 		}
 
-		texelPool[texture] = pool;
+		texelBuffer1[textureIndex] = buffer;
 
-		IndexedBitmap t = textures[texture];
-		int[] src = originalTexels[texture];
+		IndexedBitmap texture = textures[textureIndex];
+		int[] texturePalette = texturePalettes[textureIndex];
 
+		// low memory uses 64x64 textures instead of 128x128.
 		if (lowmemory) {
-			textureHasTransparency[texture] = false;
+			textureHasTransparency[textureIndex] = false;
 
+			// iterate through each pixel
 			for (int n = 0; n < (64 * 64); n++) {
-				int rgb = (pool[n] = (src[t.data[n]] & 0xF8F8FF));
+				buffer[n] = texturePalette[texture.data[n]] & 0xF8F8FF;
+
+				int rgb = buffer[n];
 
 				if (rgb == 0) {
-					textureHasTransparency[texture] = true;
+					textureHasTransparency[textureIndex] = true;
 				}
 
-				pool[n + 4096] = rgb - (rgb >>> 3) & 0xF8F8FF;
-				pool[n + 8192] = rgb - (rgb >>> 2) & 0xF8F8FF;
-				pool[n + 12288] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
+				buffer[n + (64 * 64)] = rgb - (rgb >>> 3) & 0xF8F8FF;
+				buffer[n + (64 * 128)] = rgb - (rgb >>> 2) & 0xF8F8FF;
+				buffer[n + (64 * 192)] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
 			}
 		} else {
-			if (t.width == 64) {
+			if (texture.width == 64) {
+				// implying src is 128x128: rescale from 128x128 to 64x64
 				for (int y = 0; y < 128; y++) {
 					for (int x = 0; x < 128; x++) {
-						pool[x + (y << 7)] = src[(t.data[(x >> 1) + (y >> 1 << 6)])];
+						buffer[x + (y << 7)] = texturePalette[(texture.data[(x >> 1) + ((y >> 1) << 6)])];
 					}
 				}
 			} else {
 				for (int n = 0; n < (128 * 128); n++) {
-					pool[n] = src[t.data[n]];
+					buffer[n] = texturePalette[texture.data[n]];
 				}
 			}
 
-			textureHasTransparency[texture] = false;
+			textureHasTransparency[textureIndex] = false;
 
 			for (int n = 0; n < (128 * 128); n++) {
-				pool[n] &= 0xF8F8FF;
+				// correlates with the 3 and 2 bitshifts below? A MYSTERY TO BE SOLVED!
+				// &= 1111 1000 1111 1000 1111 1111
+				buffer[n] &= 0xF8F8FF;
 
-				int rgb = pool[n];
+				int rgb = buffer[n];
 
 				if (rgb == 0) {
-					textureHasTransparency[texture] = true;
+					textureHasTransparency[textureIndex] = true;
 				}
 
-				pool[n + 16384] = rgb - (rgb >>> 3) & 0xF8F8FF;
-				pool[n + 32768] = rgb - (rgb >>> 2) & 0xF8F8FF;
-				pool[n + 49152] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
+				// TODO: Think!
+				// pos = x + (y * w)
+				// ypos = y * w
+				buffer[n + (128 * 128)] = rgb - (rgb >>> 3) & 0xF8F8FF;
+				buffer[n + (256 * 128)] = rgb - (rgb >>> 2) & 0xF8F8FF;
+				buffer[n + (384 * 128)] = rgb - (rgb >>> 2) - (rgb >>> 3) & 0xF8F8FF;
 			}
 		}
-		return pool;
+		return buffer;
 	}
 
-	public static final void generatePalette(double brightness) {
+	/**
+	 * Generates an HSL to RGB lookup table, also known as <i>palette</i>.
+	 *
+	 * @param exponent the brightness on a 0.0 to 1.0 scale.
+	 */
+	public static final void generatePalette(double exponent) {
 		int off = 0;
 
 		for (int y = 0; y < 512; y++) {
@@ -282,512 +426,587 @@ public class Canvas3D extends Canvas2D {
 				}
 
 				int rgb = ((int) (r * 256.0) << 16) + ((int) (g * 256.0) << 8) + (int) (b * 256.0);
-				rgb = adjustRGBIntensity(rgb, brightness);
+				rgb = adjustColorLightness(rgb, exponent);
 				palette[off++] = rgb;
 			}
 
+			// updates the texture palette brightness
 			for (int n = 0; n < 50; n++) {
 				if (textures[n] != null) {
-					int[] palette = (textures[n].palette);
-					originalTexels[n] = new int[palette.length];
+					int[] texturePalette = textures[n].palette;
+					texturePalettes[n] = new int[texturePalette.length];
 
-					for (int m = 0; m < palette.length; m++) {
-						originalTexels[n][m] = adjustRGBIntensity(palette[m], brightness);
+					for (int i = 0; i < texturePalette.length; i++) {
+						texturePalettes[n][i] = adjustColorLightness(texturePalette[i], exponent);
 					}
 				}
-			}
 
-			for (int n = 0; n < 50; n++) {
 				updateTexture(n);
 			}
 		}
 	}
 
-	public static int adjustRGBIntensity(int rgb, double d) {
+	/**
+	 * Adjusts the input RGB's brightness.
+	 *
+	 * @param rgb the input int24_rgb.
+	 * @param exponent the exponent.
+	 * @return rgb^exponent.
+	 */
+	public static int adjustColorLightness(int rgb, double exponent) {
 		double r = (double) (rgb >> 16) / 256.0;
 		double g = (double) (rgb >> 8 & 0xff) / 256.0;
 		double b = (double) (rgb & 0xff) / 256.0;
-		r = Math.pow(r, d);
-		g = Math.pow(g, d);
-		b = Math.pow(b, d);
+		r = Math.pow(r, exponent);
+		g = Math.pow(g, exponent);
+		b = Math.pow(b, exponent);
 		return ((int) (r * 256.0) << 16) + ((int) (g * 256.0) << 8) + (int) (b * 256.0);
 	}
 
-	public static final void fillShadedTriangle(int y1, int y2, int y3, int x1, int x2, int x3, int hsl1, int hsl2, int hsl3) {
-		int s1 = 0, s2 = 0, s3 = 0; // slope
-		int ls1 = 0, ls2 = 0, ls3 = 0; // lightness slope
+	/**
+	 * Fills a triangle using the gouraud shading technique.<br/><b>Warning:</b>
+	 * Only interpolates the <i>lightness</i> channel of the provided colors for
+	 * each point. That means you cannot select a different hue or saturation
+	 * between points!
+	 *
+	 * @param xA first point x
+	 * @param yA first point y
+	 * @param xB second point x
+	 * @param yB second point y
+	 * @param xC third point x
+	 * @param yC third point y
+	 * @param colorA first point color in HSL format
+	 * @param colorB second point color in HSL format
+	 * @param colorC third point color in HSL format
+	 */
+	public static final void fillShadedTriangle(int xA, int yA, int xB, int yB, int xC, int yC, int colorA, int colorB, int colorC) {
+		// All slopes are 16.16 fixed points
+		// All light slopes are 17.15 fixed points
+		int slopeAB = 0;
+		int lightSlopeAB = 0;
 
-		if (y2 != y1) {
-			s1 = (x2 - x1 << 16) / (y2 - y1);
-			ls1 = (hsl2 - hsl1 << 15) / (y2 - y1);
+		// What's going on here:
+		// The slopes are being transformed into 16.16 or 17.15 fixed points.
+		if (yB != yA) {
+			slopeAB = ((xB - xA) << 16) / (yB - yA);
+			lightSlopeAB = (colorB - colorA << 15) / (yB - yA);
 		}
 
-		if (y3 != y2) {
-			s2 = (x3 - x2 << 16) / (y3 - y2);
-			ls2 = (hsl3 - hsl2 << 15) / (y3 - y2);
+		int slopeBC = 0;
+		int lightSlopeBC = 0;
+
+		if (yC != yB) {
+			slopeBC = ((xC - xB) << 16) / (yC - yB);
+			lightSlopeBC = (colorC - colorB << 15) / (yC - yB);
 		}
 
-		if (y3 != y1) {
-			s3 = (x1 - x3 << 16) / (y1 - y3);
-			ls3 = (hsl1 - hsl3 << 15) / (y1 - y3);
+		int slopeCA = 0;
+		int lightSlopeCA = 0;
+
+		if (yC != yA) {
+			slopeCA = ((xA - xC) << 16) / (yA - yC);
+			lightSlopeCA = (colorA - colorC << 15) / (yA - yC);
 		}
 
-		if (y1 <= y2 && y1 <= y3) {
-			if (y1 >= Canvas2D.bottom) {
+		if (yA <= yB && yA <= yC) {
+			if (yA >= Canvas2D.bottom) {
 				return;
 			}
 
-			if (y2 > Canvas2D.bottom) {
-				y2 = Canvas2D.bottom;
+			if (yB > Canvas2D.bottom) {
+				yB = Canvas2D.bottom;
 			}
 
-			if (y3 > Canvas2D.bottom) {
-				y3 = Canvas2D.bottom;
+			if (yC > Canvas2D.bottom) {
+				yC = Canvas2D.bottom;
 			}
 
-			if (y2 < y3) {
-				x3 = x1 <<= 16;
-				hsl3 = hsl1 <<= 15;
+			if (yB < yC) {
+				// transform into 16.16 fixed point
+				xC = xA <<= 16;
 
-				if (y1 < 0) {
-					x3 -= s3 * y1;
-					x1 -= s1 * y1;
-					hsl3 -= ls3 * y1;
-					hsl1 -= ls1 * y1;
-					y1 = 0;
+				// transform into 17.15 fixed point
+				colorC = colorA <<= 15;
+
+				if (yA < 0) {
+					xC -= slopeCA * yA;
+					xA -= slopeAB * yA;
+					colorC -= lightSlopeCA * yA;
+					colorA -= lightSlopeAB * yA;
+					yA = 0;
 				}
 
-				x2 <<= 16;
-				hsl2 <<= 15;
+				// transform into 16.16 fixed point
+				xB <<= 16;
 
-				if (y2 < 0) {
-					x2 -= s2 * y2;
-					hsl2 -= ls2 * y2;
-					y2 = 0;
+				// transform into 17.15 fixed point
+				colorB <<= 15;
+
+				if (yB < 0) {
+					xB -= slopeBC * yB;
+					colorB -= lightSlopeBC * yB;
+					yB = 0;
 				}
 
-				if (y1 != y2 && s3 < s1 || y1 == y2 && s3 > s2) {
-					y3 -= y2;
-					y2 -= y1;
-					y1 = offsets[y1];
+				if (yA != yB && slopeCA < slopeAB || yA == yB && slopeCA > slopeBC) {
+					// yC is now the difference between B and C vertically
+					yC -= yB;
+					
+					// yB is now the difference between A and B vertically
+					yB -= yA;
 
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x3 >> 16, x1 >> 16, hsl3 >> 7, hsl1 >> 7);
-						x3 += s3;
-						x1 += s1;
-						hsl3 += ls3;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					// yA is now our vertical offset.
+					yA = offsets[yA];
+
+					// while we have a vertical gap between A and B
+					while (--yB >= 0) {
+						// Notice the right shifts of 7
+						// Those are transforming the 17.15 fixed points to 24.8! How exciting!
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+
+						// approach xC to xA
+						xC += slopeCA;
+						colorC += lightSlopeCA;
+
+						// approach xA to xB
+						xA += slopeAB;
+						colorA += lightSlopeAB;
+
+						// move yA down a row of pixels.
+						yA += Canvas2D.dstW;
 					}
 
-					while (--y3 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x3 >> 16, x2 >> 16, hsl3 >> 7, hsl2 >> 7);
-						x3 += s3;
-						x2 += s2;
-						hsl3 += ls3;
-						hsl2 += ls2;
-						y1 += Canvas2D.dstW;
+					// while we have a vertical gap between B and C
+					while (--yC >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						
+						
+						xC += slopeCA;
+						colorC += lightSlopeCA;
+						
+						xB += slopeBC;
+						colorB += lightSlopeBC;
+						
+						yA += Canvas2D.dstW;
 					}
 				} else {
-					y3 -= y2;
-					y2 -= y1;
-					y1 = offsets[y1];
+					yC -= yB;
+					yB -= yA;
+					yA = offsets[yA];
 
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x1 >> 16, x3 >> 16, hsl1 >> 7, hsl3 >> 7);
-						x3 += s3;
-						x1 += s1;
-						hsl3 += ls3;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						xC += slopeCA;
+						xA += slopeAB;
+						colorC += lightSlopeCA;
+						colorA += lightSlopeAB;
+						yA += Canvas2D.dstW;
 					}
 
-					while (--y3 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x2 >> 16, x3 >> 16, hsl2 >> 7, hsl3 >> 7);
-						x3 += s3;
-						x2 += s2;
-						hsl3 += ls3;
-						hsl2 += ls2;
-						y1 += Canvas2D.dstW;
+					while (--yC >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						xC += slopeCA;
+						xB += slopeBC;
+						colorC += lightSlopeCA;
+						colorB += lightSlopeBC;
+						yA += Canvas2D.dstW;
 					}
 				}
 			} else {
-				x2 = x1 <<= 16;
-				hsl2 = hsl1 <<= 15;
+				xB = xA <<= 16;
+				colorB = colorA <<= 15;
 
-				if (y1 < 0) {
-					x2 -= s3 * y1;
-					x1 -= s1 * y1;
-					hsl2 -= ls3 * y1;
-					hsl1 -= ls1 * y1;
-					y1 = 0;
+				if (yA < 0) {
+					xB -= slopeCA * yA;
+					xA -= slopeAB * yA;
+					colorB -= lightSlopeCA * yA;
+					colorA -= lightSlopeAB * yA;
+					yA = 0;
 				}
 
-				x3 <<= 16;
-				hsl3 <<= 15;
+				xC <<= 16;
+				colorC <<= 15;
 
-				if (y3 < 0) {
-					x3 -= s2 * y3;
-					hsl3 -= ls2 * y3;
-					y3 = 0;
+				if (yC < 0) {
+					xC -= slopeBC * yC;
+					colorC -= lightSlopeBC * yC;
+					yC = 0;
 				}
 
-				if (y1 != y3 && s3 < s1 || y1 == y3 && s2 > s1) {
-					y2 -= y3;
-					y3 -= y1;
-					y1 = offsets[y1];
+				if (yA != yC && slopeCA < slopeAB || yA == yC && slopeBC > slopeAB) {
+					yB -= yC;
+					yC -= yA;
+					yA = offsets[yA];
 
-					while (--y3 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x2 >> 16, x1 >> 16, hsl2 >> 7, hsl1 >> 7);
-						x2 += s3;
-						x1 += s1;
-						hsl2 += ls3;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					while (--yC >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+						xB += slopeCA;
+						xA += slopeAB;
+						colorB += lightSlopeCA;
+						colorA += lightSlopeAB;
+						yA += Canvas2D.dstW;
 					}
 
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x3 >> 16, x1 >> 16, hsl3 >> 7, hsl1 >> 7);
-						x3 += s2;
-						x1 += s1;
-						hsl3 += ls2;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+						xC += slopeBC;
+						xA += slopeAB;
+						colorC += lightSlopeBC;
+						colorA += lightSlopeAB;
+						yA += Canvas2D.dstW;
 					}
 				} else {
-					y2 -= y3;
-					y3 -= y1;
-					y1 = offsets[y1];
+					yB -= yC;
+					yC -= yA;
+					yA = offsets[yA];
 
-					while (--y3 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x1 >> 16, x2 >> 16, hsl1 >> 7, hsl2 >> 7);
-						x2 += s3;
-						x1 += s1;
-						hsl2 += ls3;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					while (--yC >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+						xB += slopeCA;
+						xA += slopeAB;
+						colorB += lightSlopeCA;
+						colorA += lightSlopeAB;
+						yA += Canvas2D.dstW;
 					}
 
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y1, 0, 0, x1 >> 16, x3 >> 16, hsl1 >> 7, hsl3 >> 7);
-						x3 += s2;
-						x1 += s1;
-						hsl3 += ls2;
-						hsl1 += ls1;
-						y1 += Canvas2D.dstW;
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						xC += slopeBC;
+						xA += slopeAB;
+						colorC += lightSlopeBC;
+						colorA += lightSlopeAB;
+						yA += Canvas2D.dstW;
 					}
 				}
 			}
-		} else if (y2 <= y3) {
-			if (y2 < Canvas2D.bottom) {
-				if (y3 > Canvas2D.bottom) {
-					y3 = Canvas2D.bottom;
+		} else if (yB <= yC) {
+			if (yB < Canvas2D.bottom) {
+				if (yC > Canvas2D.bottom) {
+					yC = Canvas2D.bottom;
 				}
 
-				if (y1 > Canvas2D.bottom) {
-					y1 = Canvas2D.bottom;
+				if (yA > Canvas2D.bottom) {
+					yA = Canvas2D.bottom;
 				}
 
-				if (y3 < y1) {
-					x1 = x2 <<= 16;
-					hsl1 = hsl2 <<= 15;
-					if (y2 < 0) {
-						x1 -= s1 * y2;
-						x2 -= s2 * y2;
-						hsl1 -= ls1 * y2;
-						hsl2 -= ls2 * y2;
-						y2 = 0;
+				if (yC < yA) {
+					xA = xB <<= 16;
+					colorA = colorB <<= 15;
+					if (yB < 0) {
+						xA -= slopeAB * yB;
+						xB -= slopeBC * yB;
+						colorA -= lightSlopeAB * yB;
+						colorB -= lightSlopeBC * yB;
+						yB = 0;
 					}
-					x3 <<= 16;
-					hsl3 <<= 15;
-					if (y3 < 0) {
-						x3 -= s3 * y3;
-						hsl3 -= ls3 * y3;
-						y3 = 0;
+					xC <<= 16;
+					colorC <<= 15;
+					if (yC < 0) {
+						xC -= slopeCA * yC;
+						colorC -= lightSlopeCA * yC;
+						yC = 0;
 					}
-					if (y2 != y3 && s1 < s2 || y2 == y3 && s1 > s3) {
-						y1 -= y3;
-						y3 -= y2;
-						y2 = offsets[y2];
-						while (--y3 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x1 >> 16, x2 >> 16, hsl1 >> 7, hsl2 >> 7);
-							x1 += s1;
-							x2 += s2;
-							hsl1 += ls1;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+					if (yB != yC && slopeAB < slopeBC || yB == yC && slopeAB > slopeCA) {
+						yA -= yC;
+						yC -= yB;
+						yB = offsets[yB];
+						while (--yC >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+							xA += slopeAB;
+							xB += slopeBC;
+							colorA += lightSlopeAB;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
-						while (--y1 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x1 >> 16, x3 >> 16, hsl1 >> 7, hsl3 >> 7);
-							x1 += s1;
-							x3 += s3;
-							hsl1 += ls1;
-							hsl3 += ls3;
-							y2 += Canvas2D.dstW;
+						while (--yA >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+							xA += slopeAB;
+							xC += slopeCA;
+							colorA += lightSlopeAB;
+							colorC += lightSlopeCA;
+							yB += Canvas2D.dstW;
 						}
 					} else {
-						y1 -= y3;
-						y3 -= y2;
-						y2 = offsets[y2];
-						while (--y3 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x2 >> 16, x1 >> 16, hsl2 >> 7, hsl1 >> 7);
-							x1 += s1;
-							x2 += s2;
-							hsl1 += ls1;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+						yA -= yC;
+						yC -= yB;
+						yB = offsets[yB];
+						while (--yC >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+							xA += slopeAB;
+							xB += slopeBC;
+							colorA += lightSlopeAB;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
-						while (--y1 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x3 >> 16, x1 >> 16, hsl3 >> 7, hsl1 >> 7);
-							x1 += s1;
-							x3 += s3;
-							hsl1 += ls1;
-							hsl3 += ls3;
-							y2 += Canvas2D.dstW;
+						while (--yA >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+							xA += slopeAB;
+							xC += slopeCA;
+							colorA += lightSlopeAB;
+							colorC += lightSlopeCA;
+							yB += Canvas2D.dstW;
 						}
 					}
 				} else {
-					x3 = x2 <<= 16;
-					hsl3 = hsl2 <<= 15;
-					if (y2 < 0) {
-						x3 -= s1 * y2;
-						x2 -= s2 * y2;
-						hsl3 -= ls1 * y2;
-						hsl2 -= ls2 * y2;
-						y2 = 0;
+					xC = xB <<= 16;
+					colorC = colorB <<= 15;
+					if (yB < 0) {
+						xC -= slopeAB * yB;
+						xB -= slopeBC * yB;
+						colorC -= lightSlopeAB * yB;
+						colorB -= lightSlopeBC * yB;
+						yB = 0;
 					}
-					x1 <<= 16;
-					hsl1 <<= 15;
-					if (y1 < 0) {
-						x1 -= s3 * y1;
-						hsl1 -= ls3 * y1;
-						y1 = 0;
+					xA <<= 16;
+					colorA <<= 15;
+					if (yA < 0) {
+						xA -= slopeCA * yA;
+						colorA -= lightSlopeCA * yA;
+						yA = 0;
 					}
-					if (s1 < s2) {
-						y3 -= y1;
-						y1 -= y2;
-						y2 = offsets[y2];
-						while (--y1 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x3 >> 16, x2 >> 16, hsl3 >> 7, hsl2 >> 7);
-							x3 += s1;
-							x2 += s2;
-							hsl3 += ls1;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+					if (slopeAB < slopeBC) {
+						yC -= yA;
+						yA -= yB;
+						yB = offsets[yB];
+						while (--yA >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+							xC += slopeAB;
+							xB += slopeBC;
+							colorC += lightSlopeAB;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
-						while (--y3 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x1 >> 16, x2 >> 16, hsl1 >> 7, hsl2 >> 7);
-							x1 += s3;
-							x2 += s2;
-							hsl1 += ls3;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+						while (--yC >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+							xA += slopeCA;
+							xB += slopeBC;
+							colorA += lightSlopeCA;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
 					} else {
-						y3 -= y1;
-						y1 -= y2;
-						y2 = offsets[y2];
-						while (--y1 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x2 >> 16, x3 >> 16, hsl2 >> 7, hsl3 >> 7);
-							x3 += s1;
-							x2 += s2;
-							hsl3 += ls1;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+						yC -= yA;
+						yA -= yB;
+						yB = offsets[yB];
+						while (--yA >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+							xC += slopeAB;
+							xB += slopeBC;
+							colorC += lightSlopeAB;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
-						while (--y3 >= 0) {
-							drawGradientScanline(Canvas2D.dst, y2, 0, 0, x2 >> 16, x1 >> 16, hsl2 >> 7, hsl1 >> 7);
-							x1 += s3;
-							x2 += s2;
-							hsl1 += ls3;
-							hsl2 += ls2;
-							y2 += Canvas2D.dstW;
+						while (--yC >= 0) {
+							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+							xA += slopeCA;
+							xB += slopeBC;
+							colorA += lightSlopeCA;
+							colorB += lightSlopeBC;
+							yB += Canvas2D.dstW;
 						}
 					}
 				}
 			}
-		} else if (y3 < Canvas2D.bottom) {
-			if (y1 > Canvas2D.bottom) {
-				y1 = Canvas2D.bottom;
+		} else if (yC < Canvas2D.bottom) {
+			if (yA > Canvas2D.bottom) {
+				yA = Canvas2D.bottom;
 			}
-			if (y2 > Canvas2D.bottom) {
-				y2 = Canvas2D.bottom;
+			if (yB > Canvas2D.bottom) {
+				yB = Canvas2D.bottom;
 			}
-			if (y1 < y2) {
-				x2 = x3 <<= 16;
-				hsl2 = hsl3 <<= 15;
-				if (y3 < 0) {
-					x2 -= s2 * y3;
-					x3 -= s3 * y3;
-					hsl2 -= ls2 * y3;
-					hsl3 -= ls3 * y3;
-					y3 = 0;
+			if (yA < yB) {
+				xB = xC <<= 16;
+				colorB = colorC <<= 15;
+				if (yC < 0) {
+					xB -= slopeBC * yC;
+					xC -= slopeCA * yC;
+					colorB -= lightSlopeBC * yC;
+					colorC -= lightSlopeCA * yC;
+					yC = 0;
 				}
-				x1 <<= 16;
-				hsl1 <<= 15;
-				if (y1 < 0) {
-					x1 -= s1 * y1;
-					hsl1 -= ls1 * y1;
-					y1 = 0;
+				xA <<= 16;
+				colorA <<= 15;
+				if (yA < 0) {
+					xA -= slopeAB * yA;
+					colorA -= lightSlopeAB * yA;
+					yA = 0;
 				}
-				if (s2 < s3) {
-					y2 -= y1;
-					y1 -= y3;
-					y3 = offsets[y3];
-					while (--y1 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x2 >> 16, x3 >> 16, hsl2 >> 7, hsl3 >> 7);
-						x2 += s2;
-						x3 += s3;
-						hsl2 += ls2;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+				if (slopeBC < slopeCA) {
+					yB -= yA;
+					yA -= yC;
+					yC = offsets[yC];
+					while (--yA >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						xB += slopeBC;
+						xC += slopeCA;
+						colorB += lightSlopeBC;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x2 >> 16, x1 >> 16, hsl2 >> 7, hsl1 >> 7);
-						x2 += s2;
-						x1 += s1;
-						hsl2 += ls2;
-						hsl1 += ls1;
-						y3 += Canvas2D.dstW;
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+						xB += slopeBC;
+						xA += slopeAB;
+						colorB += lightSlopeBC;
+						colorA += lightSlopeAB;
+						yC += Canvas2D.dstW;
 					}
 				} else {
-					y2 -= y1;
-					y1 -= y3;
-					y3 = offsets[y3];
-					while (--y1 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x3 >> 16, x2 >> 16, hsl3 >> 7, hsl2 >> 7);
-						x2 += s2;
-						x3 += s3;
-						hsl2 += ls2;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+					yB -= yA;
+					yA -= yC;
+					yC = offsets[yC];
+					while (--yA >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						xB += slopeBC;
+						xC += slopeCA;
+						colorB += lightSlopeBC;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x1 >> 16, x2 >> 16, hsl1 >> 7, hsl2 >> 7);
-						x2 += s2;
-						x1 += s1;
-						hsl2 += ls2;
-						hsl1 += ls1;
-						y3 += Canvas2D.dstW;
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+						xB += slopeBC;
+						xA += slopeAB;
+						colorB += lightSlopeBC;
+						colorA += lightSlopeAB;
+						yC += Canvas2D.dstW;
 					}
 				}
 			} else {
-				x1 = x3 <<= 16;
-				hsl1 = hsl3 <<= 15;
-				if (y3 < 0) {
-					x1 -= s2 * y3;
-					x3 -= s3 * y3;
-					hsl1 -= ls2 * y3;
-					hsl3 -= ls3 * y3;
-					y3 = 0;
+				xA = xC <<= 16;
+				colorA = colorC <<= 15;
+				if (yC < 0) {
+					xA -= slopeBC * yC;
+					xC -= slopeCA * yC;
+					colorA -= lightSlopeBC * yC;
+					colorC -= lightSlopeCA * yC;
+					yC = 0;
 				}
-				x2 <<= 16;
-				hsl2 <<= 15;
-				if (y2 < 0) {
-					x2 -= s1 * y2;
-					hsl2 -= ls1 * y2;
-					y2 = 0;
+				xB <<= 16;
+				colorB <<= 15;
+				if (yB < 0) {
+					xB -= slopeAB * yB;
+					colorB -= lightSlopeAB * yB;
+					yB = 0;
 				}
-				if (s2 < s3) {
-					y1 -= y2;
-					y2 -= y3;
-					y3 = offsets[y3];
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x1 >> 16, x3 >> 16, hsl1 >> 7, hsl3 >> 7);
-						x1 += s2;
-						x3 += s3;
-						hsl1 += ls2;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+				if (slopeBC < slopeCA) {
+					yA -= yB;
+					yB -= yC;
+					yC = offsets[yC];
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						xA += slopeBC;
+						xC += slopeCA;
+						colorA += lightSlopeBC;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
-					while (--y1 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x2 >> 16, x3 >> 16, hsl2 >> 7, hsl3 >> 7);
-						x2 += s1;
-						x3 += s3;
-						hsl2 += ls1;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+					while (--yA >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						xB += slopeAB;
+						xC += slopeCA;
+						colorB += lightSlopeAB;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
 				} else {
-					y1 -= y2;
-					y2 -= y3;
-					y3 = offsets[y3];
-					while (--y2 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x3 >> 16, x1 >> 16, hsl3 >> 7, hsl1 >> 7);
-						x1 += s2;
-						x3 += s3;
-						hsl1 += ls2;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+					yA -= yB;
+					yB -= yC;
+					yC = offsets[yC];
+					while (--yB >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+						xA += slopeBC;
+						xC += slopeCA;
+						colorA += lightSlopeBC;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
-					while (--y1 >= 0) {
-						drawGradientScanline(Canvas2D.dst, y3, 0, 0, x3 >> 16, x2 >> 16, hsl3 >> 7, hsl2 >> 7);
-						x2 += s1;
-						x3 += s3;
-						hsl2 += ls1;
-						hsl3 += ls3;
-						y3 += Canvas2D.dstW;
+					while (--yA >= 0) {
+						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						xB += slopeAB;
+						xC += slopeCA;
+						colorB += lightSlopeAB;
+						colorC += lightSlopeCA;
+						yC += Canvas2D.dstW;
 					}
 				}
 			}
 		}
 	}
 
-	public static final void drawGradientScanline(int[] dst, int off, int rgb, int length, int x0, int x1, int hsl0, int hsl1) {
+	/**
+	 * Draws a scanline and linearly translates the lightness.
+	 *
+	 * @param dst the destination.
+	 * @param off the initial offset.
+	 * @param rgb the INT24_RGB.
+	 * @param length the length.
+	 * @param xA the start x.
+	 * @param xB the end x.
+	 * @param colorA the start color. (24.8)
+	 * @param colorB the end color. (24.8)
+	 */
+	public static final void drawGradientScanline(int[] dst, int off, int rgb, int length, int xA, int xB, int colorA, int colorB) {
 		if (texturedShading) {
-			int lightSlope; // lightness slope
+			int lightnessSlope;
 
 			if (verifyBounds) {
-				if (x1 - x0 > 3) {
-					lightSlope = (hsl1 - hsl0) / (x1 - x0);
+				if (xB - xA > 3) {
+					// notice no fixed point transformations here?
+					// that's because they're still fixed points!
+					// At this point, colorA and colorB are 24.8 fixed points. :)
+					lightnessSlope = (colorB - colorA) / (xB - xA);
 				} else {
-					lightSlope = 0;
-				}
-				if (x1 > Canvas2D.dstXBound) {
-					x1 = Canvas2D.dstXBound;
+					lightnessSlope = 0;
 				}
 
-				if (x0 < 0) {
-					hsl0 -= x0 * lightSlope;
-					x0 = 0;
+				if (xB > Canvas2D.dstXBound) {
+					xB = Canvas2D.dstXBound;
 				}
 
-				if (x0 >= x1) {
+				// clip off screen part and recalculate initial color
+				if (xA < 0) {
+					colorA -= xA * lightnessSlope;
+					xA = 0;
+				}
+
+				// if we start ahead of our end point, don't do anything.
+				if (xA >= xB) {
 					return;
 				}
 
-				off += x0;
-				length = x1 - x0 >> 2;
-				lightSlope <<= 2;
+				off += xA;
+				length = xB - xA >> 2;
+				lightnessSlope <<= 2;
 			} else {
-				if (x0 >= x1) {
+				if (xA >= xB) {
 					return;
 				}
 
-				off += x0;
-				length = x1 - x0 >> 2;
+				off += xA;
+				length = xB - xA >> 2;
 
 				if (length > 0) {
-					lightSlope = (hsl1 - hsl0) * lightnessLerpArray[length] >> 15;
+					lightnessSlope = (colorB - colorA) * lightnessLerpArray[length] >> 15;
 				} else {
-					lightSlope = 0;
+					lightnessSlope = 0;
 				}
 			}
 
 			if (alpha == 0) {
 				while (--length >= 0) {
-					rgb = palette[hsl0 >> 8];
-					hsl0 += lightSlope;
+					rgb = palette[colorA >> 8];
+					colorA += lightnessSlope;
 					dst[off++] = rgb;
 					dst[off++] = rgb;
 					dst[off++] = rgb;
 					dst[off++] = rgb;
 				}
 
-				length = x1 - x0 & 0x3;
+				length = xB - xA & 0x3;
 
 				if (length > 0) {
-					rgb = palette[hsl0 >> 8];
+					rgb = palette[colorA >> 8];
 					do {
 						dst[off++] = rgb;
 					} while (--length > 0);
@@ -797,8 +1016,8 @@ public class Canvas3D extends Canvas2D {
 				int a1 = 256 - alpha;
 
 				while (--length >= 0) {
-					rgb = palette[hsl0 >> 8];
-					hsl0 += lightSlope;
+					rgb = palette[colorA >> 8];
+					colorA += lightnessSlope;
 					rgb = (((rgb & 0xFF00FF) * a1 >> 8 & 0xFF00FF) + ((rgb & 0xFF00) * a1 >> 8 & 0xFF00));
 					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
 					off++;
@@ -810,10 +1029,10 @@ public class Canvas3D extends Canvas2D {
 					off++;
 				}
 
-				length = x1 - x0 & 0x3;
+				length = xB - xA & 0x3;
 
 				if (length > 0) {
-					rgb = palette[hsl0 >> 8];
+					rgb = palette[colorA >> 8];
 					rgb = (((rgb & 0xFF00FF) * a1 >> 8 & 0xFF00FF) + ((rgb & 0xFF00) * a1 >> 8 & 0xFF00));
 					do {
 						dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
@@ -821,38 +1040,38 @@ public class Canvas3D extends Canvas2D {
 					} while (--length > 0);
 				}
 			}
-		} else if (x0 < x1) {
-			int cs = (hsl1 - hsl0) / (x1 - x0);
+		} else if (xA < xB) {
+			int lightnessSlope = (colorB - colorA) / (xB - xA);
 
 			if (verifyBounds) {
-				if (x1 > Canvas2D.dstXBound) {
-					x1 = Canvas2D.dstXBound;
+				if (xB > Canvas2D.dstXBound) {
+					xB = Canvas2D.dstXBound;
 				}
 
-				if (x0 < 0) {
-					hsl0 -= x0 * cs;
-					x0 = 0;
+				if (xA < 0) {
+					colorA -= xA * lightnessSlope;
+					xA = 0;
 				}
 
-				if (x0 >= x1) {
+				if (xA >= xB) {
 					return;
 				}
 			}
 
-			off += x0;
-			length = x1 - x0;
+			off += xA;
+			length = xB - xA;
 
 			if (alpha == 0) {
 				do {
-					dst[off++] = palette[hsl0 >> 8];
-					hsl0 += cs;
+					dst[off++] = palette[colorA >> 8];
+					colorA += lightnessSlope;
 				} while (--length > 0);
 			} else {
 				int a0 = alpha;
 				int a1 = 256 - alpha;
 				do {
-					rgb = palette[hsl0 >> 8];
-					hsl0 += cs;
+					rgb = palette[colorA >> 8];
+					colorA += lightnessSlope;
 					rgb = (((rgb & 0xFF00FF) * a1 >> 8 & 0xFF00FF) + ((rgb & 0xFF00) * a1 >> 8 & 0xFF00));
 					dst[off++] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
 				} while (--length > 0);
@@ -2352,379 +2571,6 @@ public class Canvas3D extends Canvas2D {
 		}
 	}
 
-	public static final void drawTexturedScanline2(int[] dst, int[] src, int i, int i_135_, int off, int x0, int x1, int l0, int l1, int i_141_, int i_142_, int i_143_, int i_144_, int i_145_, int i_146_) {
-		if (x0 < x1) {
-			int length;
-			int sl0;
-			if (verifyBounds) {
-				sl0 = (l1 - l0) / (x1 - x0);
-
-				if (x1 > Canvas2D.dstXBound) {
-					x1 = Canvas2D.dstXBound;
-				}
-
-				if (x0 < 0) {
-					l0 -= x0 * sl0;
-					x0 = 0;
-				}
-
-				if (x0 >= x1) {
-					return;
-				}
-
-				length = x1 - x0 >> 3;
-				sl0 <<= 12;
-				l0 <<= 9;
-			} else {
-				if (x1 - x0 > 7) {
-					length = x1 - x0 >> 3;
-					sl0 = (l1 - l0) * lightnessLerpArray[length] >> 6;
-				} else {
-					length = 0;
-					sl0 = 0;
-				}
-
-				l0 <<= 9;
-			}
-
-			off += x0;
-
-			if (lowmemory) {
-				int i_149_ = 0;
-				int i_150_ = 0;
-				int i_151_ = x0 - centerX;
-				i_141_ += (i_144_ >> 3) * i_151_;
-				i_142_ += (i_145_ >> 3) * i_151_;
-				i_143_ += (i_146_ >> 3) * i_151_;
-				int i_152_ = i_143_ >> 12;
-				if (i_152_ != 0) {
-					i = i_141_ / i_152_;
-					i_135_ = i_142_ / i_152_;
-					if (i < 0) {
-						i = 0;
-					} else if (i > 4032) {
-						i = 4032;
-					}
-				}
-				i_141_ += i_144_;
-				i_142_ += i_145_;
-				i_143_ += i_146_;
-				i_152_ = i_143_ >> 12;
-				if (i_152_ != 0) {
-					i_149_ = i_141_ / i_152_;
-					i_150_ = i_142_ / i_152_;
-					if (i_149_ < 7) {
-						i_149_ = 7;
-					} else if (i_149_ > 4032) {
-						i_149_ = 4032;
-					}
-				}
-				int i_153_ = i_149_ - i >> 3;
-				int i_154_ = i_150_ - i_135_ >> 3;
-				i += (l0 & 0x600000) >> 3;
-				int i_155_ = l0 >> 23;
-				if (opaque) {
-					while (length-- > 0) {
-						dst[off++] = src[(i_135_ & 0xFC0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i = i_149_;
-						i_135_ = i_150_;
-						i_141_ += i_144_;
-						i_142_ += i_145_;
-						i_143_ += i_146_;
-						i_152_ = i_143_ >> 12;
-						if (i_152_ != 0) {
-							i_149_ = i_141_ / i_152_;
-							i_150_ = i_142_ / i_152_;
-							if (i_149_ < 7) {
-								i_149_ = 7;
-							} else if (i_149_ > 4032) {
-								i_149_ = 4032;
-							}
-						}
-						i_153_ = i_149_ - i >> 3;
-						i_154_ = i_150_ - i_135_ >> 3;
-						l0 += sl0;
-						i += (l0 & 0x600000) >> 3;
-						i_155_ = l0 >> 23;
-					}
-					length = x1 - x0 & 0x7;
-					while (length-- > 0) {
-						dst[off++] = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_;
-						i += i_153_;
-						i_135_ += i_154_;
-					}
-				} else {
-					while (length-- > 0) {
-						int i_156_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-						if ((i_156_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_156_;
-						}
-						off++;
-						i = i_149_;
-						i_135_ = i_150_;
-						i_141_ += i_144_;
-						i_142_ += i_145_;
-						i_143_ += i_146_;
-						i_152_ = i_143_ >> 12;
-						if (i_152_ != 0) {
-							i_149_ = i_141_ / i_152_;
-							i_150_ = i_142_ / i_152_;
-							if (i_149_ < 7) {
-								i_149_ = 7;
-							} else if (i_149_ > 4032) {
-								i_149_ = 4032;
-							}
-						}
-						i_153_ = i_149_ - i >> 3;
-						i_154_ = i_150_ - i_135_ >> 3;
-						l0 += sl0;
-						i += (l0 & 0x600000) >> 3;
-						i_155_ = l0 >> 23;
-					}
-					length = x1 - x0 & 0x7;
-					while (length-- > 0) {
-						int i_157_;
-						if ((i_157_ = src[(i_135_ & 0xfc0) + (i >> 6)] >>> i_155_) != 0) {
-							dst[off] = i_157_;
-						}
-						off++;
-						i += i_153_;
-						i_135_ += i_154_;
-					}
-				}
-			} else {
-				int i_158_ = 0;
-				int i_159_ = 0;
-				int i_160_ = x0 - centerX;
-				i_141_ += (i_144_ >> 3) * i_160_;
-				i_142_ += (i_145_ >> 3) * i_160_;
-				i_143_ += (i_146_ >> 3) * i_160_;
-				int i_161_ = i_143_ >> 14;
-				if (i_161_ != 0) {
-					i = i_141_ / i_161_;
-					i_135_ = i_142_ / i_161_;
-					if (i < 0) {
-						i = 0;
-					} else if (i > 16256) {
-						i = 16256;
-					}
-				}
-				i_141_ += i_144_;
-				i_142_ += i_145_;
-				i_143_ += i_146_;
-				i_161_ = i_143_ >> 14;
-				if (i_161_ != 0) {
-					i_158_ = i_141_ / i_161_;
-					i_159_ = i_142_ / i_161_;
-					if (i_158_ < 7) {
-						i_158_ = 7;
-					} else if (i_158_ > 16256) {
-						i_158_ = 16256;
-					}
-				}
-				int i_162_ = i_158_ - i >> 3;
-				int i_163_ = i_159_ - i_135_ >> 3;
-				i += l0 & 0x600000;
-				int i_164_ = l0 >> 23;
-				if (opaque) {
-					while (length-- > 0) {
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i = i_158_;
-						i_135_ = i_159_;
-						i_141_ += i_144_;
-						i_142_ += i_145_;
-						i_143_ += i_146_;
-						i_161_ = i_143_ >> 14;
-						if (i_161_ != 0) {
-							i_158_ = i_141_ / i_161_;
-							i_159_ = i_142_ / i_161_;
-							if (i_158_ < 7) {
-								i_158_ = 7;
-							} else if (i_158_ > 16256) {
-								i_158_ = 16256;
-							}
-						}
-						i_162_ = i_158_ - i >> 3;
-						i_163_ = i_159_ - i_135_ >> 3;
-						l0 += sl0;
-						i += l0 & 0x600000;
-						i_164_ = l0 >> 23;
-					}
-					length = x1 - x0 & 0x7;
-					while (length-- > 0) {
-						dst[off++] = src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_;
-						i += i_162_;
-						i_135_ += i_163_;
-					}
-				} else {
-					while (length-- > 0) {
-						int i_165_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-						if ((i_165_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_165_;
-						}
-						off++;
-						i = i_158_;
-						i_135_ = i_159_;
-						i_141_ += i_144_;
-						i_142_ += i_145_;
-						i_143_ += i_146_;
-						i_161_ = i_143_ >> 14;
-						if (i_161_ != 0) {
-							i_158_ = i_141_ / i_161_;
-							i_159_ = i_142_ / i_161_;
-							if (i_158_ < 7) {
-								i_158_ = 7;
-							} else if (i_158_ > 16256) {
-								i_158_ = 16256;
-							}
-						}
-						i_162_ = i_158_ - i >> 3;
-						i_163_ = i_159_ - i_135_ >> 3;
-						l0 += sl0;
-						i += l0 & 0x600000;
-						i_164_ = l0 >> 23;
-					}
-					length = x1 - x0 & 0x7;
-					while (length-- > 0) {
-						int i_166_;
-						if ((i_166_ = (src[(i_135_ & 0x3f80) + (i >> 7)] >>> i_164_)) != 0) {
-							dst[off] = i_166_;
-						}
-						off++;
-						i += i_162_;
-						i_135_ += i_163_;
-					}
-				}
-			}
-		}
-	}
-
 	static {
 		for (int i = 1; i < 512; i++) {
 			lightnessLerpArray[i] = 32768 / i;
@@ -2741,10 +2587,10 @@ public class Canvas3D extends Canvas2D {
 
 		textures = new IndexedBitmap[50];
 		textureHasTransparency = new boolean[50];
-		averageTextureRGB = new int[50];
-		texelPool = new int[50][];
+		textureColors = new int[50];
+		texelBuffer1 = new int[50][];
 		textureCycles = new int[50];
 		palette = new int[65536];
-		originalTexels = new int[50][];
+		texturePalettes = new int[50][];
 	}
 }
