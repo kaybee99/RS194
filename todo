@@ -2,5 +2,9 @@ Known problems:
     Hotkeys are activated no matter what, which means typing in the search activates them too. Fix it future me.
 
 Need to rewrite:
-    GameSub needs to load the assets, region, then create the scene.
     MapPanel needs some sweeping, it's starting to look like a hoarders home.
+
+Future features:
+    Place/remove locations
+    Easy adjustments to the heightmaps
+    Preview box for Items/Locations/NPC/Floors/Tile Shapes!
