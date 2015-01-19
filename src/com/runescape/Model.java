@@ -13,7 +13,7 @@ public class Model extends CacheLink {
 
 	private static final Logger logger = Logger.getLogger(Model.class.getName());
 
-	public static ModelContext[] contexts;
+	public static ModelInfo[] contexts;
 
 	public static Buffer obhead;
 	public static Buffer obface1;
@@ -183,7 +183,7 @@ public class Model extends CacheLink {
 			obvertex2.position = 0;
 
 			int count = obhead.readUShort();
-			contexts = new ModelContext[count + 100];
+			contexts = new ModelInfo[count + 100];
 
 			int vertexTextureDataOffset = 0;
 			int labelDataOffset = 0;
@@ -195,7 +195,7 @@ public class Model extends CacheLink {
 
 			for (int n = 0; n < count; n++) {
 				int index = lastIndex = obhead.readUShort();
-				ModelContext c = contexts[index] = new ModelContext();
+				ModelInfo c = contexts[index] = new ModelInfo();
 
 				c.vertexCount = obhead.readUShort();
 				c.triangleCount = obhead.readUShort();
@@ -292,7 +292,7 @@ public class Model extends CacheLink {
 
 	public Model(int index) {
 		if (contexts != null) {
-			ModelContext h = contexts[index];
+			ModelInfo h = contexts[index];
 
 			if (h == null) {
 				System.out.println("Error model:" + index + " not found!");
@@ -1013,8 +1013,8 @@ public class Model extends CacheLink {
 
 	public void applyFrame(int frame) {
 		if (labelVertices != null && frame != -1) {
-			SeqFrame f = SeqFrame.instance[frame];
-			SeqTransform t = f.transform;
+			SequenceFrame f = SequenceFrame.instance[frame];
+			SequenceTransform t = f.transform;
 
 			transformX = 0;
 			transformY = 0;
@@ -1032,9 +1032,9 @@ public class Model extends CacheLink {
 			if (labelGroups == null || secondaryFrame == -1) {
 				applyFrame(primaryFrame);
 			} else {
-				SeqFrame primary = SeqFrame.instance[primaryFrame];
-				SeqFrame secondary = SeqFrame.instance[secondaryFrame];
-				SeqTransform t = primary.transform;
+				SequenceFrame primary = SequenceFrame.instance[primaryFrame];
+				SequenceFrame secondary = SequenceFrame.instance[secondaryFrame];
+				SequenceTransform t = primary.transform;
 
 				transformX = 0;
 				transformY = 0;

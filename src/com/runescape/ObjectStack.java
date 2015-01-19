@@ -1,6 +1,6 @@
 package com.runescape;
 
-final class ObjStack extends Link {
+final class ObjectStack extends Link {
 
 	public int index;
 }

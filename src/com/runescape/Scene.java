@@ -39,11 +39,11 @@ public final class Scene {
 	public static int clickedTileZ = -1;
 
 	public int tileSizeX;
-	public int tileSizeZ;
+	public int tileSizeY;
 	public int[][][] heightmap;
 	public byte[][][] renderflags;
-	public byte[][][] planeUnderlayFloIndices;
-	public byte[][][] planeOverlayFloIndices;
+	public byte[][][] planeUnderlayFloorIndices;
+	public byte[][][] planeOverlayFloorIndices;
 	public byte[][][] planeOverlayTypes;
 	public byte[][][] planeOverlayRotations;
 	public byte[][][] shadowmap;
@@ -51,33 +51,33 @@ public final class Scene {
 	public int[] blendedHue;
 	public int[] blendedSaturation;
 	public int[] blendedLightness;
-	public int[] blendedHueDivisor;
+	public int[] blendedHueMultiplier;
 	public int[] blendDirectionTracker;
 	public int[][][] cullingflags;
 
 	public Scene(int sizeX, int sizeY, byte[][][] renderFlags, int[][][] heightmap) {
 		this.tileSizeX = sizeX;
-		this.tileSizeZ = sizeY;
+		this.tileSizeY = sizeY;
 		this.heightmap = heightmap;
 		this.renderflags = renderFlags;
-		this.planeUnderlayFloIndices = new byte[4][tileSizeX][tileSizeZ];
-		this.planeOverlayFloIndices = new byte[4][tileSizeX][tileSizeZ];
-		this.planeOverlayTypes = new byte[4][tileSizeX][tileSizeZ];
-		this.planeOverlayRotations = new byte[4][tileSizeX][tileSizeZ];
-		this.cullingflags = new int[4][tileSizeX + 1][tileSizeZ + 1];
-		this.shadowmap = new byte[4][tileSizeX + 1][tileSizeZ + 1];
-		this.lightmap = new int[tileSizeX + 1][tileSizeZ + 1];
-		this.blendedHue = new int[tileSizeZ];
-		this.blendedSaturation = new int[tileSizeZ];
-		this.blendedLightness = new int[tileSizeZ];
-		this.blendedHueDivisor = new int[tileSizeZ];
-		this.blendDirectionTracker = new int[tileSizeZ];
+		this.planeUnderlayFloorIndices = new byte[4][tileSizeX][tileSizeY];
+		this.planeOverlayFloorIndices = new byte[4][tileSizeX][tileSizeY];
+		this.planeOverlayTypes = new byte[4][tileSizeX][tileSizeY];
+		this.planeOverlayRotations = new byte[4][tileSizeX][tileSizeY];
+		this.cullingflags = new int[4][tileSizeX + 1][tileSizeY + 1];
+		this.shadowmap = new byte[4][tileSizeX + 1][tileSizeY + 1];
+		this.lightmap = new int[tileSizeX + 1][tileSizeY + 1];
+		this.blendedHue = new int[tileSizeY];
+		this.blendedSaturation = new int[tileSizeY];
+		this.blendedLightness = new int[tileSizeY];
+		this.blendedHueMultiplier = new int[tileSizeY];
+		this.blendDirectionTracker = new int[tileSizeY];
 	}
 
 	public final void clearLandscape(int tileX, int tileY, int width, int height) {
 		byte water = 0;
-		for (int n = 0; n < Flo.count; n++) {
-			if (Flo.instances[n].name.equalsIgnoreCase("water")) {
+		for (int n = 0; n < FloorType.count; n++) {
+			if (FloorType.instances[n].name.equalsIgnoreCase("water")) {
 				water = (byte) (n + 1);
 				break;
 			}
@@ -85,8 +85,8 @@ public final class Scene {
 
 		for (int y = tileY; y < tileY + height; y++) {
 			for (int x = tileX; x < tileX + width; x++) {
-				if (x >= 0 && x < tileSizeX && y >= 0 && y < tileSizeZ) {
-					planeOverlayFloIndices[0][x][y] = water;
+				if (x >= 0 && x < tileSizeX && y >= 0 && y < tileSizeY) {
+					planeOverlayFloorIndices[0][x][y] = water;
 
 					for (int plane = 0; plane < 4; plane++) {
 						heightmap[plane][x][y] = 0;
@@ -135,13 +135,13 @@ public final class Scene {
 							}
 
 							if (type <= 49) {
-								planeOverlayFloIndices[plane][x][y] = b.readByte();
+								planeOverlayFloorIndices[plane][x][y] = b.readByte();
 								planeOverlayTypes[plane][x][y] = (byte) ((type - 2) / 4);
 								planeOverlayRotations[plane][x][y] = (byte) (type - 2 & 0x3);
 							} else if (type <= 81) {
 								renderflags[plane][x][y] = (byte) (type - 49);
 							} else {
-								planeUnderlayFloIndices[plane][x][y] = (byte) (type - 81);
+								planeUnderlayFloorIndices[plane][x][y] = (byte) (type - 81);
 							}
 						}
 					} else {
@@ -228,7 +228,7 @@ public final class Scene {
 		int northwestY = heightmap[plane][tileX][tileY + 1];
 		int averageY = (southwestY + southeastY + northeastY + northwestY) >> 2;
 
-		LocConfig l = LocConfig.get(locIndex);
+		LocationInfo l = LocationInfo.get(locIndex);
 
 		if (l == null) {
 			return;
@@ -294,7 +294,7 @@ public final class Scene {
 			}
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
 			}
 		} else if (type >= 12) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -309,7 +309,7 @@ public final class Scene {
 			}
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
 			}
 		} else if (type == 0) {
 			Model m = l.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -430,49 +430,49 @@ public final class Scene {
 			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
 			int wallBitset = landscape.getWallBitset(tileX, tileY, plane);
 
 			if (wallBitset > 0) {
-				thickness = LocConfig.get(wallBitset >> 14 & 0x7fff).thickness;
+				thickness = LocationInfo.get(wallBitset >> 14 & 0x7fff).thickness;
 			}
 
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			landscape.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 256, rotation);
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 512, rotation);
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 768, rotation);
 
 			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		}
 	}
 
 	public final void buildLandscape(CollisionMap[] planeCollisions, Landscape landscape) {
 		CollisionMap lastCollisionMap = null;
-		
+
 		for (int plane = 0; plane < 4; plane++) {
 			CollisionMap collisionMap = planeCollisions[plane];
 
@@ -491,9 +491,9 @@ public final class Scene {
 			lastCollisionMap = collisionMap;
 		}
 
-		for (int y = 0; y < 4; y++) {
-			byte[][] sm = shadowmap[y];
-			int baseIntensity = 96;
+		for (int plane = 0; plane < 4; plane++) {
+			byte[][] sm = shadowmap[plane];
+			int minIntensity = 96;
 			int lightSpecularFactor = 768;
 			int lightX = -50;
 			int lightY = -10;
@@ -501,63 +501,63 @@ public final class Scene {
 			int lightLength = (int) Math.sqrt((double) (lightX * lightX + lightY * lightY + lightZ * lightZ));
 			int specularDistribution = (lightSpecularFactor * lightLength) >> 8;
 
-			for (int z = 1; z < tileSizeZ - 1; z++) {
-				for (int x = 1; x < tileSizeX - 1; x++) {
-					int dx = heightmap[y][x + 1][z] - heightmap[y][x - 1][z];
-					int dy = heightmap[y][x][z + 1] - heightmap[y][x][z - 1];
-					int length = (int) Math.sqrt((double) ((dx * dx) + (256 * 256) + (dy * dy)));
+			for (int tileY = 1; tileY < tileSizeY - 1; tileY++) {
+				for (int tileX = 1; tileX < tileSizeX - 1; tileX++) {
+					int x = heightmap[plane][tileX + 1][tileY] - heightmap[plane][tileX - 1][tileY];
+					int y = heightmap[plane][tileX][tileY + 1] - heightmap[plane][tileX][tileY - 1];
+					int length = (int) Math.sqrt((double) ((x * x) + (256 * 256) + (y * y)));
 
 					if (length == 0) {
 						length = 256;
 					}
 
-					int vx = (dx << 8) / length;
-					int vy = (256 << 8) / length;
-					int vz = (dy << 8) / length;
+					int normalX = (x << 8) / length;
+					int normalY = (256 << 8) / length;
+					int normalZ = (y << 8) / length;
 
-					int lightIntensity = baseIntensity + (lightX * vx + lightY * vy + lightZ * vz) / specularDistribution;
-					int shadowIntensity = (sm[x - 1][z] >> 2) + (sm[x + 1][z] >> 3) + (sm[x][z - 1] >> 2) + (sm[x][z + 1] >> 3) + (sm[x][z] >> 1);
-					lightmap[x][z] = lightIntensity - shadowIntensity;
+					int intensity = minIntensity + (lightX * normalX + lightY * normalY + lightZ * normalZ) / specularDistribution;
+					int subtraction = (sm[tileX - 1][tileY] >> 2) + (sm[tileX + 1][tileY] >> 3) + (sm[tileX][tileY - 1] >> 2) + (sm[tileX][tileY + 1] >> 3) + (sm[tileX][tileY] >> 1);
+					lightmap[tileX][tileY] = intensity - subtraction;
 				}
 			}
 
-			for (int z = 0; z < tileSizeZ; z++) {
-				blendedHue[z] = 0;
-				blendedSaturation[z] = 0;
-				blendedLightness[z] = 0;
-				blendedHueDivisor[z] = 0;
-				blendDirectionTracker[z] = 0;
+			for (int y = 0; y < tileSizeY; y++) {
+				blendedHue[y] = 0;
+				blendedSaturation[y] = 0;
+				blendedLightness[y] = 0;
+				blendedHueMultiplier[y] = 0;
+				blendDirectionTracker[y] = 0;
 			}
 
 			for (int x = -5; x < tileSizeX + 5; x++) {
-				for (int z = 0; z < tileSizeZ; z++) {
+				for (int y = 0; y < tileSizeY; y++) {
 					int dx = x + 5;
 
 					if (dx >= 0 && dx < tileSizeX) {
-						int floIndex = (planeUnderlayFloIndices[y][dx][z] & 0xFF) - 1;
+						int index = (planeUnderlayFloorIndices[plane][dx][y] & 0xFF) - 1;
 
-						if (floIndex >= 0 && floIndex < Flo.instances.length) {
-							Flo f = Flo.instances[floIndex];
-							blendedHue[z] += f.hue2;
-							blendedSaturation[z] += f.saturation;
-							blendedLightness[z] += f.lightness;
-							blendedHueDivisor[z] += f.hueDivisor;
-							blendDirectionTracker[z]++;
+						if (index >= 0 && index < FloorType.instances.length) {
+							FloorType f = FloorType.instances[index];
+							blendedHue[y] += f.blendHue;
+							blendedSaturation[y] += f.saturation;
+							blendedLightness[y] += f.lightness;
+							blendedHueMultiplier[y] += f.blendHueMultiplier;
+							blendDirectionTracker[y]++;
 						}
 					}
 
 					dx = x - 5;
 
 					if (dx >= 0 && dx < tileSizeX) {
-						int flo = (planeUnderlayFloIndices[y][dx][z] & 0xFF) - 1;
+						int index = (planeUnderlayFloorIndices[plane][dx][y] & 0xFF) - 1;
 
-						if (flo >= 0 && flo < Flo.instances.length) {
-							Flo f = Flo.instances[flo];
-							blendedHue[z] -= f.hue2;
-							blendedSaturation[z] -= f.saturation;
-							blendedLightness[z] -= f.lightness;
-							blendedHueDivisor[z] -= f.hueDivisor;
-							blendDirectionTracker[z]--;
+						if (index >= 0 && index < FloorType.instances.length) {
+							FloorType f = FloorType.instances[index];
+							blendedHue[y] -= f.blendHue;
+							blendedSaturation[y] -= f.saturation;
+							blendedLightness[y] -= f.lightness;
+							blendedHueMultiplier[y] -= f.blendHueMultiplier;
+							blendDirectionTracker[y]--;
 						}
 					}
 				}
@@ -569,80 +569,80 @@ public final class Scene {
 					int hueDivisor = 0;
 					int directionTracker = 0;
 
-					for (int z = -5; z < tileSizeZ + 5; z++) {
-						int dz = z + 5;
+					for (int y = -5; y < tileSizeY + 5; y++) {
+						int yD = y + 5;
 
-						if (dz >= 0 && dz < tileSizeZ) {
-							hue += blendedHue[dz];
-							saturation += blendedSaturation[dz];
-							lightness += blendedLightness[dz];
-							hueDivisor += blendedHueDivisor[dz];
-							directionTracker += blendDirectionTracker[dz];
+						if (yD >= 0 && yD < tileSizeY) {
+							hue += blendedHue[yD];
+							saturation += blendedSaturation[yD];
+							lightness += blendedLightness[yD];
+							hueDivisor += blendedHueMultiplier[yD];
+							directionTracker += blendDirectionTracker[yD];
 						}
 
-						dz = z - 5;
+						yD = y - 5;
 
-						if (dz >= 0 && dz < tileSizeZ) {
-							hue -= blendedHue[dz];
-							saturation -= blendedSaturation[dz];
-							lightness -= blendedLightness[dz];
-							hueDivisor -= blendedHueDivisor[dz];
-							directionTracker -= blendDirectionTracker[dz];
+						if (yD >= 0 && yD < tileSizeY) {
+							hue -= blendedHue[yD];
+							saturation -= blendedSaturation[yD];
+							lightness -= blendedLightness[yD];
+							hueDivisor -= blendedHueMultiplier[yD];
+							directionTracker -= blendDirectionTracker[yD];
 						}
 
-						if (z >= 1 && z < tileSizeZ - 1) {
+						if (y >= 1 && y < tileSizeY - 1) {
 							if (lowmemory) {
-								int p = y;
+								int p = plane;
 
 								// it's a bridge!
-								if (y > 0 && (renderflags[1][x][z] & 0x2) != 0) {
+								if (plane > 0 && (renderflags[1][x][y] & 0x2) != 0) {
 									p--;
 								}
 
-								if (((renderflags[y][x][z]) & 0x8) != 0) {
+								if (((renderflags[plane][x][y]) & 0x8) != 0) {
 									p = 0;
 								}
 
-								if (p != builtPlane || ((renderflags[y][x][z]) & 0x10) != 0) {
+								if (p != builtPlane || ((renderflags[plane][x][y]) & 0x10) != 0) {
 									continue;
 								}
 							}
 
-							int underlay = planeUnderlayFloIndices[y][x][z] & 0xFF;
-							int overlay = planeOverlayFloIndices[y][x][z] & 0xFF;
+							int underlayFloorIndex = planeUnderlayFloorIndices[plane][x][y] & 0xFF;
+							int overlayFloorIndex = planeOverlayFloorIndices[plane][x][y] & 0xFF;
 
-							if (underlay > 0 || overlay > 0) {
-								int southwestY = heightmap[y][x][z];
-								int southeastY = heightmap[y][x + 1][z];
-								int northeastY = heightmap[y][x + 1][z + 1];
-								int northwestY = heightmap[y][x][z + 1];
+							if (underlayFloorIndex > 0 || overlayFloorIndex > 0) {
+								int southwestY = heightmap[plane][x][y];
+								int southeastY = heightmap[plane][x + 1][y];
+								int northeastY = heightmap[plane][x + 1][y + 1];
+								int northwestY = heightmap[plane][x][y + 1];
 
-								int southwestLightness = lightmap[x][z];
-								int southeastLightness = lightmap[x + 1][z];
-								int northeastLightness = lightmap[x + 1][z + 1];
-								int northwestLightness = lightmap[x][z + 1];
+								int southwestLightness = lightmap[x][y];
+								int southeastLightness = lightmap[x + 1][y];
+								int northeastLightness = lightmap[x + 1][y + 1];
+								int northwestLightness = lightmap[x][y + 1];
 
 								int color = -1;
 
-								if (underlay > 0) {
+								if (underlayFloorIndex > 0) {
 									if (hueDivisor != 0 && directionTracker != 0) {
 										color = getColor((hue * 256) / hueDivisor, saturation / directionTracker, lightness / directionTracker);
 									}
 								}
 
-								if (y > 0 && !lowmemory) {
+								if (plane > 0 && !lowmemory) {
 									boolean hideUnderlay = true;
 
-									if (underlay == 0 && planeOverlayTypes[y][x][z] != 0) {
+									if (underlayFloorIndex == 0 && planeOverlayTypes[plane][x][y] != 0) {
 										hideUnderlay = false;
 									}
 
-									if (overlay > 0 && overlay - 1 < Flo.count && !(Flo.instances[overlay - 1].occlude)) {
+									if (overlayFloorIndex > 0 && overlayFloorIndex - 1 < FloorType.count && !(FloorType.instances[overlayFloorIndex - 1].occlude)) {
 										hideUnderlay = false;
 									}
 
 									if (hideUnderlay && southwestY == southeastY && southwestY == northeastY && southwestY == northwestY) {
-										cullingflags[y][x][z] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
+										cullingflags[plane][x][y] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
 									}
 								}
 
@@ -652,36 +652,36 @@ public final class Scene {
 									minimapColor = Canvas3D.palette[adjustColorLightness(color, 96)];
 								}
 
-								if (overlay == 0) {
-									landscape.addTile(y, x, z, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
+								if (overlayFloorIndex == 0) {
+									landscape.addTile(plane, x, y, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
 								} else {
-									int type = planeOverlayTypes[y][x][z] + 1;
-									byte rotation = planeOverlayRotations[y][x][z];
+									int type = planeOverlayTypes[plane][x][y] + 1;
+									byte rotation = planeOverlayRotations[plane][x][y];
 
-									overlay--;
+									overlayFloorIndex--;
 
-									if (overlay >= Flo.count) {
-										overlay = 0;
+									if (overlayFloorIndex >= FloorType.count) {
+										overlayFloorIndex = 0;
 									}
 
-									Flo f = Flo.instances[overlay];
-									int texture = f.textureIndex;
+									FloorType f = FloorType.instances[overlayFloorIndex];
+									int textureIndex = f.textureIndex;
 									int rgb;
 									int hsl;
 
-									if (texture >= 0) {
-										rgb = Canvas3D.getTextureColor(texture);
+									if (textureIndex >= 0) {
+										rgb = Canvas3D.getTextureColor(textureIndex);
 										hsl = -1;
 									} else if (f.rgb == 0xFF00FF) {
 										rgb = 0;
 										hsl = -2;
-										texture = -1;
+										textureIndex = -1;
 									} else {
 										hsl = getColor(f.hue, f.saturation, f.lightness);
 										rgb = Canvas3D.palette[adjustHSLLightness0(hsl, 96)];
 									}
 
-									landscape.addTile(y, x, z, type, rotation, texture, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
+									landscape.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
 								}
 							}
 						}
@@ -689,19 +689,19 @@ public final class Scene {
 				}
 			}
 
-			for (int z = 1; z < tileSizeZ - 1; z++) {
+			for (int z = 1; z < tileSizeY - 1; z++) {
 				for (int x = 1; x < tileSizeX - 1; x++) {
-					int drawY = y;
+					int drawY = plane;
 
 					if (drawY > 0 && ((renderflags[1][x][z] & 0x2) != 0)) {
 						drawY--;
 					}
 
-					if ((renderflags[y][x][z] & 0x8) != 0) {
+					if ((renderflags[plane][x][z] & 0x8) != 0) {
 						drawY = 0;
 					}
 
-					landscape.setDrawPlane(y, x, z, drawY);
+					landscape.setDrawPlane(plane, x, z, drawY);
 				}
 			}
 		}
@@ -709,7 +709,7 @@ public final class Scene {
 		landscape.applyLighting(-50, -10, -50, 64, 768);
 
 		for (int tileX = 0; tileX < tileSizeX; tileX++) {
-			for (int tileY = 0; tileY < tileSizeZ; tileY++) {
+			for (int tileY = 0; tileY < tileSizeY; tileY++) {
 				if ((renderflags[1][tileX][tileY] & 0x2) == 2) {
 					landscape.setBridge(tileX, tileY);
 				}
@@ -729,7 +729,7 @@ public final class Scene {
 				}
 
 				for (int p = 0; p <= plane; p++) {
-					for (int tileY = 0; tileY <= tileSizeZ; tileY++) {
+					for (int tileY = 0; tileY <= tileSizeY; tileY++) {
 						for (int tileX = 0; tileX <= tileSizeX; tileX++) {
 
 							if ((cullingflags[p][tileX][tileY] & rule0) != 0) {
@@ -744,7 +744,7 @@ public final class Scene {
 									}
 								}
 
-								for (; maxTileY < tileSizeZ; maxTileY++) {
+								for (; maxTileY < tileSizeY; maxTileY++) {
 									if ((cullingflags[p][tileX][maxTileY + 1] & rule0) == 0) {
 										break;
 									}
@@ -848,7 +848,7 @@ public final class Scene {
 									}
 								}
 
-								for (; maxY < tileSizeZ; maxY++) {
+								for (; maxY < tileSizeY; maxY++) {
 									if (((cullingflags[p][tileX][maxY + 1]) & rule2) == 0) {
 										break;
 									}
@@ -1000,7 +1000,7 @@ public final class Scene {
 		int northwestY = planeHeightmaps[groundPlane][tileX][tileY + 1];
 		int averageY = southwestY + southeastY + northeastY + northwestY >> 2;
 
-		LocConfig c = LocConfig.get(index);
+		LocationInfo c = LocationInfo.get(index);
 
 		int bitset = tileX + (tileY << 7) + (index << 14) + 0x40000000;
 
@@ -1046,7 +1046,7 @@ public final class Scene {
 			}
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 2, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 2, tileX, tileY, plane));
 			}
 		} else if (type >= 12) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -1057,7 +1057,7 @@ public final class Scene {
 			}
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 2, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 2, tileX, tileY, plane));
 			}
 		} else if (type == 0) {
 			Model m = c.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -1102,42 +1102,42 @@ public final class Scene {
 			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
 			int wallBitset = land.getWallBitset(tileX, tileY, plane);
 
 			if (wallBitset > 0) {
-				thickness = LocConfig.get(wallBitset >> 14 & 0x7fff).thickness;
+				thickness = LocationInfo.get(wallBitset >> 14 & 0x7fff).thickness;
 			}
 
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			land.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x100, rotation);
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x200, rotation);
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x300, rotation);
 
 			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLoc(Seq.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		}
 	}

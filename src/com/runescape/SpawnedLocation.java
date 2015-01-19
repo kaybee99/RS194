@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class SpawntLoc extends Link {
+public final class SpawnedLocation extends Link {
 
 	public int tileY;
 	public int classtype;

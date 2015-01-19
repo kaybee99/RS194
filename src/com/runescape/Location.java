@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class Loc {
+public final class Location {
 
 	/* @formatter:off */
 	public static final int[] TYPE_TO_CLASS = {

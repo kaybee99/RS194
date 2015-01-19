@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class TemporaryLoc extends Link {
+public final class TemporaryLocation extends Link {
 
 	public int plane;
 	public int classtype;
@@ -11,7 +11,7 @@ public final class TemporaryLoc extends Link {
 	public int type;
 	public int lastCycle;
 
-	public TemporaryLoc(int locIndex, int tileX, int tileY, int plane, int type, int rotation, int classtype, int lastCycle) {
+	public TemporaryLocation(int locIndex, int tileX, int tileY, int plane, int type, int rotation, int classtype, int lastCycle) {
 		this.plane = plane;
 		this.classtype = classtype;
 		this.tileX = tileX;

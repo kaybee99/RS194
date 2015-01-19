@@ -327,7 +327,7 @@ public class Game extends GameShell {
 	/* Chat */
 	public ImageProducer chatarea;
 	public IndexedBitmap chatback;
-	public RSInterface chatbox = new RSInterface();
+	public GameInterface chatbox = new GameInterface();
 	public int chatHeight = 78;
 	public int chatScrollAmount;
 	public int chatDialogueInputType;
@@ -692,19 +692,19 @@ public class Game extends GameShell {
 	public void unpackModels(Archive models) {
 		drawProgress("Unpacking models", 85);
 		Model.load(models);
-		SeqTransform.load(models);
-		SeqFrame.load(models);
+		SequenceTransform.load(models);
+		SequenceFrame.load(models);
 	}
 
 	public void unpackConfigs(Archive config) {
 		drawProgress("Unpacking config", 85);
-		Seq.load(config);
-		LocConfig.load(config);
-		Flo.unpack(config);
-		ObjConfig.load(config);
-		NPCConfig.load(config);
+		Sequence.load(config);
+		LocationInfo.load(config);
+		FloorType.unpack(config);
+		ObjectInfo.load(config);
+		NPCInfo.load(config);
 		IdentityKit.load(config);
-		SpotAnim.load(config);
+		SpotAnimation.load(config);
 		Varp.load(config);
 	}
 
@@ -791,7 +791,7 @@ public class Game extends GameShell {
 			unpackConfigs(config);
 
 			drawProgress("Unpacking interfaces", 90);
-			RSInterface.load(new BitmapFont[]{fontSmall, fontNormal, fontBold, fontFancy}, media, interfaces);
+			GameInterface.load(new BitmapFont[]{fontSmall, fontNormal, fontBold, fontFancy}, media, interfaces);
 
 			drawProgress("Preparing game engine", 95);
 			prepareRotatables();
@@ -812,14 +812,27 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final Archive loadArchive(String archiveName, String archiveFile, int crc, int loadPercent) {
+	/**
+	 * Attempts to load the archive data locally. If there is no local data
+	 * stored, it will open a connection to the URL of the archive and download
+	 * it.
+	 *
+	 * @param archiveName the archive name.
+	 * @param archiveFile the archive file.
+	 * @param crc the archive crc.
+	 * @param percent the load percentage.
+	 * @return the archive file.
+	 */
+	public Archive loadArchive(String archiveName, String archiveFile, int crc, int percent) {
 		int wait = 5;
 		byte[] data = Signlink.loadFile(archiveFile);
 
 		if (data != null) {
 			crc32.reset();
 			crc32.update(data);
+
 			int readcrc = (int) crc32.getValue();
+
 			if (readcrc != crc) {
 				// data = null;
 			}
@@ -830,7 +843,7 @@ public class Game extends GameShell {
 		}
 
 		while (data == null) {
-			drawProgress("Requesting " + archiveName, loadPercent);
+			drawProgress("Requesting " + archiveName, percent);
 
 			try {
 				int lastPercent = 0;
@@ -858,13 +871,13 @@ public class Game extends GameShell {
 
 						read += dis.read(data, read, available);
 
-						int percent = read * 100 / size;
+						int currentPercent = read * 100 / size;
 
-						if (percent != lastPercent) {
-							drawProgress("Loading " + archiveName + " - " + percent + "%", loadPercent);
+						if (currentPercent != lastPercent) {
+							drawProgress("Loading " + archiveName + " - " + currentPercent + "%", currentPercent);
 						}
 
-						lastPercent = percent;
+						lastPercent = currentPercent;
 					}
 				}
 			} catch (IOException e) {
@@ -873,7 +886,7 @@ public class Game extends GameShell {
 				logger.log(Level.WARNING, "Error loading archive", e);
 
 				for (int s = wait; s > 0; s--) {
-					drawProgress(("Error loading - Will retry in " + s + " secs."), loadPercent);
+					drawProgress(("Error loading - Will retry in " + s + " secs."), percent);
 					try {
 						Thread.sleep(1000L);
 					} catch (Exception ex) {
@@ -2064,33 +2077,33 @@ public class Game extends GameShell {
 		titleLeftSpace = null;
 		titleRightSpace = null;
 		unloadTitle();
-		LocConfig.unload();
-		NPCConfig.unload();
-		ObjConfig.unload();
-		Flo.instances = null;
+		LocationInfo.unload();
+		NPCInfo.unload();
+		ObjectInfo.unload();
+		FloorType.instances = null;
 		IdentityKit.instance = null;
-		RSInterface.instances = null;
-		Seq.instance = null;
-		SpotAnim.instance = null;
-		SpotAnim.uniqueModelCache = null;
+		GameInterface.instances = null;
+		Sequence.instance = null;
+		SpotAnimation.instance = null;
+		SpotAnimation.uniqueModelCache = null;
 		Varp.instance = null;
 		Player.uniqueModelCache = null;
 		Canvas3D.unload();
 		Landscape.unload();
 		Model.unload();
-		SeqTransform.instance = null;
-		SeqFrame.instance = null;
+		SequenceTransform.instance = null;
+		SequenceFrame.instance = null;
 		System.gc();
 	}
 
 	public final void clearCaches() {
-		LocConfig.unmodifiedModelCache.clear();
-		LocConfig.uniqueModelCache.clear();
-		NPCConfig.uniqueModelCache.clear();
-		ObjConfig.uniqueModelCache.clear();
-		ObjConfig.uniqueBitmapCache.clear();
+		LocationInfo.unmodifiedModelCache.clear();
+		LocationInfo.uniqueModelCache.clear();
+		NPCInfo.uniqueModelCache.clear();
+		ObjectInfo.uniqueModelCache.clear();
+		ObjectInfo.uniqueBitmapCache.clear();
 		Player.uniqueModelCache.clear();
-		SpotAnim.uniqueModelCache.clear();
+		SpotAnimation.uniqueModelCache.clear();
 	}
 
 	public final void logout() {
@@ -2143,7 +2156,7 @@ public class Game extends GameShell {
 	}
 
 	public final int getInterfaceParent(int index) {
-		int parent = RSInterface.instances[index].parent;
+		int parent = GameInterface.instances[index].parent;
 
 		if (parent == index) {
 			return index;
@@ -2280,7 +2293,7 @@ public class Game extends GameShell {
 
 	public void updateTemporaryLocs() {
 		if (sceneState == 2) {
-			for (TemporaryLoc l = (TemporaryLoc) temporaryLocs.peekLast(); l != null; l = (TemporaryLoc) temporaryLocs.getPrevious()) {
+			for (TemporaryLocation l = (TemporaryLocation) temporaryLocs.peekLast(); l != null; l = (TemporaryLocation) temporaryLocs.getPrevious()) {
 				if (cycle >= l.lastCycle) {
 					addLoc(l.locIndex, l.plane, l.tileX, l.tileY, l.type, l.classtype, l.rotation);
 					l.unlink();
@@ -3182,7 +3195,7 @@ public class Game extends GameShell {
 		chatsettings.draw(graphics, 0, 471);
 	}
 
-	public int updateCamera() {
+	public int updateCamera(int tileX, int tileY) {
 		int landY = getLandY(cameraOrbitX, cameraOrbitZ, currentPlane);
 		cameraPitch = cameraOrbitPitch;
 
@@ -3190,13 +3203,13 @@ public class Game extends GameShell {
 			cameraPitch = cameraMaxY / 256;
 		}
 
-		updateCamera(cameraOrbitX, landY - 50, cameraOrbitZ, cameraOrbitYaw, cameraPitch, cameraPitch * 3 + 600);
+		updateCameraOrbit(cameraOrbitX, landY - 50, cameraOrbitZ, cameraOrbitYaw, cameraPitch, cameraPitch * 3 + 600);
 
-		if ((renderflags[currentPlane][localPlayer.sceneX >> 7][localPlayer.sceneZ >> 7] & 0x4) != 0) {
+		if ((renderflags[currentPlane][tileX][tileY] & 0x4) != 0) {
 			return currentPlane;
 		}
 
-		return getTopPlane(localPlayer.sceneX >> 7, localPlayer.sceneZ >> 7);
+		return getTopPlane(tileX, tileY);
 	}
 
 	public void drawViewport() {
@@ -3208,7 +3221,7 @@ public class Game extends GameShell {
 		drawSpotanims();
 		drawSequencedLocs();
 
-		int topPlane = updateCamera();
+		int topPlane = updateCamera(localPlayer.sceneX >> 7, localPlayer.sceneZ >> 7);
 
 		int startCycle = Canvas3D.cycle;
 		Model.allowInput = true;
@@ -3228,7 +3241,7 @@ public class Game extends GameShell {
 		drawCrosses();
 
 		if (viewportInterfaceIndex != -1) {
-			drawInterface(RSInterface.instances[viewportInterfaceIndex], 0, 0, 0);
+			drawInterface(GameInterface.instances[viewportInterfaceIndex], 0, 0, 0);
 		}
 
 		if (!optionMenuVisible) {
@@ -3352,7 +3365,7 @@ public class Game extends GameShell {
 	}
 
 	public void drawSpotanims() {
-		for (SpotAnimEntity sa = (SpotAnimEntity) spotanims.peekLast(); sa != null; sa = (SpotAnimEntity) spotanims.getPrevious()) {
+		for (SpotAnimationEntity sa = (SpotAnimationEntity) spotanims.peekLast(); sa != null; sa = (SpotAnimationEntity) spotanims.getPrevious()) {
 			if (sa.plane != currentPlane || sa.finished) {
 				sa.unlink();
 			} else if (cycle >= sa.firstCycle) {
@@ -3368,7 +3381,7 @@ public class Game extends GameShell {
 	}
 
 	public void drawSequencedLocs() {
-		for (SequencedLoc l = (SequencedLoc) sequencedLocs.peekLast(); l != null; l = (SequencedLoc) sequencedLocs.getPrevious()) {
+		for (SequencedLocation l = (SequencedLocation) sequencedLocs.peekLast(); l != null; l = (SequencedLocation) sequencedLocs.getPrevious()) {
 			boolean append = false;
 			l.seqCycle += sceneDelta;
 
@@ -3407,7 +3420,7 @@ public class Game extends GameShell {
 				if (bitset == 0 || (bitset >> 14 & 0x7fff) != l.locIndex) {
 					l.unlink();
 				} else {
-					LocConfig c = LocConfig.get(l.locIndex);
+					LocationInfo c = LocationInfo.get(l.locIndex);
 					int seqFrame = -1;
 
 					if (l.seqFrame != -1) {
@@ -3694,7 +3707,7 @@ public class Game extends GameShell {
 		return southY * (128 - tileLocalY) + northY * tileLocalY >> 7;
 	}
 
-	public final void updateCamera(int x, int y, int z, int cameraYaw, int cameraPitch, int distance) {
+	public final void updateCameraOrbit(int x, int y, int z, int cameraYaw, int cameraPitch, int distance) {
 		int pitch = 2048 - cameraPitch & 0x7ff;
 		int yaw = 2048 - cameraYaw & 0x7ff;
 
@@ -3790,14 +3803,14 @@ public class Game extends GameShell {
 
 			updateObjectStacks();
 
-			for (SpawntLoc l = (SpawntLoc) spawntLocs.peekLast(); l != null; l = (SpawntLoc) spawntLocs.getPrevious()) {
+			for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
 				addLoc(l.locIndex, l.tileY, l.tileX, l.tileZ, l.type, l.classtype, l.rotation);
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error creating scene", e);
 		}
 
-		LocConfig.unmodifiedModelCache.clear();
+		LocationInfo.unmodifiedModelCache.clear();
 		System.gc();
 		Canvas3D.setupPools(20);
 		return s;
@@ -3858,7 +3871,7 @@ public class Game extends GameShell {
 
 				if (index != 0) {
 					index = index >> 14 & 0x7fff;
-					int mapfunction = LocConfig.get(index).mapfunction;
+					int mapfunction = LocationInfo.get(index).mapfunction;
 
 					if (mapfunction >= mapfunctions.length) {
 						continue;
@@ -3891,7 +3904,7 @@ public class Game extends GameShell {
 			int[] dst = minimap.pixels;
 			int off = x * 4 + 24624 + (103 - y) * 512 * 4;
 			int locIndex = bitset >> 14 & 0x7fff;
-			LocConfig c = LocConfig.get(locIndex);
+			LocationInfo c = LocationInfo.get(locIndex);
 
 			if (c.mapfunction != -1) {
 				Bitmap b = minimapFunctions[c.mapfunction];
@@ -3996,7 +4009,7 @@ public class Game extends GameShell {
 
 			if (type == 10 || type == 11) {
 				int locIndex = bitset >> 14 & 0x7fff;
-				LocConfig c = LocConfig.get(locIndex);
+				LocationInfo c = LocationInfo.get(locIndex);
 
 				if (c.mapscene != -1) {
 					IndexedBitmap mapscene = mapscenes[c.mapscene];
@@ -4030,7 +4043,7 @@ public class Game extends GameShell {
 
 		if (e.primarySeqIndex != -1 && e.primarySeqDelay == 0) {
 			try {
-				Seq s = Seq.instance[e.primarySeqIndex];
+				Sequence s = Sequence.instance[e.primarySeqIndex];
 
 				if (s.labelGroups == null) {
 					noLabels = true;
@@ -4069,7 +4082,7 @@ public class Game extends GameShell {
 			}
 		} else if (e.lastMoveCycle >= cycle) {
 			try {
-				if (e.lastMoveCycle == cycle || !noLabels || e.primarySeqCycle + 1 > Seq.instance[e.primarySeqIndex].frameDuration[e.primarySeqFrame]) {
+				if (e.lastMoveCycle == cycle || !noLabels || e.primarySeqCycle + 1 > Sequence.instance[e.primarySeqIndex].frameDuration[e.primarySeqFrame]) {
 					// total move time in cycles (20ms/cycle)
 					int duration = e.lastMoveCycle - e.firstMoveCycle;
 
@@ -4307,7 +4320,7 @@ public class Game extends GameShell {
 
 		if (e.secondarySeqIndex != -1) {
 			try {
-				Seq s = Seq.instance[e.secondarySeqIndex];
+				Sequence s = Sequence.instance[e.secondarySeqIndex];
 				e.secondarySeqCycle++;
 
 				if (e.secondarySeqFrame < s.frameCount && (e.secondarySeqCycle > (s.frameDuration[e.secondarySeqFrame]))) {
@@ -4326,7 +4339,7 @@ public class Game extends GameShell {
 
 		if (e.primarySeqIndex != -1 && e.primarySeqDelay == 0) {
 			try {
-				Seq s = (Seq.instance[e.primarySeqIndex]);
+				Sequence s = (Sequence.instance[e.primarySeqIndex]);
 
 				for (e.primarySeqCycle++; (e.primarySeqFrame < s.frameCount && (e.primarySeqCycle > (s.frameDuration[e.primarySeqFrame]))); e.primarySeqFrame++) {
 					e.primarySeqCycle -= (s.frameDuration[e.primarySeqFrame]);
@@ -4362,7 +4375,7 @@ public class Game extends GameShell {
 						e.spotanimFrame = 0;
 					}
 
-					Seq s = (SpotAnim.instance[e.spotanimIndex].seq);
+					Sequence s = (SpotAnimation.instance[e.spotanimIndex].seq);
 
 					for (e.spotanimCycle++; (e.spotanimFrame < s.frameCount && (e.spotanimCycle > (s.frameDuration[e.spotanimFrame]))); e.spotanimFrame++) {
 						e.spotanimCycle -= (s.frameDuration[e.spotanimFrame]);
@@ -4410,7 +4423,7 @@ public class Game extends GameShell {
 			int rotation = info >> 6 & 0x3;
 
 			if (type == 10 || type == 11 || type == 22) {
-				LocConfig c = LocConfig.get(locIndex);
+				LocationInfo c = LocationInfo.get(locIndex);
 				int sizeX;
 				int sizeY;
 
@@ -4844,7 +4857,7 @@ public class Game extends GameShell {
 					}
 				}
 
-				for (SpawntLoc l = (SpawntLoc) spawntLocs.peekLast(); l != null; l = (SpawntLoc) spawntLocs.getPrevious()) {
+				for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
 					l.tileX -= deltaX;
 					l.tileZ -= deltaY;
 
@@ -4860,7 +4873,7 @@ public class Game extends GameShell {
 				int red = rgb >> 10 & 0x1f;
 				int green = rgb >> 5 & 0x1f;
 				int blue = rgb & 0x1f;
-				RSInterface.instances[index].colorDisabled = (red << 19) + (green << 11) + (blue << 3);
+				GameInterface.instances[index].colorDisabled = (red << 19) + (green << 11) + (blue << 3);
 			} else if (packetType == 98) {
 				sidebarRedraw = true;
 				int skill = in.read();
@@ -4938,7 +4951,7 @@ public class Game extends GameShell {
 				chatRedrawSettings = true;
 				chatRedraw = true;
 			} else if (packetType == 149) {
-				RSInterface.instances[in.readUShort()].seqIndexDisabled = in.readUShort();
+				GameInterface.instances[in.readUShort()].seqIndexDisabled = in.readUShort();
 			} else if (packetType == 95) {
 				netTileX = in.read();
 				netTileZ = in.read();
@@ -4952,7 +4965,7 @@ public class Game extends GameShell {
 				}
 			} else if (packetType == 123) {
 				int i_432_ = in.readUShort();
-				RSInterface.instances[i_432_].modelDisabled = localPlayer.getHeadModel();
+				GameInterface.instances[i_432_].modelDisabled = localPlayer.getHeadModel();
 			} else if (packetType == 44) {
 				int x = in.read();
 				int y = in.read();
@@ -5010,10 +5023,10 @@ public class Game extends GameShell {
 					in.read(mapLandData[index], off, packetSize - 6);
 				}
 			} else if (packetType == 181) {
-				RSInterface.instances[in.readUShort()].modelDisabled = NPCConfig.get(in.readUShort()).getHeadModel();
+				GameInterface.instances[in.readUShort()].modelDisabled = NPCInfo.get(in.readUShort()).getHeadModel();
 			} else if (packetType == 68) {
 				sidebarRedraw = true;
-				RSInterface i = RSInterface.instances[in.readUShort()];
+				GameInterface i = GameInterface.instances[in.readUShort()];
 
 				while (in.position < packetSize) {
 					int slot = in.read();
@@ -5032,7 +5045,7 @@ public class Game extends GameShell {
 			} else if (packetType == 153 || packetType == 90 || packetType == 59 || packetType == 60 || packetType == 250 || packetType == 127 || packetType == 175 || packetType == 35 || packetType == 22) {
 				readSecondaryPacket(in, packetType);
 			} else if (packetType == 61) {
-				RSInterface.instances[in.readUShort()].hidden = in.read() == 1;
+				GameInterface.instances[in.readUShort()].hidden = in.read() == 1;
 			} else if (packetType == 80) {
 				if (sidebarInterfaceIndex != -1) {
 					sidebarInterfaceIndex = -1;
@@ -5088,14 +5101,14 @@ public class Game extends GameShell {
 			} else if (packetType == 100) {
 				updateNPCs(in, packetSize);
 			} else if (packetType == 210) {
-				RSInterface i = RSInterface.instances[in.readUShort()];
+				GameInterface i = GameInterface.instances[in.readUShort()];
 
 				for (int n = 0; n < i.inventoryIndices.length; n++) {
 					i.inventoryIndices[n] = -1;
 					i.inventoryIndices[n] = 0;
 				}
 			} else if (packetType == 42) {
-				RSInterface.instances[in.readUShort()].modelDisabled = new Model(in.readUShort());
+				GameInterface.instances[in.readUShort()].modelDisabled = new Model(in.readUShort());
 			} else if (packetType == 254) {
 				selectedTab = in.read();
 				sidebarRedraw = true;
@@ -5197,7 +5210,7 @@ public class Game extends GameShell {
 				}
 			} else if (packetType == 227) {
 				sidebarRedraw = true;
-				RSInterface i = RSInterface.instances[in.readUShort()];
+				GameInterface i = GameInterface.instances[in.readUShort()];
 				int length = in.read();
 
 				for (int n = 0; n < length; n++) {
@@ -5228,14 +5241,14 @@ public class Game extends GameShell {
 					}
 				}
 
-				for (SpawntLoc l = (SpawntLoc) spawntLocs.peekLast(); l != null; l = (SpawntLoc) spawntLocs.getPrevious()) {
+				for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
 					if (l.tileX >= netTileX && l.tileX < netTileX + 8 && l.tileZ >= netTileZ && l.tileZ < netTileZ + 8 && l.tileY == currentPlane) {
 						addLoc(l.lastLocIndex, l.tileY, l.tileX, l.tileZ, l.lastType, l.classtype, l.lastRotation);
 						l.unlink();
 					}
 				}
 			} else if (packetType == 9) {
-				RSInterface.instances[in.readUShort()].messageDisabled = in.readString();
+				GameInterface.instances[in.readUShort()].messageDisabled = in.readString();
 			} else {
 				if (packetType == 126) {
 					logout();
@@ -5292,11 +5305,11 @@ public class Game extends GameShell {
 					int interfaceIndex = in.readUShort();
 					int object = in.readUShort();
 					int zoomPercent = in.readUShort();
-					ObjConfig o = ObjConfig.get(object);
-					RSInterface.instances[interfaceIndex].modelDisabled = o.getModel();
-					RSInterface.instances[interfaceIndex].modelCameraPitch = o.iconCameraPitch;
-					RSInterface.instances[interfaceIndex].modelYaw = o.iconYaw;
-					RSInterface.instances[interfaceIndex].modelZoom = o.iconZoom * 100 / zoomPercent;
+					ObjectInfo o = ObjectInfo.get(object);
+					GameInterface.instances[interfaceIndex].modelDisabled = o.getModel();
+					GameInterface.instances[interfaceIndex].modelCameraPitch = o.iconCameraPitch;
+					GameInterface.instances[interfaceIndex].modelYaw = o.iconYaw;
+					GameInterface.instances[interfaceIndex].modelZoom = o.iconZoom * 100 / zoomPercent;
 				} else if (packetType == 75) {
 					chatShowDialogueInput = false;
 					chatShowTransferInput = true;
@@ -5353,19 +5366,19 @@ public class Game extends GameShell {
 			int bitset = 0;
 			int lastIndex;
 
-			if (classtype == Loc.CLASS_WALL) {
+			if (classtype == Location.CLASS_WALL) {
 				bitset = landscape.getWallBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Loc.CLASS_WALL_DECORATION) {
+			if (classtype == Location.CLASS_WALL_DECORATION) {
 				bitset = landscape.getWallDecorationBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Loc.CLASS_NORMAL) {
+			if (classtype == Location.CLASS_NORMAL) {
 				bitset = landscape.getLocBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Loc.CLASS_GROUND_DECORATION) {
+			if (classtype == Location.CLASS_GROUND_DECORATION) {
 				bitset = landscape.getGroundDecorationBitset(tileX, tileZ, plane);
 			}
 
@@ -5375,29 +5388,29 @@ public class Game extends GameShell {
 
 				if (classtype == 0) {
 					landscape.removeWall(tileX, tileZ, plane);
-					LocConfig c = LocConfig.get(lastIndex);
+					LocationInfo c = LocationInfo.get(lastIndex);
 
 					if (c.hasCollision) {
 						collisions[plane].removeWall(tileX, tileZ, info & 0x1F, info >> 6, c.isSolid);
 					}
 				}
 
-				if (classtype == Loc.CLASS_WALL_DECORATION) {
+				if (classtype == Location.CLASS_WALL_DECORATION) {
 					landscape.removeWallDecoration(tileX, tileZ, plane);
 				}
 
-				if (classtype == Loc.CLASS_NORMAL) {
+				if (classtype == Location.CLASS_NORMAL) {
 					landscape.removeLocs(tileX, tileZ, plane);
-					LocConfig c = LocConfig.get(lastIndex);
+					LocationInfo c = LocationInfo.get(lastIndex);
 
 					if (c.hasCollision) {
 						collisions[plane].removeLoc(tileX, tileZ, c.sizeX, c.sizeY, info >> 6, c.isSolid);
 					}
 				}
 
-				if (classtype == Loc.CLASS_GROUND_DECORATION) {
+				if (classtype == Location.CLASS_GROUND_DECORATION) {
 					landscape.removeGroundDecoration(tileX, tileZ, plane);
-					LocConfig c = LocConfig.get(lastIndex);
+					LocationInfo c = LocationInfo.get(lastIndex);
 
 					if (c.hasCollision && c.interactable) {
 						collisions[plane].removeBlock(tileX, tileZ);
@@ -5426,7 +5439,7 @@ public class Game extends GameShell {
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
-			int locClass = Loc.TYPE_TO_CLASS[locType];
+			int locClass = Location.TYPE_TO_CLASS[locType];
 			int locIndex;
 
 			if (opcode == 35) {
@@ -5436,9 +5449,9 @@ public class Game extends GameShell {
 			}
 
 			if (tileX >= 0 && tileY >= 0 && tileX < 104 && tileY < 104) {
-				SpawntLoc loc = null;
+				SpawnedLocation loc = null;
 
-				for (SpawntLoc l = (SpawntLoc) spawntLocs.peekLast(); l != null; l = (SpawntLoc) spawntLocs.getPrevious()) {
+				for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
 					if (l.tileY == currentPlane && l.tileX == tileX && l.tileZ == tileY && l.classtype == locClass) {
 						loc = l;
 						break;
@@ -5477,7 +5490,7 @@ public class Game extends GameShell {
 						lastRotation = info >> 6;
 					}
 
-					loc = new SpawntLoc();
+					loc = new SpawnedLocation();
 					loc.tileY = currentPlane;
 					loc.classtype = locClass;
 					loc.tileX = tileX;
@@ -5499,22 +5512,22 @@ public class Game extends GameShell {
 			int z = netTileZ + (xy & 0x7);
 			int flags = b.read();
 			int type = flags >> 2;
-			int classtype = Loc.TYPE_TO_CLASS[type];
+			int classtype = Location.TYPE_TO_CLASS[type];
 			int seqid = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
 				int bitset = 0;
 
-				if (classtype == Loc.CLASS_WALL_DECORATION) {
+				if (classtype == Location.CLASS_WALL_DECORATION) {
 					bitset = landscape.getWallDecorationBitset(x, z, currentPlane);
 				}
 
-				if (classtype == Loc.CLASS_NORMAL) {
+				if (classtype == Location.CLASS_NORMAL) {
 					bitset = landscape.getLocBitset(x, z, currentPlane);
 				}
 
 				if (bitset != 0) {
-					sequencedLocs.push(new SequencedLoc(Seq.instance[seqid], bitset >> 14 & 0x7fff, classtype, x, z, currentPlane));
+					sequencedLocs.push(new SequencedLocation(Sequence.instance[seqid], bitset >> 14 & 0x7fff, classtype, x, z, currentPlane));
 				}
 			}
 		} else if (opcode == 127) {
@@ -5524,7 +5537,7 @@ public class Game extends GameShell {
 			int index = b.readUShort();
 
 			if (x >= 0 && y >= 0 && x < 104 && y < 104) {
-				ObjStack o = new ObjStack();
+				ObjectStack o = new ObjectStack();
 				o.index = index;
 
 				if (planeObjStacks[currentPlane][x][y] == null) {
@@ -5544,7 +5557,7 @@ public class Game extends GameShell {
 				LinkedList stack = planeObjStacks[currentPlane][x][z];
 
 				if (stack != null) {
-					for (ObjStack s = (ObjStack) stack.peekLast(); s != null; s = (ObjStack) stack.getPrevious()) {
+					for (ObjectStack s = (ObjectStack) stack.peekLast(); s != null; s = (ObjectStack) stack.getPrevious()) {
 						if (s.index == (index & 0x7fff)) {
 							s.unlink();
 							break;
@@ -5591,7 +5604,7 @@ public class Game extends GameShell {
 			if (x >= 0 && y >= 0 && x < 104 && y < 104) {
 				x = x * 128 + 64;
 				y = y * 128 + 64;
-				SpotAnimEntity sa = new SpotAnimEntity(getLandY(x, y, currentPlane) - i_553_, 0, i_554_, i_552_, currentPlane, x, y, cycle);
+				SpotAnimationEntity sa = new SpotAnimationEntity(getLandY(x, y, currentPlane) - i_553_, 0, i_554_, i_552_, currentPlane, x, y, cycle);
 				spotanims.push(sa);
 			}
 		} else if (opcode == 90) {
@@ -5602,7 +5615,7 @@ public class Game extends GameShell {
 			int i_559_ = b.readUShort();
 
 			if (x >= 0 && y >= 0 && x < 104 && y < 104 && i_559_ != localPlayerIndex) {
-				ObjStack gi = new ObjStack();
+				ObjectStack gi = new ObjectStack();
 				gi.index = i_558_;
 				if (planeObjStacks[currentPlane][x][y] == null) {
 					planeObjStacks[currentPlane][x][y] = new LinkedList();
@@ -5617,7 +5630,7 @@ public class Game extends GameShell {
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
-			int locClass = Loc.TYPE_TO_CLASS[locType];
+			int locClass = Location.TYPE_TO_CLASS[locType];
 			int locIndex = b.readUShort();
 			int locStartCycle = b.readUShort();
 			int locEndCycle = b.readUShort();
@@ -5636,15 +5649,15 @@ public class Game extends GameShell {
 			}
 
 			if (p != null) {
-				temporaryLocs.push(new TemporaryLoc(-1, tileX, tileY, currentPlane, locType, locRotation, locClass, locStartCycle + cycle));
-				temporaryLocs.push(new TemporaryLoc(locIndex, tileX, tileY, currentPlane, locType, locRotation, locClass, locEndCycle + cycle));
+				temporaryLocs.push(new TemporaryLocation(-1, tileX, tileY, currentPlane, locType, locRotation, locClass, locStartCycle + cycle));
+				temporaryLocs.push(new TemporaryLocation(locIndex, tileX, tileY, currentPlane, locType, locRotation, locClass, locEndCycle + cycle));
 
 				int southwestY = planeHeightmaps[currentPlane][tileX][tileY];
 				int southeastY = planeHeightmaps[currentPlane][tileX + 1][tileY];
 				int northeastY = planeHeightmaps[currentPlane][tileX + 1][tileY + 1];
 				int northwestY = planeHeightmaps[currentPlane][tileX][tileY + 1];
 
-				LocConfig l = LocConfig.get(locIndex);
+				LocationInfo l = LocationInfo.get(locIndex);
 				p.locFirstCycle = locStartCycle + cycle;
 				p.locLastCycle = locEndCycle + cycle;
 				p.locModel = l.getModel(locType, locRotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -5688,10 +5701,10 @@ public class Game extends GameShell {
 			landscape.removeObject(x, y, currentPlane);
 		} else {
 			int maxPriority = -99999999;
-			ObjConfig topObject = null;
+			ObjectInfo topObject = null;
 
-			for (ObjStack i = (ObjStack) stack.peekLast(); i != null; i = (ObjStack) stack.getPrevious()) {
-				ObjConfig o = ObjConfig.get(i.index);
+			for (ObjectStack i = (ObjectStack) stack.peekLast(); i != null; i = (ObjectStack) stack.getPrevious()) {
+				ObjectInfo o = ObjectInfo.get(i.index);
 				if (o.priority > maxPriority) {
 					maxPriority = o.priority;
 					topObject = o;
@@ -5840,7 +5853,7 @@ public class Game extends GameShell {
 
 				int delay = b.read();
 
-				if (seqIndex == -1 || p.primarySeqIndex == -1 || Seq.instance[seqIndex].priority > Seq.instance[p.primarySeqIndex].priority) {
+				if (seqIndex == -1 || p.primarySeqIndex == -1 || Sequence.instance[seqIndex].priority > Sequence.instance[p.primarySeqIndex].priority) {
 					p.primarySeqIndex = seqIndex;
 					p.primarySeqFrame = 0;
 					p.primarySeqCycle = 0;
@@ -6018,7 +6031,7 @@ public class Game extends GameShell {
 
 			NPC n = npcs[index];
 			n.remove = false;
-			n.config = NPCConfig.get(b.readBits(11));
+			n.config = NPCInfo.get(b.readBits(11));
 			n.size = n.config.size;
 			n.seqWalk = n.config.seqWalk;
 			n.seqRun = n.config.seqRun;
@@ -6066,7 +6079,7 @@ public class Game extends GameShell {
 
 				int delay = b.read();
 
-				if (seqIndex == -1 || npc.primarySeqIndex == -1 || (Seq.instance[seqIndex].priority > (Seq.instance[npc.primarySeqIndex].priority))) {
+				if (seqIndex == -1 || npc.primarySeqIndex == -1 || (Sequence.instance[seqIndex].priority > (Sequence.instance[npc.primarySeqIndex].priority))) {
 					npc.primarySeqIndex = seqIndex;
 					npc.primarySeqFrame = 0;
 					npc.primarySeqCycle = 0;
@@ -6097,7 +6110,7 @@ public class Game extends GameShell {
 			}
 
 			if ((mask & 0x20) == 32) {
-				npc.config = NPCConfig.get(b.readUShort());
+				npc.config = NPCInfo.get(b.readUShort());
 				npc.seqWalk = npc.config.seqWalk;
 				npc.seqRun = npc.config.seqRun;
 				npc.seqTurnRight = npc.config.seqTurnRight;
@@ -6370,7 +6383,7 @@ public class Game extends GameShell {
 
 		if (type == 1294) {
 			int locIndex = a >> 14 & 0x7fff;
-			LocConfig l = LocConfig.get(locIndex);
+			LocationInfo l = LocationInfo.get(locIndex);
 			String string;
 
 			if (l.description != null) {
@@ -6385,7 +6398,7 @@ public class Game extends GameShell {
 		if (type == 700) {
 			out.writeOpcode(101);
 			out.writeShort(c);
-			RSInterface i = RSInterface.instances[c];
+			GameInterface i = GameInterface.instances[c];
 
 			if (i.cscript != null && i.cscript[0][0] == 5) {
 				int v = i.cscript[0][1];
@@ -6423,7 +6436,7 @@ public class Game extends GameShell {
 		}
 
 		if (type == 17) {
-			RSInterface i = RSInterface.instances[c];
+			GameInterface i = GameInterface.instances[c];
 			selectedSpell = true;
 			selectedSpellIndex = c;
 			selectedFlags = i.optionFlags;
@@ -6462,7 +6475,7 @@ public class Game extends GameShell {
 				selectedObjSlot = b;
 				selectedObjInterface = c;
 				selectedObjIndex = a;
-				selectedObjName = ObjConfig.get(a).name;
+				selectedObjName = ObjectInfo.get(a).name;
 				selectedSpell = false;
 			} else {
 				if (type == 146) {
@@ -6479,7 +6492,7 @@ public class Game extends GameShell {
 				if (type == 739) {
 					out.writeOpcode(101);
 					out.writeShort(c);
-					RSInterface i = RSInterface.instances[c];
+					GameInterface i = GameInterface.instances[c];
 					if (i.cscript != null && i.cscript[0][0] == 5) {
 						int j = i.cscript[0][1];
 						variables[j] = 1 - variables[j];
@@ -6541,7 +6554,7 @@ public class Game extends GameShell {
 				}
 
 				if (type == 1971 || type == 1258) {
-					ObjConfig o = ObjConfig.get(a);
+					ObjectInfo o = ObjectInfo.get(a);
 					String s;
 
 					if (o.description != null) {
@@ -6617,10 +6630,10 @@ public class Game extends GameShell {
 					selectedInterfaceSlot = b;
 					selectedArea = 2;
 
-					if (RSInterface.instances[c].parent == viewportInterfaceIndex) {
+					if (GameInterface.instances[c].parent == viewportInterfaceIndex) {
 						selectedArea = 1;
 					}
-					if (RSInterface.instances[c].parent == chatInterfaceIndex) {
+					if (GameInterface.instances[c].parent == chatInterfaceIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6648,11 +6661,11 @@ public class Game extends GameShell {
 					selectedInterfaceSlot = b;
 					selectedArea = 2;
 
-					if (RSInterface.instances[c].parent == viewportInterfaceIndex) {
+					if (GameInterface.instances[c].parent == viewportInterfaceIndex) {
 						selectedArea = 1;
 					}
 
-					if (RSInterface.instances[c].parent == chatInterfaceIndex) {
+					if (GameInterface.instances[c].parent == chatInterfaceIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6681,7 +6694,7 @@ public class Game extends GameShell {
 				}
 
 				if (type == 759) {
-					RSInterface i = RSInterface.instances[c];
+					GameInterface i = GameInterface.instances[c];
 					boolean write = true;
 
 					if (i.action > 0) {
@@ -6734,11 +6747,11 @@ public class Game extends GameShell {
 					selectedInterfaceSlot = b;
 					selectedArea = 2;
 
-					if (RSInterface.instances[c].parent == viewportInterfaceIndex) {
+					if (GameInterface.instances[c].parent == viewportInterfaceIndex) {
 						selectedArea = 1;
 					}
 
-					if (RSInterface.instances[c].parent == chatInterfaceIndex) {
+					if (GameInterface.instances[c].parent == chatInterfaceIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6781,11 +6794,11 @@ public class Game extends GameShell {
 					selectedInterfaceSlot = b;
 					selectedArea = 2;
 
-					if (RSInterface.instances[c].parent == viewportInterfaceIndex) {
+					if (GameInterface.instances[c].parent == viewportInterfaceIndex) {
 						selectedArea = 1;
 					}
 
-					if (RSInterface.instances[c].parent == chatInterfaceIndex) {
+					if (GameInterface.instances[c].parent == chatInterfaceIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6828,7 +6841,7 @@ public class Game extends GameShell {
 
 		if (mouseX > 8 && mouseY > 11 && mouseX < 520 && mouseY < 345) {
 			if (viewportInterfaceIndex != -1) {
-				updateInterface(RSInterface.instances[viewportInterfaceIndex], 8, 11, mouseX, mouseY, 0);
+				updateInterface(GameInterface.instances[viewportInterfaceIndex], 8, 11, mouseX, mouseY, 0);
 			} else {
 				updateViewport();
 			}
@@ -6842,9 +6855,9 @@ public class Game extends GameShell {
 
 		if (mouseX > 562 && mouseY > 231 && mouseX < 752 && mouseY < 492) {
 			if (sidebarInterfaceIndex != -1) {
-				updateInterface(RSInterface.instances[sidebarInterfaceIndex], 562, 231, mouseX, mouseY, 0);
+				updateInterface(GameInterface.instances[sidebarInterfaceIndex], 562, 231, mouseX, mouseY, 0);
 			} else if (sidebarTabInterfaceIndex[selectedTab] != -1) {
-				updateInterface(RSInterface.instances[sidebarTabInterfaceIndex[selectedTab]], 562, 231, mouseX, mouseY, 0);
+				updateInterface(GameInterface.instances[sidebarTabInterfaceIndex[selectedTab]], 562, 231, mouseX, mouseY, 0);
 			}
 		}
 
@@ -6856,7 +6869,7 @@ public class Game extends GameShell {
 		hoveredInterfaceIndex = 0;
 
 		if (mouseX > 22 && mouseY > 375 && mouseX < 501 && mouseY < 471 && chatInterfaceIndex != -1) {
-			updateInterface(RSInterface.instances[chatInterfaceIndex], 22, 375, mouseX, mouseY, 0);
+			updateInterface(GameInterface.instances[chatInterfaceIndex], 22, 375, mouseX, mouseY, 0);
 		}
 
 		if (chatInterfaceIndex != -1 && hoveredInterfaceIndex != chatHoveredInterfaceIndex) {
@@ -6915,7 +6928,7 @@ public class Game extends GameShell {
 			int hovertype = (bitset >> 29) & 0x3;
 
 			if (hovertype == 2 && landscape.getInfo(tileX, tileY, currentPlane, bitset) >= 0) {
-				LocConfig l = LocConfig.get(index);
+				LocationInfo l = LocationInfo.get(index);
 
 				if (selectedObj) {
 					options[optionCount] = "Use " + selectedObjName + " with @cya@" + l.name;
@@ -7007,8 +7020,8 @@ public class Game extends GameShell {
 				LinkedList stack = planeObjStacks[currentPlane][tileX][tileY];
 
 				if (stack != null) {
-					for (ObjStack o = (ObjStack) stack.peekFirst(); o != null; o = (ObjStack) stack.getNext()) {
-						ObjConfig c = ObjConfig.get(o.index);
+					for (ObjectStack o = (ObjectStack) stack.peekFirst(); o != null; o = (ObjectStack) stack.getNext()) {
+						ObjectInfo c = ObjectInfo.get(o.index);
 
 						if (selectedObj) {
 							options[optionCount] = ("Use " + selectedObjName + " with @lre@" + c.name);
@@ -7069,7 +7082,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void parseNPCOptions(NPCConfig c, int tileX, int tileY, int info) {
+	public final void parseNPCOptions(NPCInfo c, int tileX, int tileY, int info) {
 		if (optionCount < 400) {
 			String name = c.name;
 
@@ -7195,7 +7208,7 @@ public class Game extends GameShell {
 		return "@yel@";
 	}
 
-	public final void drawInterface(RSInterface parent, int parentX, int parentY, int offsetY) {
+	public final void drawInterface(GameInterface parent, int parentX, int parentY, int offsetY) {
 		if (parent.type == 0 && parent.children != null && (!parent.hidden || viewportHoveredInterfaceIndex == parent.index || sidebarHoveredInterfaceIndex == parent.index || chatHoveredInterfaceIndex == parent.index)) {
 			int left = Canvas2D.left;
 			int top = Canvas2D.top;
@@ -7206,7 +7219,7 @@ public class Game extends GameShell {
 			for (int n = 0; n < parent.children.length; n++) {
 				int x = parent.childX[n] + parentX;
 				int y = parent.childY[n] + parentY - offsetY;
-				RSInterface i = RSInterface.instances[parent.children[n]];
+				GameInterface i = GameInterface.instances[parent.children[n]];
 
 				if (i.action > 0) {
 					updateInterface(i);
@@ -7241,7 +7254,7 @@ public class Game extends GameShell {
 
 							if (i.inventoryIndices[slot] > 0) {
 								int index = i.inventoryIndices[slot] - 1;
-								Bitmap b = ObjConfig.getBitmap(index);
+								Bitmap b = ObjectInfo.getBitmap(index);
 
 								if (selectedArea != 0 && selectedInterfaceSlot == slot && selectedInterfaceIndex == i.index) {
 									b.draw(drawX, drawY, 128);
@@ -7387,7 +7400,7 @@ public class Game extends GameShell {
 					if (i.seqIndexDisabled == -1) {
 						m = i.getModel(-1, -1, isInterfaceEnabled(i));
 					} else {
-						Seq s = Seq.instance[i.seqIndexDisabled];
+						Sequence s = Sequence.instance[i.seqIndexDisabled];
 						m = i.getModel(s.primaryFrames[i.seqFrame], s.secondaryFrames[i.seqFrame], isInterfaceEnabled(i));
 					}
 
@@ -7404,7 +7417,7 @@ public class Game extends GameShell {
 					for (int h = 0; h < i.height; h++) {
 						for (int w = 0; w < i.width; w++) {
 							if (i.inventoryIndices[slot] > 0) {
-								ObjConfig c = ObjConfig.get(i.inventoryIndices[slot] - 1);
+								ObjectInfo c = ObjectInfo.get(i.inventoryIndices[slot] - 1);
 								String name = c.name;
 
 								if (c.stackable || i.inventoryAmount[slot] != 1) {
@@ -7435,7 +7448,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void updateScrollbar(RSInterface ui, int x, int y, int h, int scrollHeight, int mouseX, int mouseY, boolean isSidebar) {
+	public final void updateScrollbar(GameInterface ui, int x, int y, int h, int scrollHeight, int mouseX, int mouseY, boolean isSidebar) {
 		if (scrollGripHeld) {
 			scrollGripInputPadding = 32;
 		} else {
@@ -7513,7 +7526,7 @@ public class Game extends GameShell {
 		return "*";
 	}
 
-	public final boolean isInterfaceEnabled(RSInterface i) {
+	public final boolean isInterfaceEnabled(GameInterface i) {
 		if (i.cscriptComparator == null) {
 			return false;
 		}
@@ -7541,7 +7554,7 @@ public class Game extends GameShell {
 		return true;
 	}
 
-	public final int getInterfaceScriptReturnCode(RSInterface parent, int script) {
+	public final int getInterfaceScriptReturnCode(GameInterface parent, int script) {
 		if (parent.cscript == null || script >= parent.cscript.length) {
 			return -2;
 		}
@@ -7571,7 +7584,7 @@ public class Game extends GameShell {
 				}
 
 				if (opcode == 4) {
-					RSInterface i = RSInterface.instances[code[position++]];
+					GameInterface i = GameInterface.instances[code[position++]];
 					int index = code[position++] + 1;
 
 					for (int n = 0; n < i.inventoryIndices.length; n++) {
@@ -7607,7 +7620,7 @@ public class Game extends GameShell {
 				}
 
 				if (opcode == 10) {
-					RSInterface i = RSInterface.instances[code[position++]];
+					GameInterface i = GameInterface.instances[code[position++]];
 					int index = code[position++] + 1;
 
 					for (int n = 0; n < i.inventoryIndices.length; n++) {
@@ -7624,7 +7637,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void parseInterfaceOption(RSInterface i) {
+	public void parseInterfaceOption(GameInterface i) {
 		if (i.optionType == 1) {
 			options[optionCount] = i.option;
 			optionType[optionCount] = 759;
@@ -7668,12 +7681,12 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void updateInterface(RSInterface parent, int parentX, int parentY, int mouseX, int mouseY, int scrollAmount) {
+	public final void updateInterface(GameInterface parent, int parentX, int parentY, int mouseX, int mouseY, int scrollAmount) {
 		if (parent.type == 0 && parent.children != null && !parent.hidden && (mouseX >= parentX && mouseY >= parentY && mouseX <= parentX + parent.width && mouseY <= parentY + parent.height)) {
 			for (int n = 0; n < parent.children.length; n++) {
 				int x = parent.childX[n] + parentX;
 				int y = parent.childY[n] + parentY - scrollAmount;
-				RSInterface i = RSInterface.instances[parent.children[n]];
+				GameInterface i = GameInterface.instances[parent.children[n]];
 
 				boolean containsMouse = mouseX >= x && mouseY >= y && mouseX < x + i.width && mouseY < y + i.height;
 
@@ -7710,7 +7723,7 @@ public class Game extends GameShell {
 									}
 
 									if (mouseX >= x0 && mouseY >= y0 && mouseX < x0 + 32 && mouseY < y0 + 32) {
-										ObjConfig c = ObjConfig.get(i.inventoryIndices[slot] - 1);
+										ObjectInfo c = ObjectInfo.get(i.inventoryIndices[slot] - 1);
 
 										if (selectedObj && i.inventoryHasActions) {
 											if (i.index != selectedObjInterface || slot != selectedObjSlot) {
@@ -7829,13 +7842,13 @@ public class Game extends GameShell {
 	}
 
 	public final void resetInterfaceSequence(int index) {
-		RSInterface i = RSInterface.instances[index];
+		GameInterface i = GameInterface.instances[index];
 		for (int n = 0; n < i.children.length; n++) {
 			if (i.children[n] == -1) {
 				break;
 			}
 
-			RSInterface child = RSInterface.instances[i.children[n]];
+			GameInterface child = GameInterface.instances[i.children[n]];
 
 			if (child.type == 1) {
 				resetInterfaceSequence(child.index);
@@ -7848,21 +7861,21 @@ public class Game extends GameShell {
 
 	public final boolean updateInterfaceSequence(int index, int cycle) {
 		boolean updated = false;
-		RSInterface parent = RSInterface.instances[index];
+		GameInterface parent = GameInterface.instances[index];
 
 		for (int n = 0; n < parent.children.length; n++) {
 			if (parent.children[n] == -1) {
 				break;
 			}
 
-			RSInterface i = RSInterface.instances[parent.children[n]];
+			GameInterface i = GameInterface.instances[parent.children[n]];
 
 			if (i.type == 1) {
 				updated |= updateInterfaceSequence(i.index, cycle);
 			}
 
 			if (i.seqIndexDisabled != -1) {
-				Seq s = Seq.instance[i.seqIndexDisabled];
+				Sequence s = Sequence.instance[i.seqIndexDisabled];
 				i.seqCycle += cycle;
 
 				while (i.seqCycle > s.frameDuration[i.seqFrame]) {
@@ -7900,7 +7913,7 @@ public class Game extends GameShell {
 				} else if (v == 4) {
 					Canvas3D.generatePalette(0.6);
 				}
-				ObjConfig.uniqueBitmapCache.clear();
+				ObjectInfo.uniqueBitmapCache.clear();
 				redraw = true;
 			}
 
@@ -7925,7 +7938,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void updateInterface(RSInterface i) {
+	public void updateInterface(GameInterface i) {
 		int action = i.action;
 
 		if (action >= 1 && action <= 100) {
@@ -8011,7 +8024,7 @@ public class Game extends GameShell {
 				}
 
 				m.applyGroups();
-				m.applyFrame(Seq.instance[localPlayer.seqStand].primaryFrames[0]);
+				m.applyFrame(Sequence.instance[localPlayer.seqStand].primaryFrames[0]);
 				m.applyLighting(64, 850, -30, -50, -30, true);
 				i.modelDisabled = m;
 			}
@@ -8040,7 +8053,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public boolean useInterfaceAction(RSInterface i) {
+	public boolean useInterfaceAction(GameInterface i) {
 		int action = i.action;
 
 		if (action == 201) {
@@ -8290,7 +8303,7 @@ public class Game extends GameShell {
 			fontBold.drawCentered("Enter amount to transfer:", 239, 40, 0);
 			fontBold.drawCentered(chatTransferInput + "*", 239, 60, 128);
 		} else if (chatInterfaceIndex != -1) {
-			drawInterface(RSInterface.instances[chatInterfaceIndex], 0, 0, 0);
+			drawInterface(GameInterface.instances[chatInterfaceIndex], 0, 0, 0);
 		} else {
 			int messageCount = 0;
 			Canvas2D.setBounds(0, 0, 463, 77);
@@ -8390,9 +8403,9 @@ public class Game extends GameShell {
 		invback.draw(0, 0);
 
 		if (sidebarInterfaceIndex != -1) {
-			drawInterface(RSInterface.instances[sidebarInterfaceIndex], 0, 0, 0);
+			drawInterface(GameInterface.instances[sidebarInterfaceIndex], 0, 0, 0);
 		} else if (sidebarTabInterfaceIndex[selectedTab] != -1) {
-			drawInterface(RSInterface.instances[sidebarTabInterfaceIndex[selectedTab]], 0, 0, 0);
+			drawInterface(GameInterface.instances[sidebarTabInterfaceIndex[selectedTab]], 0, 0, 0);
 		}
 
 		if (optionMenuVisible && optionMenuArea == 1) {

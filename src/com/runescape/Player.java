@@ -91,7 +91,7 @@ final class Player extends Entity {
 		}
 
 		if (spotanimIndex != -1 && spotanimFrame != -1) {
-			SpotAnim s = SpotAnim.instance[spotanimIndex];
+			SpotAnimation s = SpotAnimation.instance[spotanimIndex];
 			Model m = new Model(s.getModel(), false, true, !s.disposeAlpha, true);
 			m.translate(0, -spotanimOffsetY, 0);
 			m.applyGroups();
@@ -151,11 +151,11 @@ final class Player extends Entity {
 		int weaponOverride = -1;
 
 		if (primarySeqIndex >= 0 && primarySeqDelay == 0) {
-			Seq s = Seq.instance[primarySeqIndex];
+			Sequence s = Sequence.instance[primarySeqIndex];
 			primaryFrame = s.primaryFrames[primarySeqFrame];
 
 			if (secondarySeqIndex >= 0 && secondarySeqIndex != seqStand) {
-				secondaryFrame = Seq.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+				secondaryFrame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
 			}
 
 			if (s.shieldOverride >= 0) {
@@ -168,13 +168,13 @@ final class Player extends Entity {
 				bitset += (long) (shieldOverride - appearanceindex[3] << 16);
 			}
 		} else if (secondarySeqIndex >= 0) {
-			primaryFrame = Seq.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+			primaryFrame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
 		}
 
 		Model m = (Model) uniqueModelCache.get(bitset);
 
 		if (m == null) {
-			NPCConfig c = NPCConfig.get(666);
+			NPCInfo c = NPCInfo.get(666);
 
 			if (c != null) {
 				seqWalk = c.seqWalk;
@@ -226,7 +226,7 @@ final class Player extends Entity {
 				}
 
 				if (index >= 512) {
-					ObjConfig o = ObjConfig.get(index - 512);
+					ObjectInfo o = ObjectInfo.get(index - 512);
 					Model objModel = o.getWornModel(gender);
 
 					if (objModel != null) {
@@ -259,7 +259,7 @@ final class Player extends Entity {
 		m = new Model(m, true);
 
 		if (primaryFrame != -1 && secondaryFrame != -1) {
-			m.applyFrames(primaryFrame, secondaryFrame, Seq.instance[primarySeqIndex].labelGroups);
+			m.applyFrames(primaryFrame, secondaryFrame, Sequence.instance[primarySeqIndex].labelGroups);
 		} else if (primaryFrame != -1) {
 			m.applyFrame(primaryFrame);
 		}
@@ -285,7 +285,7 @@ final class Player extends Entity {
 			}
 
 			if (i >= 512) {
-				Model m = ObjConfig.get(i - 512).getHeadModel(gender);
+				Model m = ObjectInfo.get(i - 512).getHeadModel(gender);
 
 				if (m != null) {
 					models[count++] = m;

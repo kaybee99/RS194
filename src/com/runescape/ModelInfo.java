@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class ModelContext {
+public class ModelInfo {
 
 	public int vertexCount;
 	public int triangleCount;

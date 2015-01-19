@@ -11,7 +11,7 @@ public final class Landscape {
 	public Tile[][][] planeTiles;
 	public int minPlane;
 	public int locCount;
-	public Loc[] locs = new Loc[5000];
+	public Location[] locs = new Location[5000];
 	public int[][][] levelTileCycle;
 	public static int lastTileUpdateCount;
 	public static int tileUpdateN;
@@ -30,7 +30,7 @@ public final class Landscape {
 	public static int pitchCos;
 	public static int yawSin;
 	public static int yawCos;
-	public static Loc[] drawnLocs = new Loc[100];
+	public static Location[] drawnLocs = new Location[100];
 
 	public static final int[] DECO_TYPE1_OFFSET_X = {53, -53, -53, 53};
 	public static final int[] DECO_TYPE1_OFFSET_Z = {-53, -53, 53, 53};
@@ -304,7 +304,7 @@ public final class Landscape {
 	}
 
 	public void addObj(Model m, int tileY, int tileX, int tileZ, int sceneY, int bitset) {
-		ObjLoc l = new ObjLoc();
+		ObjectLocation l = new ObjectLocation();
 		l.model = m;
 		l.sceneX = tileX * 128 + 64;
 		l.sceneZ = tileZ * 128 + 64;
@@ -331,7 +331,7 @@ public final class Landscape {
 
 	public void addWall(Model m1, Model m2, int tileY, int tileX, int tileZ, int sceneY, int bitset, byte info, int type1, int type2) {
 		if (m1 != null || m2 != null) {
-			WallLoc l = new WallLoc();
+			WallLocation l = new WallLocation();
 			l.bitset = bitset;
 			l.info = info;
 			l.sceneX = tileX * 128 + 64;
@@ -352,7 +352,7 @@ public final class Landscape {
 
 	public void addWallDecoration(Model model, int tileX, int tileZ, int sceneY, int sizeX, int sizeY, int tileY, int bitset, byte flags, int type, int rotation) {
 		if (model != null) {
-			WallDecorationLoc l = new WallDecorationLoc();
+			WallDecorationLocation l = new WallDecorationLocation();
 			l.bitset = bitset;
 			l.info = flags;
 			l.sceneX = (tileX * 128) + 64 + sizeX;
@@ -449,7 +449,7 @@ public final class Landscape {
 			}
 		}
 
-		Loc l = new Loc();
+		Location l = new Location();
 		l.bitset = bitset;
 		l.info = info;
 		l.tileY = tileY;
@@ -506,14 +506,14 @@ public final class Landscape {
 
 	public void clearFrameLocs() {
 		for (int i = 0; i < locCount; i++) {
-			Loc l = locs[i];
+			Location l = locs[i];
 			removeLoc(l);
 			locs[i] = null;
 		}
 		locCount = 0;
 	}
 
-	private void removeLoc(Loc l) {
+	private void removeLoc(Location l) {
 		for (int x = l.minTileX; x <= l.maxTileX; x++) {
 			for (int z = l.minTileZ; z <= l.maxTileZ; z++) {
 				Tile t = planeTiles[l.tileY][x][z];
@@ -552,7 +552,7 @@ public final class Landscape {
 			Tile t = planeTiles[y][x][z];
 			if (t != null) {
 				for (int n = 0; n < t.locN; n++) {
-					Loc l = t.locs[n];
+					Location l = t.locs[n];
 					if ((l.bitset >> 29 & 0x3) == 2) {
 						l.model = m;
 						return;
@@ -566,7 +566,7 @@ public final class Landscape {
 		if (m != null) {
 			Tile t = planeTiles[y][x][z];
 			if (t != null) {
-				WallDecorationLoc l = t.wallDecoration;
+				WallDecorationLocation l = t.wallDecoration;
 				if (l != null) {
 					l.model = m;
 				}
@@ -592,7 +592,7 @@ public final class Landscape {
 		Tile t = planeTiles[y][x][z];
 		if (t != null) {
 			for (int n = 0; n < t.locN; n++) {
-				Loc l = t.locs[n];
+				Location l = t.locs[n];
 				if (l.bitset >> 29 == 2 && l.minTileX == x && l.minTileZ == z) {
 					removeLoc(l);
 					return;
@@ -616,13 +616,13 @@ public final class Landscape {
 	}
 
 	public int getBitset(int type, int x, int z, int y) {
-		if (type == Loc.CLASS_WALL) {
+		if (type == Location.CLASS_WALL) {
 			return getWallBitset(x, z, y);
-		} else if (type == Loc.CLASS_WALL_DECORATION) {
+		} else if (type == Location.CLASS_WALL_DECORATION) {
 			return getWallDecorationBitset(x, z, y);
-		} else if (type == Loc.CLASS_NORMAL) {
+		} else if (type == Location.CLASS_NORMAL) {
 			return getLocBitset(x, z, y);
-		} else if (type == Loc.CLASS_GROUND_DECORATION) {
+		} else if (type == Location.CLASS_GROUND_DECORATION) {
 			return getGroundDecorationBitset(x, z, y);
 		}
 		return 0;
@@ -650,7 +650,7 @@ public final class Landscape {
 			return 0;
 		}
 		for (int n = 0; n < t.locN; n++) {
-			Loc l = t.locs[n];
+			Location l = t.locs[n];
 			if ((l.bitset >> 29 & 0x3) == 2 && l.minTileX == x && l.minTileZ == z) {
 				return l.bitset;
 			}
@@ -703,7 +703,7 @@ public final class Landscape {
 					Tile t = planeTiles[plane][tileX][tileY];
 
 					if (t != null) {
-						WallLoc w = t.wall;
+						WallLocation w = t.wall;
 
 						if (w != null && w.model1 != null && w.model1.normals != null) {
 							mergeLocNormals(w.model1, tileX, tileY, plane, 1, 1);
@@ -718,7 +718,7 @@ public final class Landscape {
 						}
 
 						for (int n = 0; n < t.locN; n++) {
-							Loc l = t.locs[n];
+							Location l = t.locs[n];
 
 							if (l != null && l.model != null && l.model.normals != null) {
 								mergeLocNormals(l.model, tileX, tileY, plane, (l.maxTileX - l.minTileX + 1), (l.maxTileZ - l.minTileZ + 1));
@@ -799,7 +799,7 @@ public final class Landscape {
 							if (t != null) {
 								int averageY = ((heightmap[y][x][z] + heightmap[y][x + 1][z] + heightmap[y][x][z + 1] + heightmap[y][x + 1][z + 1]) / 4) - baseAverageY;
 
-								WallLoc wall = t.wall;
+								WallLocation wall = t.wall;
 
 								if (wall != null && wall.model1 != null && wall.model1.normals != null) {
 									mergeNormals(m, wall.model1, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
@@ -810,7 +810,7 @@ public final class Landscape {
 								}
 
 								for (int n = 0; n < t.locN; n++) {
-									Loc l = t.locs[n];
+									Location l = t.locs[n];
 
 									if (l != null && l.model != null && l.model.normals != null) {
 										int tileSizeX = (l.maxTileX - l.minTileX + 1);
@@ -1320,14 +1320,14 @@ public final class Landscape {
 							drawTileUnderlay(null, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
 						}
 
-						WallLoc wall = bridge.wall;
+						WallLocation wall = bridge.wall;
 
 						if (wall != null) {
 							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 						}
 
 						for (int n = 0; n < bridge.locN; n++) {
-							Loc loc = bridge.locs[n];
+							Location loc = bridge.locs[n];
 
 							if (loc != null) {
 								Model m = loc.model;
@@ -1359,8 +1359,8 @@ public final class Landscape {
 
 					int direction = 0;
 					int drawType = 0;
-					WallLoc wall = tile.wall;
-					WallDecorationLoc decoration = tile.wallDecoration;
+					WallLocation wall = tile.wall;
+					WallDecorationLocation decoration = tile.wallDecoration;
 
 					if (wall != null || decoration != null) {
 						if (cameraTileX == tileX) {
@@ -1457,7 +1457,7 @@ public final class Landscape {
 							d.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, d.sceneX - cameraX, d.sceneY - cameraY, d.sceneZ - cameraZ, d.bitset);
 						}
 
-						ObjLoc o = tile.obj;
+						ObjectLocation o = tile.obj;
 
 						if (o != null && o.offsetY == 0) {
 							o.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, o.sceneX - cameraX, o.sceneY - cameraY, o.sceneZ - cameraZ, o.bitset);
@@ -1512,7 +1512,7 @@ public final class Landscape {
 					}
 
 					if (visible) {
-						WallLoc wall = tile.wall;
+						WallLocation wall = tile.wall;
 
 						if (!culledWall(tileRenderPlane, tileX, tileZ, wall.type1)) {
 							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
@@ -1528,7 +1528,7 @@ public final class Landscape {
 					int locCount = 0;
 					LOOP:
 					for (int n = 0; n < locN; n++) {
-						Loc l = tile.locs[n];
+						Location l = tile.locs[n];
 
 						if (l.cycle != cullCycle) {
 							for (int x = l.minTileX; x <= l.maxTileX; x++) {
@@ -1596,7 +1596,7 @@ public final class Landscape {
 						int index = -1;
 
 						for (int n = 0; n < locCount; n++) {
-							Loc l = drawnLocs[n];
+							Location l = drawnLocs[n];
 
 							if (l.drawPriority > maxPriority && l.cycle != cullCycle) {
 								maxPriority = l.drawPriority;
@@ -1608,7 +1608,7 @@ public final class Landscape {
 							break;
 						}
 
-						Loc l = drawnLocs[index];
+						Location l = drawnLocs[index];
 						l.cycle = cullCycle;
 						Model m = l.model;
 
@@ -1678,14 +1678,14 @@ public final class Landscape {
 					tile.update = false;
 					tileUpdateN--;
 
-					ObjLoc object = tile.obj;
+					ObjectLocation object = tile.obj;
 
 					if (object != null && object.offsetY != 0) {
 						object.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, object.sceneX - cameraX, object.sceneY - cameraY - object.offsetY, object.sceneZ - cameraZ, object.bitset);
 					}
 
 					if (tile.anInt988 != 0) {
-						WallDecorationLoc decoration = tile.wallDecoration;
+						WallDecorationLocation decoration = tile.wallDecoration;
 
 						if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.minBoundY)) {
 							if ((decoration.type & tile.anInt988) != 0) {
@@ -1725,7 +1725,7 @@ public final class Landscape {
 							}
 						}
 
-						WallLoc wall = tile.wall;
+						WallLocation wall = tile.wall;
 
 						if (wall != null) {
 							if ((wall.type2 & tile.anInt988) != 0 && !culledWall(tileRenderPlane, tileX, tileZ, wall.type2)) {

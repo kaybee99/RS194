@@ -1,17 +1,17 @@
 package com.runescape;
 
-public final class SequencedLoc extends Link {
+public final class SequencedLocation extends Link {
 
 	public int plane;
 	public int classtype;
 	public int tileX;
 	public int tileY;
 	public int locIndex;
-	public Seq seq;
+	public Sequence seq;
 	public int seqFrame;
 	public int seqCycle;
 
-	public SequencedLoc(Seq s, int locIndex, int type, int tileX, int tileY, int plane) {
+	public SequencedLocation(Sequence s, int locIndex, int type, int tileX, int tileY, int plane) {
 		this.plane = plane;
 		this.classtype = type;
 		this.tileX = tileX;

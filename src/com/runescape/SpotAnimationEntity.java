@@ -1,8 +1,8 @@
 package com.runescape;
 
-final class SpotAnimEntity extends Renderable {
+final class SpotAnimationEntity extends Renderable {
 
-	private final SpotAnim spotanim;
+	private final SpotAnimation spotanim;
 	public int firstCycle;
 	public int plane;
 	public int x;
@@ -12,8 +12,8 @@ final class SpotAnimEntity extends Renderable {
 	private int frameCycle;
 	public boolean finished = false;
 
-	public SpotAnimEntity(int i, int i_0_, int duration, int spotanim, int plane, int i_4_, int i_5_, int firstCycle) {
-		this.spotanim = SpotAnim.instance[spotanim];
+	public SpotAnimationEntity(int i, int i_0_, int duration, int spotanim, int plane, int i_4_, int i_5_, int firstCycle) {
+		this.spotanim = SpotAnimation.instance[spotanim];
 		this.plane = plane;
 		this.x = i_4_;
 		this.y = i_5_;

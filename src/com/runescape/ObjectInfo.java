@@ -1,11 +1,11 @@
 package com.runescape;
 
-public class ObjConfig {
+public class ObjectInfo {
 
 	public static int count;
 	private static int[] pointers;
 	private static Buffer buffer;
-	private static ObjConfig[] cache;
+	private static ObjectInfo[] cache;
 	private static int cachepos;
 	public static Table uniqueModelCache = new Table(50);
 	static Table uniqueBitmapCache = new Table(200);
@@ -54,10 +54,10 @@ public class ObjConfig {
 			i += b.readUShort();
 		}
 
-		cache = new ObjConfig[10];
+		cache = new ObjectInfo[10];
 
 		for (i = 0; i < 10; i++) {
-			cache[i] = new ObjConfig();
+			cache[i] = new ObjectInfo();
 		}
 	}
 
@@ -69,14 +69,14 @@ public class ObjConfig {
 		buffer = null;
 	}
 
-	public static final ObjConfig get(int i) {
+	public static final ObjectInfo get(int i) {
 		for (int n = 0; n < 10; n++) {
 			if (cache[n].index == i) {
 				return cache[n];
 			}
 		}
 		cachepos = (cachepos + 1) % 10;
-		ObjConfig o = cache[cachepos];
+		ObjectInfo o = cache[cachepos];
 		buffer.position = pointers[i];
 		o.index = i;
 		o.reset();
@@ -221,7 +221,7 @@ public class ObjConfig {
 			return b;
 		}
 
-		ObjConfig c = get(index);
+		ObjectInfo c = get(index);
 		b = new Bitmap(32, 32);
 
 		int centerX = Canvas3D.centerX;

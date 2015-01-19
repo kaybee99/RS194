@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class WallLoc {
+public final class WallLocation {
 
 	public int sceneY;
 	public int sceneX;

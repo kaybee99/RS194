@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class RSInterface {
+public class GameInterface {
 
 	public static final int TYPE_PARENT = 0;
 	public static final int TYPE_UNUSED = 1;
@@ -16,7 +16,7 @@ public class RSInterface {
 	public static final int OPTIONTYPE_SELECT2 = 5;
 	public static final int OPTIONTYPE_CONTINUE = 6;
 
-	public static RSInterface[] instances;
+	public static GameInterface[] instances;
 
 	private static Table bitmapCache;
 	private static Table modelCache;
@@ -51,7 +51,7 @@ public class RSInterface {
 		modelCache = new Table(50000);
 
 		Buffer b = new Buffer(interfaces.get("data", null));
-		instances = new RSInterface[b.readUShort()];
+		instances = new GameInterface[b.readUShort()];
 
 		int parent = -1;
 		while (b.position < b.data.length) {
@@ -62,7 +62,7 @@ public class RSInterface {
 				index = b.readUShort();
 			}
 
-			RSInterface i = instances[index] = new RSInterface();
+			GameInterface i = instances[index] = new GameInterface();
 			i.index = index;
 			i.parent = parent;
 			i.type = b.read();

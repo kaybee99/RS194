@@ -8,12 +8,12 @@ public final class Tile extends Link {
 	public int renderPlane;
 	public TileUnderlay underlay;
 	public TileOverlay overlay;
-	public WallLoc wall;
-	public WallDecorationLoc wallDecoration;
+	public WallLocation wall;
+	public WallDecorationLocation wallDecoration;
 	public GroundDecorationLoc groundDecoration;
-	public ObjLoc obj;
+	public ObjectLocation obj;
 	public int locN;
-	public Loc[] locs = new Loc[5];
+	public Location[] locs = new Location[5];
 	public int[] locFlags = new int[5];
 	public int flags;
 	public int drawY;

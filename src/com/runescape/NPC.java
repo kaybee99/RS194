@@ -2,7 +2,7 @@ package com.runescape;
 
 final class NPC extends Entity {
 
-	NPCConfig config;
+	NPCInfo config;
 
 	@Override
 	public final Model getDrawModel() {
@@ -14,7 +14,7 @@ final class NPC extends Entity {
 			return getModel();
 		}
 
-		SpotAnim spotanim = SpotAnim.instance[spotanimIndex];
+		SpotAnimation spotanim = SpotAnimation.instance[spotanimIndex];
 		Model m = new Model(spotanim.getModel(), false, true, !spotanim.disposeAlpha, true);
 
 		m.translate(0, -spotanimOffsetY, 0);
@@ -31,20 +31,20 @@ final class NPC extends Entity {
 
 	public final Model getModel() {
 		if (primarySeqIndex >= 0 && primarySeqDelay == 0) {
-			int frame1 = Seq.instance[primarySeqIndex].primaryFrames[primarySeqFrame];
+			int frame1 = Sequence.instance[primarySeqIndex].primaryFrames[primarySeqFrame];
 			int frame2 = -1;
 
 			if (secondarySeqIndex >= 0 && secondarySeqIndex != seqStand) {
-				frame2 = (Seq.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame]);
+				frame2 = (Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame]);
 			}
 
-			return config.getModel(frame1, frame2, Seq.instance[primarySeqIndex].labelGroups);
+			return config.getModel(frame1, frame2, Sequence.instance[primarySeqIndex].labelGroups);
 		}
 
 		int frame = -1;
 
 		if (secondarySeqIndex >= 0) {
-			frame = Seq.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+			frame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
 		}
 
 		Model m = config.getModel(frame, -1, null);

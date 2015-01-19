@@ -43,12 +43,12 @@ public class Canvas3D extends Canvas2D {
 	public static int centerY;
 
 	/**
-	 * Technically a lookup table for 17.15 fixed point fractions.
+	 * A lookup table for 17.15 fixed point fractions.
 	 */
 	public static int[] oneOverFixed1715 = new int[512];
 
 	/**
-	 * Technically a lookup table for 16.16 fixed point fractions.
+	 * A lookup table for 16.16 fixed point fractions.
 	 */
 	public static int[] oneOverFixed1616 = new int[2048];
 
@@ -2640,11 +2640,11 @@ public class Canvas3D extends Canvas2D {
 
 	static {
 		for (int i = 1; i < 512; i++) {
-			oneOverFixed1715[i] = 32768 / i;
+			oneOverFixed1715[i] = (1 << 15) / i;
 		}
 
 		for (int i = 1; i < 2048; i++) {
-			oneOverFixed1616[i] = 65536 / i;
+			oneOverFixed1616[i] = (1 << 16) / i;
 		}
 
 		for (int i = 0; i < 2048; i++) {

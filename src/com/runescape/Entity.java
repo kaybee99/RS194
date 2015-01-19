@@ -71,7 +71,7 @@ public class Entity extends Renderable {
 
 	public final void setPosition(int x, int y) {
 		if (x != pathX[0] || y != pathY[0]) {
-			if (primarySeqIndex != -1 && Seq.instance[primarySeqIndex].priority <= 1) {
+			if (primarySeqIndex != -1 && Sequence.instance[primarySeqIndex].priority <= 1) {
 				primarySeqIndex = -1;
 			}
 
@@ -97,7 +97,7 @@ public class Entity extends Renderable {
 			int x = pathX[0] + dx;
 			int y = pathY[0] + dy;
 
-			if (primarySeqIndex != -1 && Seq.instance[primarySeqIndex].priority <= 1) {
+			if (primarySeqIndex != -1 && Sequence.instance[primarySeqIndex].priority <= 1) {
 				primarySeqIndex = -1;
 			}
 

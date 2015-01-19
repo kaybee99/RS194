@@ -295,7 +295,7 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	 */
 	protected void fireStartup() {
 		for (ShellListener l : this.getShellListeners()) {
-			l.onShellStartup();
+			l.onPreShellStartup();
 		}
 	}
 

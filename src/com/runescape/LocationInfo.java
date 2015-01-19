@@ -2,14 +2,14 @@ package com.runescape;
 
 import java.util.Arrays;
 
-public class LocConfig {
+public class LocationInfo {
 
 	private static final Model[] tmpModelStore = new Model[4];
 	public static String[] names;
 	public static int count;
 	private static int[] pointers;
 	private static Buffer data;
-	private static LocConfig[] cache;
+	private static LocationInfo[] cache;
 	private static int cachePosition;
 
 	public int index;
@@ -57,10 +57,10 @@ public class LocConfig {
 			i += b.readUShort();
 		}
 
-		cache = new LocConfig[10];
+		cache = new LocationInfo[10];
 
 		for (int n = 0; n < 10; n++) {
-			cache[n] = new LocConfig();
+			cache[n] = new LocationInfo();
 		}
 	}
 
@@ -76,7 +76,7 @@ public class LocConfig {
 		return count;
 	}
 
-	public static final LocConfig get(int index) {
+	public static final LocationInfo get(int index) {
 		if (index < 0 || index >= count) {
 			return null;
 		}
@@ -88,7 +88,7 @@ public class LocConfig {
 		}
 
 		cachePosition = (cachePosition + 1) % 10;
-		LocConfig c = cache[cachePosition];
+		LocationInfo c = cache[cachePosition];
 		data.position = pointers[index];
 		c.index = index;
 		c.reset();
@@ -96,7 +96,7 @@ public class LocConfig {
 		return c;
 	}
 
-	public LocConfig() {
+	public LocationInfo() {
 		this.index = -1;
 	}
 

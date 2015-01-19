@@ -1,8 +1,8 @@
 package com.runescape;
 
-public class SeqTransform {
+public class SequenceTransform {
 
-	public static SeqTransform[] instance;
+	public static SequenceTransform[] instance;
 	public int length;
 	public int[] groupTypes;
 	public int[][] groups;
@@ -14,7 +14,7 @@ public class SeqTransform {
 
 		int total = bhead.readUShort();
 
-		instance = new SeqTransform[bhead.readUShort() + 1];
+		instance = new SequenceTransform[bhead.readUShort() + 1];
 
 		for (int i = 0; i < total; i++) {
 			int index = bhead.readUShort();
@@ -34,7 +34,7 @@ public class SeqTransform {
 				}
 			}
 
-			instance[index] = new SeqTransform();
+			instance[index] = new SequenceTransform();
 			instance[index].length = length;
 			instance[index].groupTypes = groupTypes;
 			instance[index].groups = groups;

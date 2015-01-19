@@ -2,7 +2,7 @@ package com.runescape;
 
 final class Projectile extends Renderable {
 
-	private final SpotAnim spotanim;
+	private final SpotAnimation spotanim;
 	public int plane;
 	public int sourceX;
 	public int sourceY;
@@ -28,7 +28,7 @@ final class Projectile extends Renderable {
 	private int frameCycle;
 
 	public Projectile(int spotanim, int target, int sourceX, int sourceY, int sourceZ, int plane, int firstTick, int lastTick, int arcScale, int elevationPitch, int baseZ) {
-		this.spotanim = SpotAnim.instance[spotanim];
+		this.spotanim = SpotAnimation.instance[spotanim];
 		this.plane = plane;
 		this.sourceX = sourceX;
 		this.sourceY = sourceY;

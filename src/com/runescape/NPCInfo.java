@@ -1,11 +1,11 @@
 package com.runescape;
 
-public class NPCConfig {
+public class NPCInfo {
 
 	public static int count;
 	private static int[] pointers;
 	private static Buffer data;
-	private static NPCConfig[] cache;
+	private static NPCInfo[] cache;
 	private static int cachepos;
 	public int index;
 	public String name;
@@ -47,9 +47,9 @@ public class NPCConfig {
 			off += idx.readUShort();
 		}
 
-		cache = new NPCConfig[20];
+		cache = new NPCInfo[20];
 		for (int n = 0; n < 20; n++) {
-			cache[n] = new NPCConfig();
+			cache[n] = new NPCInfo();
 		}
 	}
 
@@ -60,21 +60,21 @@ public class NPCConfig {
 		data = null;
 	}
 
-	public static final NPCConfig get(int i) {
+	public static final NPCInfo get(int i) {
 		for (int n = 0; n < 20; n++) {
 			if (cache[n].index == i) {
 				return cache[n];
 			}
 		}
 		cachepos = (cachepos + 1) % 20;
-		NPCConfig n = cache[cachepos] = new NPCConfig();
+		NPCInfo n = cache[cachepos] = new NPCInfo();
 		data.position = pointers[i];
 		n.index = i;
 		n.read(data);
 		return n;
 	}
 
-	public NPCConfig() {
+	public NPCInfo() {
 		this.index = -1;
 	}
 
