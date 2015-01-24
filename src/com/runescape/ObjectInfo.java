@@ -224,22 +224,22 @@ public class ObjectInfo {
 		ObjectInfo c = get(index);
 		b = new Bitmap(32, 32);
 
-		int centerX = Canvas3D.centerX;
-		int centerY = Canvas3D.centerY;
-		int[] offsets = Canvas3D.offsets;
-		int[] data = Canvas2D.dst;
-		int width = Canvas2D.dstW;
-		int height = Canvas2D.dstH;
+		int centerX = Graphics3D.centerX;
+		int centerY = Graphics3D.centerY;
+		int[] offsets = Graphics3D.offsets;
+		int[] data = Graphics2D.dst;
+		int width = Graphics2D.dstW;
+		int height = Graphics2D.dstH;
 
-		Canvas3D.texturedShading = false;
-		Canvas2D.prepare(b.pixels, 32, 32);
-		Canvas2D.fillRect(0, 0, 32, 32, 0);
-		Canvas3D.prepareOffsets();
+		Graphics3D.texturedShading = false;
+		Graphics2D.prepare(b.pixels, 32, 32);
+		Graphics2D.fillRect(0, 0, 32, 32, 0);
+		Graphics3D.prepareOffsets();
 
 		Model m = c.getModel();
 
-		int cameraY = (Canvas3D.sin[c.iconCameraPitch] * c.iconZoom) >> 16;
-		int cameraZ = (Canvas3D.cos[c.iconCameraPitch] * c.iconZoom) >> 16;
+		int cameraY = (Graphics3D.sin[c.iconCameraPitch] * c.iconZoom) >> 16;
+		int cameraZ = (Graphics3D.cos[c.iconCameraPitch] * c.iconZoom) >> 16;
 
 		m.draw(0, c.iconYaw, c.iconRoll, c.iconX, (cameraY + (m.maxBoundY / 2) + c.iconY), cameraZ + c.iconY, c.iconCameraPitch);
 
@@ -269,11 +269,11 @@ public class ObjectInfo {
 
 		uniqueBitmapCache.put(b, (long) index);
 
-		Canvas2D.prepare(data, width, height);
-		Canvas3D.centerX = centerX;
-		Canvas3D.centerY = centerY;
-		Canvas3D.offsets = offsets;
-		Canvas3D.texturedShading = true;
+		Graphics2D.prepare(data, width, height);
+		Graphics3D.centerX = centerX;
+		Graphics3D.centerY = centerY;
+		Graphics3D.offsets = offsets;
+		Graphics3D.texturedShading = true;
 
 		if (c.stackable) {
 			b.clipWidth = 33;

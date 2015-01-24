@@ -24,6 +24,7 @@
 package dane.runescape.mapeditor;
 
 import dane.runescape.mapeditor.event.ShellListener;
+import java.awt.AWTEvent;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import javax.swing.JComponent;
@@ -50,6 +51,8 @@ public class GamePanel extends JComponent implements ShellListener {
 		final int w = this.getWidth();
 		final int h = this.getHeight();
 
+		this.enableEvents(AWTEvent.MOUSE_EVENT_MASK | AWTEvent.KEY_EVENT_MASK | AWTEvent.MOUSE_MOTION_EVENT_MASK | AWTEvent.MOUSE_WHEEL_EVENT_MASK);
+
 		this.game.addShellListener(this);
 		this.game.initApplet(w, h);
 		this.image = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
@@ -64,6 +67,14 @@ public class GamePanel extends JComponent implements ShellListener {
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 		g.drawImage(this.image, 0, 0, this.getWidth(), this.getHeight(), this);
+	}
+
+	@Override
+	protected void processEvent(AWTEvent e) {
+		super.processEvent(e);
+		
+		// stick that in there ;)
+		this.game.feedEvent(e);
 	}
 
 	public GameSub getGame() {

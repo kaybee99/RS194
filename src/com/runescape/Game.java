@@ -483,14 +483,14 @@ public class Game extends GameShell {
 
 	public static final void setLowMemory() {
 		Landscape.lowmemory = true;
-		Canvas3D.lowmemory = true;
+		Graphics3D.lowmemory = true;
 		lowmemory = true;
 		Scene.lowmemory = true;
 	}
 
 	public static final void setHighMemory() {
 		Landscape.lowmemory = false;
-		Canvas3D.lowmemory = false;
+		Graphics3D.lowmemory = false;
 		lowmemory = false;
 		Scene.lowmemory = false;
 	}
@@ -685,9 +685,9 @@ public class Game extends GameShell {
 
 	public void loadTextures(Archive textures) {
 		drawProgress("Unpacking textures", 85);
-		Canvas3D.unpackTextures(textures);
-		Canvas3D.generatePalette(0.8);
-		Canvas3D.setupPools(20);
+		Graphics3D.unpackTextures(textures);
+		Graphics3D.generatePalette(0.8);
+		Graphics3D.setupPools(20);
 	}
 
 	public void loadModels(Archive models) {
@@ -797,14 +797,14 @@ public class Game extends GameShell {
 			drawProgress("Preparing game engine", 95);
 			prepareRotatables();
 
-			Canvas3D.prepareOffsets(479, 96);
-			chatOffsets = Canvas3D.offsets;
+			Graphics3D.prepareOffsets(479, 96);
+			chatOffsets = Graphics3D.offsets;
 
-			Canvas3D.prepareOffsets(190, 261);
-			sidebarOffsets = Canvas3D.offsets;
+			Graphics3D.prepareOffsets(190, 261);
+			sidebarOffsets = Graphics3D.offsets;
 
-			Canvas3D.prepareOffsets(512, 334);
-			viewportOffsets = Canvas3D.offsets;
+			Graphics3D.prepareOffsets(512, 334);
+			viewportOffsets = Graphics3D.offsets;
 
 			Landscape.init(512, 334, 500, 800);
 		} catch (Exception e) {
@@ -999,9 +999,9 @@ public class Game extends GameShell {
 			y -= (h / 2);
 			y -= 21; // titleCenter isn't even perfectly centered
 
-			Canvas2D.fillRect(x, y, w, h, 0);
-			Canvas2D.drawRect(x, y, w, h, 0x8C1111);
-			Canvas2D.fillRect(x + 2, y + 2, ((w - 4) * percent) / 100, h - 4, 0x8C1111);
+			Graphics2D.fillRect(x, y, w, h, 0);
+			Graphics2D.drawRect(x, y, w, h, 0x8C1111);
+			Graphics2D.fillRect(x + 2, y + 2, ((w - 4) * percent) / 100, h - 4, 0x8C1111);
 
 			fontBold.drawCentered(caption, centerX, centerY - (h / 2), 0xFFFFFF);
 
@@ -1135,11 +1135,11 @@ public class Game extends GameShell {
 			sideiconsBottom = new ImageProducer(288, 40);
 
 			maparea = new ImageProducer(168, 160);
-			Canvas2D.clear();
+			Graphics2D.clear();
 			mapback.draw(0, 0);
 
 			viewport = new ImageProducer(512, 334);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			redraw = true;
 		}
@@ -1156,31 +1156,31 @@ public class Game extends GameShell {
 			sideiconsTop = null;
 
 			titleLeft = new ImageProducer(128, 265);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleRight = new ImageProducer(128, 265);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleTop = new ImageProducer(533, 186);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleBottom = new ImageProducer(360, 146);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleCenter = new ImageProducer(360, 200);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleBottomLeft = new ImageProducer(214, 267);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleBottomRight = new ImageProducer(215, 267);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleLeftSpace = new ImageProducer(86, 79);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			titleRightSpace = new ImageProducer(87, 79);
-			Canvas2D.clear();
+			Graphics2D.clear();
 
 			if (titleArchive != null) {
 				loadTitleBackground();
@@ -2089,7 +2089,7 @@ public class Game extends GameShell {
 		SpotAnimation.uniqueModelCache = null;
 		Varp.instance = null;
 		Player.uniqueModelCache = null;
-		Canvas3D.unload();
+		Graphics3D.unload();
 		Landscape.unload();
 		Model.unload();
 		SequenceTransform.instance = null;
@@ -2312,8 +2312,8 @@ public class Game extends GameShell {
 				x -= 73;
 				y -= 75;
 
-				int yawsin = Canvas3D.sin[cameraOrbitYaw];
-				int yawcos = Canvas3D.cos[cameraOrbitYaw];
+				int yawsin = Graphics3D.sin[cameraOrbitYaw];
+				int yawcos = Graphics3D.cos[cameraOrbitYaw];
 
 				int rotatedX = y * yawsin + x * yawcos >> 11;
 				int rotatedY = y * yawcos - x * yawsin >> 11;
@@ -2423,7 +2423,7 @@ public class Game extends GameShell {
 	public void updateLandscapeClick() {
 		if (Scene.clickedTileX != -1) {
 			int tileX = Scene.clickedTileX;
-			int tileZ = Scene.clickedTileZ;
+			int tileZ = Scene.clickedTileY;
 			boolean canMove = moveTo(localPlayer.pathX[0], localPlayer.pathY[0], tileX, tileZ, 0, 0, 0, 0, 0, true);
 			Scene.clickedTileX = -1;
 
@@ -3224,13 +3224,13 @@ public class Game extends GameShell {
 
 		int topPlane = updateCamera(localPlayer.sceneX >> 7, localPlayer.sceneZ >> 7);
 
-		int startCycle = Canvas3D.cycle;
+		int startCycle = Graphics3D.cycle;
 		Model.allowInput = true;
 		Model.hoverCount = 0;
 		Model.mouseX = mouseX - 8;
 		Model.mouseY = mouseY - 11;
 
-		Canvas2D.clear();
+		Graphics2D.clear();
 
 		Scene.mouseX = Model.mouseX;
 		Scene.mouseY = Model.mouseY;
@@ -3239,7 +3239,7 @@ public class Game extends GameShell {
 		landscape.clearFrameLocs();
 
 		drawViewport2d();
-		drawCrosses();
+		drawCross();
 
 		if (viewportInterfaceIndex != -1) {
 			drawInterface(GameInterface.instances[viewportInterfaceIndex], 0, 0, 0);
@@ -3531,10 +3531,10 @@ public class Game extends GameShell {
 						} else if (e.spokenEffect == 2) { // slide
 							int w = fontBold.stringWidth(e.spoken);
 							int x = ((150 - e.spokenLife) * (w + 100)) / 150;
-							Canvas2D.setBounds(viewportDrawX - 50, 0, viewportDrawX + 50, 334);
+							Graphics2D.setBounds(viewportDrawX - 50, 0, viewportDrawX + 50, 334);
 							fontBold.draw(e.spoken, viewportDrawX + 50 - x, viewportDrawY + 1, 0);
 							fontBold.draw(e.spoken, viewportDrawX + 50 - x, viewportDrawY, rgb);
-							Canvas2D.resetBounds();
+							Graphics2D.resetBounds();
 						}
 					} else {
 						fontBold.drawCentered(e.spoken, viewportDrawX, viewportDrawY + 1, 0);
@@ -3552,8 +3552,8 @@ public class Game extends GameShell {
 						w = 30;
 					}
 
-					Canvas2D.fillRect(viewportDrawX - 15, viewportDrawY - 3, w, 5, 0xFF00);
-					Canvas2D.fillRect(viewportDrawX - 15 + w, viewportDrawY - 3, 30 - w, 5, 0xFF0000);
+					Graphics2D.fillRect(viewportDrawX - 15, viewportDrawY - 3, w, 5, 0xFF00);
+					Graphics2D.fillRect(viewportDrawX - 15 + w, viewportDrawY - 3, 30 - w, 5, 0xFF0000);
 				}
 			}
 
@@ -3569,7 +3569,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void drawCrosses() {
+	public void drawCross() {
 		if (crossType == 1) {
 			crosses[crossCycle / 100].draw(crossX - 8 - 8, crossY - 8 - 11);
 		}
@@ -3584,8 +3584,8 @@ public class Game extends GameShell {
 			return;
 		}
 
-		if (Canvas3D.textureCycles[17] >= cycle) {
-			IndexedBitmap i = (Canvas3D.textures[17]);
+		if (Graphics3D.textureCycles[17] >= cycle) {
+			IndexedBitmap i = (Graphics3D.textures[17]);
 			int len = ((i.width * i.height) - 1);
 			int shift = i.width * (sceneDelta * 2);
 			byte[] pixels = i.data;
@@ -3597,7 +3597,7 @@ public class Game extends GameShell {
 
 			i.data = tmp;
 			tmpTexels = pixels;
-			Canvas3D.updateTexture(17);
+			Graphics3D.updateTexture(17);
 		}
 	}
 
@@ -3674,8 +3674,8 @@ public class Game extends GameShell {
 		sceneY = w;
 
 		if (sceneZ >= 50) {
-			viewportDrawX = Canvas3D.centerX + (sceneX << 9) / sceneZ;
-			viewportDrawY = Canvas3D.centerY + (sceneY << 9) / sceneZ;
+			viewportDrawX = Graphics3D.centerX + (sceneX << 9) / sceneZ;
+			viewportDrawY = Graphics3D.centerY + (sceneY << 9) / sceneZ;
 		} else {
 			viewportDrawX = -1;
 			viewportDrawY = -1;
@@ -3743,7 +3743,7 @@ public class Game extends GameShell {
 		sequencedLocs.clear();
 		spotanims.clear();
 		projectiles.clear();
-		Canvas3D.clearPools();
+		Graphics3D.clearPools();
 		clearCaches();
 		landscape.reset();
 
@@ -3813,7 +3813,7 @@ public class Game extends GameShell {
 
 		LocationInfo.unmodifiedModelCache.clear();
 		System.gc();
-		Canvas3D.setupPools(20);
+		Graphics3D.setupPools(20);
 		return s;
 	}
 
@@ -4415,7 +4415,7 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void interactWithLoc(int bitset, int x, int y, int opcode) {
+	public void interactWithLoc(int bitset, int x, int y, int opcode) {
 		int locIndex = bitset >> 14 & 0x7fff;
 		int info = landscape.getInfo(x, y, currentPlane, bitset);
 
@@ -6174,9 +6174,9 @@ public class Game extends GameShell {
 		int h = optionMenuHeight;
 		int bgrgb = 0x5D5447;
 
-		Canvas2D.fillRect(x, y, w, h, bgrgb);
-		Canvas2D.fillRect(x + 1, y + 1, w - 2, 16, 0);
-		Canvas2D.drawRect(x + 1, y + 18, w - 2, h - 19, 0);
+		Graphics2D.fillRect(x, y, w, h, bgrgb);
+		Graphics2D.fillRect(x + 1, y + 1, w - 2, 16, 0);
+		Graphics2D.drawRect(x + 1, y + 18, w - 2, h - 19, 0);
 		fontBold.draw("Choose Option", x + 3, y + 14, bgrgb);
 
 		int mx = mouseX;
@@ -7211,11 +7211,11 @@ public class Game extends GameShell {
 
 	public final void drawInterface(GameInterface parent, int parentX, int parentY, int offsetY) {
 		if (parent.type == 0 && parent.children != null && (!parent.hidden || viewportHoveredInterfaceIndex == parent.index || sidebarHoveredInterfaceIndex == parent.index || chatHoveredInterfaceIndex == parent.index)) {
-			int left = Canvas2D.left;
-			int top = Canvas2D.top;
-			int right = Canvas2D.right;
-			int bottom = Canvas2D.bottom;
-			Canvas2D.setBounds(parentX, parentY, parentX + parent.width, parentY + parent.height);
+			int left = Graphics2D.left;
+			int top = Graphics2D.top;
+			int right = Graphics2D.right;
+			int bottom = Graphics2D.bottom;
+			Graphics2D.setBounds(parentX, parentY, parentX + parent.width, parentY + parent.height);
 
 			for (int n = 0; n < parent.children.length; n++) {
 				int x = parent.childX[n] + parentX;
@@ -7280,9 +7280,9 @@ public class Game extends GameShell {
 					}
 				} else if (i.type == 3) {
 					if (i.fill) {
-						Canvas2D.fillRect(x, y, i.width, i.height, i.colorDisabled);
+						Graphics2D.fillRect(x, y, i.width, i.height, i.colorDisabled);
 					} else {
-						Canvas2D.drawRect(x, y, i.width, i.height, i.colorDisabled);
+						Graphics2D.drawRect(x, y, i.width, i.height, i.colorDisabled);
 					}
 				} else if (i.type == 4) {
 					BitmapFont f = i.font;
@@ -7388,14 +7388,14 @@ public class Game extends GameShell {
 						b.draw(x, y);
 					}
 				} else if (i.type == 6) {
-					int centerX = Canvas3D.centerX;
-					int centerY = Canvas3D.centerY;
+					int centerX = Graphics3D.centerX;
+					int centerY = Graphics3D.centerY;
 
-					Canvas3D.centerX = x + (i.width / 2);
-					Canvas3D.centerY = y + (i.height / 2);
+					Graphics3D.centerX = x + (i.width / 2);
+					Graphics3D.centerY = y + (i.height / 2);
 
-					int camY = (Canvas3D.sin[i.modelCameraPitch] * i.modelZoom) >> 16;
-					int camZ = (Canvas3D.cos[i.modelCameraPitch] * i.modelZoom) >> 16;
+					int camY = (Graphics3D.sin[i.modelCameraPitch] * i.modelZoom) >> 16;
+					int camZ = (Graphics3D.cos[i.modelCameraPitch] * i.modelZoom) >> 16;
 					Model m;
 
 					if (i.seqIndexDisabled == -1) {
@@ -7409,8 +7409,8 @@ public class Game extends GameShell {
 						m.draw(0, i.modelYaw, 0, 0, camY, camZ, i.modelCameraPitch);
 					}
 
-					Canvas3D.centerX = centerX;
-					Canvas3D.centerY = centerY;
+					Graphics3D.centerX = centerX;
+					Graphics3D.centerY = centerY;
 				} else if (i.type == 7) {
 					BitmapFont f = i.font;
 
@@ -7445,7 +7445,7 @@ public class Game extends GameShell {
 					}
 				}
 			}
-			Canvas2D.setBounds(left, top, right, bottom);
+			Graphics2D.setBounds(left, top, right, bottom);
 		}
 	}
 
@@ -7500,7 +7500,7 @@ public class Game extends GameShell {
 	public final void drawScrollbar(int x, int y, int h, int scrollHeight, int scrollAmount) {
 		scrollbar1.draw(x, y);
 		scrollbar2.draw(x, y + h - 16);
-		Canvas2D.fillRect(x, y + 16, 16, h - 32, SCROLLBAR_TRACK_COLOR);
+		Graphics2D.fillRect(x, y + 16, 16, h - 32, SCROLLBAR_TRACK_COLOR);
 
 		int gripHeight = ((h - 32) * h) / scrollHeight;
 
@@ -7509,15 +7509,15 @@ public class Game extends GameShell {
 		}
 
 		int offY = ((h - 32 - gripHeight) * scrollAmount) / (scrollHeight - h);
-		Canvas2D.fillRect(x, y + 16 + offY, 16, gripHeight, SCROLLBAR_GRIP_FOREGROUND);
-		Canvas2D.drawVerticalLine(x, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_HIGHLIGHT);
-		Canvas2D.drawVerticalLine(x + 1, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_HIGHLIGHT);
-		Canvas2D.drawHorizontalLine(x, y + 16 + offY, 16, SCROLLBAR_GRIP_HIGHLIGHT);
-		Canvas2D.drawHorizontalLine(x, y + 17 + offY, 16, SCROLLBAR_GRIP_HIGHLIGHT);
-		Canvas2D.drawVerticalLine(x + 15, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_LOWLIGHT);
-		Canvas2D.drawVerticalLine(x + 14, y + 17 + offY, gripHeight - 1, SCROLLBAR_GRIP_LOWLIGHT);
-		Canvas2D.drawHorizontalLine(x, y + 15 + offY + gripHeight, 16, SCROLLBAR_GRIP_LOWLIGHT);
-		Canvas2D.drawHorizontalLine(x + 1, y + 14 + offY + gripHeight, 15, SCROLLBAR_GRIP_LOWLIGHT);
+		Graphics2D.fillRect(x, y + 16 + offY, 16, gripHeight, SCROLLBAR_GRIP_FOREGROUND);
+		Graphics2D.drawVerticalLine(x, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_HIGHLIGHT);
+		Graphics2D.drawVerticalLine(x + 1, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_HIGHLIGHT);
+		Graphics2D.drawHorizontalLine(x, y + 16 + offY, 16, SCROLLBAR_GRIP_HIGHLIGHT);
+		Graphics2D.drawHorizontalLine(x, y + 17 + offY, 16, SCROLLBAR_GRIP_HIGHLIGHT);
+		Graphics2D.drawVerticalLine(x + 15, y + 16 + offY, gripHeight, SCROLLBAR_GRIP_LOWLIGHT);
+		Graphics2D.drawVerticalLine(x + 14, y + 17 + offY, gripHeight - 1, SCROLLBAR_GRIP_LOWLIGHT);
+		Graphics2D.drawHorizontalLine(x, y + 15 + offY + gripHeight, 16, SCROLLBAR_GRIP_LOWLIGHT);
+		Graphics2D.drawHorizontalLine(x + 1, y + 14 + offY + gripHeight, 15, SCROLLBAR_GRIP_LOWLIGHT);
 	}
 
 	public final String getAmountString(int i) {
@@ -7906,13 +7906,13 @@ public class Game extends GameShell {
 
 			if (type == 1) {
 				if (v == 1) {
-					Canvas3D.generatePalette(0.9);
+					Graphics3D.generatePalette(0.9);
 				} else if (v == 2) {
-					Canvas3D.generatePalette(0.8);
+					Graphics3D.generatePalette(0.8);
 				} else if (v == 3) {
-					Canvas3D.generatePalette(0.7);
+					Graphics3D.generatePalette(0.7);
 				} else if (v == 4) {
-					Canvas3D.generatePalette(0.6);
+					Graphics3D.generatePalette(0.6);
 				}
 				ObjectInfo.uniqueBitmapCache.clear();
 				redraw = true;
@@ -8247,7 +8247,7 @@ public class Game extends GameShell {
 				drawOntoMinimap(mapdot3, x, y);
 			}
 		}
-		Canvas2D.fillRect(93, 82, 3, 3, 0xFFFFFF);
+		Graphics2D.fillRect(93, 82, 3, 3, 0xFFFFFF);
 		viewport.prepare();
 	}
 
@@ -8294,7 +8294,7 @@ public class Game extends GameShell {
 
 	public final void drawChat() {
 		chatarea.prepare();
-		Canvas3D.offsets = chatOffsets;
+		Graphics3D.offsets = chatOffsets;
 		chatback.draw(0, 0);
 
 		if (chatShowDialogueInput) {
@@ -8307,7 +8307,7 @@ public class Game extends GameShell {
 			drawInterface(GameInterface.instances[chatInterfaceIndex], 0, 0, 0);
 		} else {
 			int messageCount = 0;
-			Canvas2D.setBounds(0, 0, 463, 77);
+			Graphics2D.setBounds(0, 0, 463, 77);
 
 			for (int n = 0; n < 50; n++) {
 				if (chatMessage[n] != null) {
@@ -8368,7 +8368,7 @@ public class Game extends GameShell {
 					}
 				}
 			}
-			Canvas2D.resetBounds();
+			Graphics2D.resetBounds();
 			chatHeight = (messageCount * 14) + 7;
 
 			if (chatHeight < 78) {
@@ -8377,11 +8377,11 @@ public class Game extends GameShell {
 
 			drawScrollbar(463, 0, 77, chatHeight, chatHeight - chatScrollAmount - 77);
 			fontFancy.draw(chatInput + "*", 3, 90, 0);
-			Canvas2D.drawHorizontalLine(0, 77, 479, 0);
+			Graphics2D.drawHorizontalLine(0, 77, 479, 0);
 		}
 		chatarea.draw(graphics, 22, 375);
 		viewport.prepare();
-		Canvas3D.offsets = viewportOffsets;
+		Graphics3D.offsets = viewportOffsets;
 	}
 
 	public final boolean isFriend(String s) {
@@ -8400,7 +8400,7 @@ public class Game extends GameShell {
 
 	public final void drawSidebar() {
 		sidebar.prepare();
-		Canvas3D.offsets = sidebarOffsets;
+		Graphics3D.offsets = sidebarOffsets;
 		invback.draw(0, 0);
 
 		if (sidebarInterfaceIndex != -1) {
@@ -8415,7 +8415,7 @@ public class Game extends GameShell {
 
 		sidebar.draw(graphics, 562, 231);
 		viewport.prepare();
-		Canvas3D.offsets = viewportOffsets;
+		Graphics3D.offsets = viewportOffsets;
 	}
 
 	@Override

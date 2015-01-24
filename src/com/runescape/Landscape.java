@@ -961,7 +961,7 @@ public final class Landscape {
 		for (int n = 0; n < 9; n++) {
 			int angle = (n * 32) + 128 + 15;
 			int zoom = (angle * 3) + 600;
-			pitchZ[n] = (zoom * Canvas3D.sin[angle]) >> 16;
+			pitchZ[n] = (zoom * Graphics3D.sin[angle]) >> 16;
 		}
 
 		// some padding?
@@ -1060,7 +1060,7 @@ public final class Landscape {
 		Scene.clickX = clickX;
 		Scene.clickY = clickY;
 		Scene.clickedTileX = -1;
-		Scene.clickedTileZ = -1;
+		Scene.clickedTileY = -1;
 	}
 
 	public void draw(int cameraX, int cameraY, int cameraZ, int pitch, int yaw, int topY) {
@@ -1845,31 +1845,31 @@ public final class Landscape {
 			return;
 		}
 
-		int x0 = (Canvas3D.centerX + (sceneX0 << 9) / sceneZ0);
-		int y0 = (Canvas3D.centerY + (sceneY0 << 9) / sceneZ0);
-		int x1 = (Canvas3D.centerX + (sceneX1 << 9) / sceneZ1);
-		int y1 = (Canvas3D.centerY + (sceneY1 << 9) / sceneZ1);
-		int x2 = (Canvas3D.centerX + (sceneX2 << 9) / sceneZ2);
-		int y2 = (Canvas3D.centerY + (sceneY2 << 9) / sceneZ2);
-		int x3 = (Canvas3D.centerX + (sceneX3 << 9) / sceneZ3);
-		int y3 = (Canvas3D.centerY + (sceneY3 << 9) / sceneZ3);
+		int x0 = (Graphics3D.centerX + (sceneX0 << 9) / sceneZ0);
+		int y0 = (Graphics3D.centerY + (sceneY0 << 9) / sceneZ0);
+		int x1 = (Graphics3D.centerX + (sceneX1 << 9) / sceneZ1);
+		int y1 = (Graphics3D.centerY + (sceneY1 << 9) / sceneZ1);
+		int x2 = (Graphics3D.centerX + (sceneX2 << 9) / sceneZ2);
+		int y2 = (Graphics3D.centerY + (sceneY2 << 9) / sceneZ2);
+		int x3 = (Graphics3D.centerX + (sceneX3 << 9) / sceneZ3);
+		int y3 = (Graphics3D.centerY + (sceneY3 << 9) / sceneZ3);
 
-		Canvas3D.alpha = 0;
+		Graphics3D.alpha = 0;
 
 		boolean within = withinTriangle(Scene.mouseX, Scene.mouseY, y2, y3, y1, x2, x3, x1) | withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y3, x0, x1, x3);
 		boolean hovered = false;
 
 		if (((x2 - x3) * (y1 - y3) - (y2 - y3) * (x1 - x3)) > 0) {
-			Canvas3D.verifyBounds = false;
+			Graphics3D.verifyBounds = false;
 
-			if (x2 < 0 || x3 < 0 || x1 < 0 || x2 > Canvas2D.dstXBound || x3 > Canvas2D.dstXBound || x1 > Canvas2D.dstXBound) {
-				Canvas3D.verifyBounds = true;
+			if (x2 < 0 || x3 < 0 || x1 < 0 || x2 > Graphics2D.dstXBound || x3 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound) {
+				Graphics3D.verifyBounds = true;
 			}
 
 			if (within) {
 				if (Scene.checkClick) {
 					Scene.clickedTileX = tileX;
-					Scene.clickedTileZ = tileZ;
+					Scene.clickedTileY = tileZ;
 				}
 
 				if (Scene.hoverPlane == plane) {
@@ -1882,32 +1882,32 @@ public final class Landscape {
 			if (u != null) {
 				if (u.textureIndex == -1) {
 					if (u.northeastColor != 12345678) {
-						Canvas3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, u.northeastColor, u.northwestColor, u.southeastColor);
+						Graphics3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, u.northeastColor, u.northwestColor, u.southeastColor);
 					}
 				} else if (!lowmemory) {
 					if (u.isFlat) {
-						Canvas3D.fillTexturedTriangle(y2, y3, y1, x2, x3, x1, u.northeastColor, u.northwestColor, u.southeastColor, sceneX0, sceneX1, sceneX3, sceneY0, sceneY1, sceneY3, sceneZ0, sceneZ1, sceneZ3, u.textureIndex);
+						Graphics3D.fillTexturedTriangle(y2, y3, y1, x2, x3, x1, u.northeastColor, u.northwestColor, u.southeastColor, sceneX0, sceneX1, sceneX3, sceneY0, sceneY1, sceneY3, sceneZ0, sceneZ1, sceneZ3, u.textureIndex);
 					} else {
-						Canvas3D.fillTexturedTriangle(y2, y3, y1, x2, x3, x1, u.northeastColor, u.northwestColor, u.southeastColor, sceneX2, sceneX3, sceneX1, sceneY2, sceneY3, sceneY1, sceneZ2, sceneZ3, sceneZ1, u.textureIndex);
+						Graphics3D.fillTexturedTriangle(y2, y3, y1, x2, x3, x1, u.northeastColor, u.northwestColor, u.southeastColor, sceneX2, sceneX3, sceneX1, sceneY2, sceneY3, sceneY1, sceneZ2, sceneZ3, sceneZ1, u.textureIndex);
 					}
 				} else {
 					int hsl = TEXTURE_HSL[u.textureIndex];
-					Canvas3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, adjustHSLLightness(hsl, u.northeastColor), adjustHSLLightness(hsl, u.northwestColor), adjustHSLLightness(hsl, u.southeastColor));
+					Graphics3D.fillShadedTriangle(x2, y2, x3, y3, x1, y1, adjustHSLLightness(hsl, u.northeastColor), adjustHSLLightness(hsl, u.northwestColor), adjustHSLLightness(hsl, u.southeastColor));
 				}
 			}
 		}
 
 		if (((x0 - x1) * (y3 - y1) - (y0 - y1) * (x3 - x1)) > 0) {
-			Canvas3D.verifyBounds = false;
+			Graphics3D.verifyBounds = false;
 
-			if (x0 < 0 || x1 < 0 || x3 < 0 || x0 > Canvas2D.dstXBound || x1 > Canvas2D.dstXBound || x3 > Canvas2D.dstXBound) {
-				Canvas3D.verifyBounds = true;
+			if (x0 < 0 || x1 < 0 || x3 < 0 || x0 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound || x3 > Graphics2D.dstXBound) {
+				Graphics3D.verifyBounds = true;
 			}
 
 			if (within) {
 				if (Scene.checkClick) {
 					Scene.clickedTileX = tileX;
-					Scene.clickedTileZ = tileZ;
+					Scene.clickedTileY = tileZ;
 				}
 
 				if (Scene.hoverPlane == plane) {
@@ -1920,13 +1920,13 @@ public final class Landscape {
 			if (u != null) {
 				if (u.textureIndex == -1) {
 					if (u.southwestColor != 12345678) {
-						Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, u.southwestColor, u.southeastColor, u.northwestColor);
+						Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, u.southwestColor, u.southeastColor, u.northwestColor);
 					}
 				} else if (!lowmemory) {
-					Canvas3D.fillTexturedTriangle(y0, y1, y3, x0, x1, x3, u.southwestColor, u.southeastColor, u.northwestColor, sceneX0, sceneX1, sceneX3, sceneY0, sceneY1, sceneY3, sceneZ0, sceneZ1, sceneZ3, u.textureIndex);
+					Graphics3D.fillTexturedTriangle(y0, y1, y3, x0, x1, x3, u.southwestColor, u.southeastColor, u.northwestColor, sceneX0, sceneX1, sceneX3, sceneY0, sceneY1, sceneY3, sceneZ0, sceneZ1, sceneZ3, u.textureIndex);
 				} else {
 					int hsl = TEXTURE_HSL[u.textureIndex];
-					Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, adjustHSLLightness(hsl, u.southwestColor), adjustHSLLightness(hsl, u.southeastColor), adjustHSLLightness(hsl, u.northwestColor));
+					Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, adjustHSLLightness(hsl, u.southwestColor), adjustHSLLightness(hsl, u.southeastColor), adjustHSLLightness(hsl, u.northwestColor));
 				}
 			}
 		}
@@ -1936,14 +1936,14 @@ public final class Landscape {
 			int dz = Scene.hoverTileZ - tileZ;
 			int a = (dx * dx) + (dz * dz);
 
-			Canvas3D.verifyBounds = true;
+			Graphics3D.verifyBounds = true;
 
 			if (hovered || a < Scene.hoverRadiusSquared) {
-				int alpha = Canvas3D.alpha;
-				Canvas3D.alpha = 150;
-				Canvas3D.fillTriangle(x2, y2, x3, y3, x1, y1, Scene.hoverColor);
-				Canvas3D.fillTriangle(x0, y0, x1, y1, x3, y3, Scene.hoverColor);
-				Canvas3D.alpha = alpha;
+				int alpha = Graphics3D.alpha;
+				Graphics3D.alpha = 150;
+				Graphics3D.fillTriangle(x2, y2, x3, y3, x1, y1, Scene.hoverColor);
+				Graphics3D.fillTriangle(x0, y0, x1, y1, x3, y3, Scene.hoverColor);
+				Graphics3D.alpha = alpha;
 			}
 		}
 	}
@@ -1974,11 +1974,11 @@ public final class Landscape {
 				TileOverlay.vertexSceneZ[v] = sceneZ;
 			}
 
-			TileOverlay.tmpScreenX[v] = Canvas3D.centerX + (sceneX << 9) / sceneZ;
-			TileOverlay.tmpScreenY[v] = Canvas3D.centerY + (sceneY << 9) / sceneZ;
+			TileOverlay.tmpScreenX[v] = Graphics3D.centerX + (sceneX << 9) / sceneZ;
+			TileOverlay.tmpScreenY[v] = Graphics3D.centerY + (sceneY << 9) / sceneZ;
 		}
 
-		Canvas3D.alpha = 0;
+		Graphics3D.alpha = 0;
 		count = o.triangleVertexA.length;
 
 		for (int t = 0; t < count; t++) {
@@ -1997,16 +1997,16 @@ public final class Landscape {
 			boolean within = withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y2, x0, x1, x2);
 
 			if (((x0 - x1) * (y2 - y1) - (y0 - y1) * (x2 - x1)) > 0) {
-				Canvas3D.verifyBounds = false;
+				Graphics3D.verifyBounds = false;
 
-				if (x0 < 0 || x1 < 0 || x2 < 0 || x0 > Canvas2D.dstXBound || x1 > Canvas2D.dstXBound || x2 > Canvas2D.dstXBound) {
-					Canvas3D.verifyBounds = true;
+				if (x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound || x2 > Graphics2D.dstXBound) {
+					Graphics3D.verifyBounds = true;
 				}
 
 				if (within) {
 					if (Scene.checkClick) {
 						Scene.clickedTileX = tileX;
-						Scene.clickedTileZ = tileY;
+						Scene.clickedTileY = tileY;
 					}
 
 					if (Scene.hoverPlane == plane) {
@@ -2017,17 +2017,17 @@ public final class Landscape {
 
 				if (o.triangleTexture == null || o.triangleTexture[t] == -1) {
 					if (o.triangleColorA[t] != 12345678) {
-						Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t]);
+						Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t]);
 					}
 				} else if (!lowmemory) {
 					if (o.isFlat) {
-						Canvas3D.fillTexturedTriangle(y0, y1, y2, x0, x1, x2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t], TileOverlay.vertexSceneX[0], TileOverlay.vertexSceneX[1], TileOverlay.vertexSceneX[3], TileOverlay.vertexSceneY[0], TileOverlay.vertexSceneY[1], TileOverlay.vertexSceneY[3], TileOverlay.vertexSceneZ[0], TileOverlay.vertexSceneZ[1], TileOverlay.vertexSceneZ[3], o.triangleTexture[t]);
+						Graphics3D.fillTexturedTriangle(y0, y1, y2, x0, x1, x2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t], TileOverlay.vertexSceneX[0], TileOverlay.vertexSceneX[1], TileOverlay.vertexSceneX[3], TileOverlay.vertexSceneY[0], TileOverlay.vertexSceneY[1], TileOverlay.vertexSceneY[3], TileOverlay.vertexSceneZ[0], TileOverlay.vertexSceneZ[1], TileOverlay.vertexSceneZ[3], o.triangleTexture[t]);
 					} else {
-						Canvas3D.fillTexturedTriangle(y0, y1, y2, x0, x1, x2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t], TileOverlay.vertexSceneX[a], TileOverlay.vertexSceneX[b], TileOverlay.vertexSceneX[c], TileOverlay.vertexSceneY[a], TileOverlay.vertexSceneY[b], TileOverlay.vertexSceneY[c], TileOverlay.vertexSceneZ[a], TileOverlay.vertexSceneZ[b], TileOverlay.vertexSceneZ[c], o.triangleTexture[t]);
+						Graphics3D.fillTexturedTriangle(y0, y1, y2, x0, x1, x2, o.triangleColorA[t], o.triangleColorB[t], o.triangleColorC[t], TileOverlay.vertexSceneX[a], TileOverlay.vertexSceneX[b], TileOverlay.vertexSceneX[c], TileOverlay.vertexSceneY[a], TileOverlay.vertexSceneY[b], TileOverlay.vertexSceneY[c], TileOverlay.vertexSceneZ[a], TileOverlay.vertexSceneZ[b], TileOverlay.vertexSceneZ[c], o.triangleTexture[t]);
 					}
 				} else {
 					int hsl = TEXTURE_HSL[o.triangleTexture[t]];
-					Canvas3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, adjustHSLLightness(hsl, o.triangleColorA[t]), adjustHSLLightness(hsl, o.triangleColorB[t]), adjustHSLLightness(hsl, o.triangleColorC[t]));
+					Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, adjustHSLLightness(hsl, o.triangleColorA[t]), adjustHSLLightness(hsl, o.triangleColorB[t]), adjustHSLLightness(hsl, o.triangleColorC[t]));
 				}
 			}
 		}

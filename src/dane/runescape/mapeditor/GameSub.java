@@ -24,8 +24,8 @@
 package dane.runescape.mapeditor;
 
 import com.runescape.Archive;
-import com.runescape.Canvas2D;
-import com.runescape.Canvas3D;
+import com.runescape.Graphics2D;
+import com.runescape.Graphics3D;
 import com.runescape.Game;
 import com.runescape.GameShell;
 import com.runescape.ImageProducer;
@@ -78,13 +78,14 @@ public class GameSub extends Game implements MapPanelEventListener {
 
 			initSceneComponents();
 
+			loadMedia(media);
 			loadTextures(textures);
 			loadModels(models);
 			loadConfigs(config);
 
 			drawProgress("Preparing game engine", 95);
 			viewport = new ImageProducer(512, 334);
-			viewportOffsets = Canvas3D.prepareOffsets();
+			viewportOffsets = Graphics3D.prepareOffsets();
 
 			Landscape.init(512, 334, 500, 800);
 			loadRegion(50, 50);
@@ -127,6 +128,9 @@ public class GameSub extends Game implements MapPanelEventListener {
 
 	@Override
 	public void update() {
+		updateCross();
+		updateOptionMenu();
+		updateLandscapeClick();
 	}
 
 	@Override
@@ -176,13 +180,13 @@ public class GameSub extends Game implements MapPanelEventListener {
 
 		int topPlane = updateCamera(camera.getCurrentX() >> 7, camera.getCurrentY() >> 7);
 
-		int startCycle = Canvas3D.cycle;
+		int startCycle = Graphics3D.cycle;
 		Model.allowInput = true;
 		Model.hoverCount = 0;
 		Model.mouseX = mouseX;
 		Model.mouseY = mouseY;
 
-		Canvas2D.clear();
+		Graphics2D.clear();
 
 		Scene.mouseX = Model.mouseX;
 		Scene.mouseY = Model.mouseY;
@@ -191,7 +195,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 		landscape.clearFrameLocs();
 
 		drawViewport2d();
-		drawCrosses();
+		drawCross();
 
 		if (!optionMenuVisible) {
 			updateInput();
@@ -201,8 +205,141 @@ public class GameSub extends Game implements MapPanelEventListener {
 		}
 
 		updateAnimatedTextures(startCycle);
-		
+
+		fontSmall.draw(mouseX + ", " + mouseY + ", " + clickX + ", " + clickY, 16, 32, 0xFFFFFF);
+
 		viewport.draw(graphics, 0, 0);
+	}
+
+	@Override
+	public void updateInput() {
+		options[0] = "Cancel";
+		optionType[0] = 1264;
+		optionCount = 1;
+
+		updateViewport();
+		sortOptions();
+	}
+
+	@Override
+	public void updateOptionMenu() {
+		int button = mouseButton;
+
+		if (optionMenuVisible) {
+			if (button != 1) {
+				int mx = mouseX;
+				int my = mouseY;
+
+				if (mx < optionMenuX - 10 || mx > optionMenuX + optionMenuWidth + 10 || my < optionMenuY - 10 || my > optionMenuY + optionMenuHeight + 10) {
+					optionMenuVisible = false;
+
+					if (optionMenuArea == 1) {
+						sidebarRedraw = true;
+					}
+				}
+			}
+
+			if (button == 1) {
+				int x = optionMenuX;
+				int y = optionMenuY;
+				int w = optionMenuWidth;
+				int cx = clickX;
+				int cy = clickY;
+
+				int option = -1;
+				for (int n = 0; n < optionCount; n++) {
+					int optionY = y + 31 + (optionCount - 1 - n) * 15;
+
+					if (cx > x && cx < x + w && cy > optionY - 13 && cy < optionY + 3) {
+						option = n;
+					}
+				}
+
+				if (option != -1) {
+					useOption(option);
+				}
+
+				optionMenuVisible = false;
+
+				if (optionMenuArea == 1) {
+					sidebarRedraw = true;
+				}
+			}
+		} else {
+			if (button == 1 && mouseOneButton && optionCount > 2) {
+				button = 2;
+			}
+
+			if (button == 1 && optionCount > 0) {
+				useOption(optionCount - 1);
+			}
+
+			if (button == 2 && optionCount > 0) {
+				int maxWidth = fontBold.stringWidth("Choose Option");
+
+				for (int n = 0; n < optionCount; n++) {
+					int w = fontBold.stringWidth(options[n]);
+					if (w > maxWidth) {
+						maxWidth = w;
+					}
+				}
+
+				maxWidth += 8;
+
+				int h = (optionCount * 15) + 21;
+				int x = clickX - maxWidth / 2;
+
+				if (x + maxWidth > 512) {
+					x = 512 - maxWidth;
+				}
+
+				if (x < 0) {
+					x = 0;
+				}
+
+				int y = clickY;
+
+				if (y + h > 334) {
+					y = 334 - h;
+				}
+
+				if (y < 0) {
+					y = 0;
+				}
+
+				optionMenuVisible = true;
+				optionMenuArea = 0;
+				optionMenuX = x;
+				optionMenuY = y;
+				optionMenuWidth = maxWidth;
+				optionMenuHeight = optionCount * 15 + 22;
+			}
+		}
+	}
+
+	@Override
+	public void interactWithLoc(int bitset, int x, int y, int opcode) {
+		crossX = clickX;
+		crossY = clickY;
+		crossType = 2;
+		crossCycle = 0;
+	}
+
+	@Override
+	public void updateLandscapeClick() {
+		if (Scene.clickedTileX != -1) {
+			int tileX = Scene.clickedTileX;
+			int tileZ = Scene.clickedTileY;
+			
+			// do something?
+			
+			crossX = clickX;
+			crossY = clickY;
+			crossType = 1;
+			crossCycle = 0;
+
+			Scene.clickedTileX = -1;
+		}
 	}
 
 	@Override

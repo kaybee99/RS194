@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class IndexedBitmap extends Canvas2D {
+public final class IndexedBitmap extends Graphics2D {
 
 	public byte[] data;
 	public int[] palette;
@@ -115,39 +115,39 @@ public final class IndexedBitmap extends Canvas2D {
 	public void draw(int x, int y) {
 		x += clipX;
 		y += clipY;
-		int dstOff = x + y * Canvas2D.dstW;
+		int dstOff = x + y * Graphics2D.dstW;
 		int srcOff = 0;
 		int h = height;
 		int w = width;
-		int dstStep = Canvas2D.dstW - w;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
-		if (y < Canvas2D.top) {
-			int trim = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int trim = Graphics2D.top - y;
 			h -= trim;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += trim * w;
-			dstOff += trim * Canvas2D.dstW;
+			dstOff += trim * Graphics2D.dstW;
 		}
-		if (y + h > Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom;
+		if (y + h > Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom;
 		}
-		if (x < Canvas2D.left) {
-			int trim = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int trim = Graphics2D.left - x;
 			w -= trim;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += trim;
 			dstOff += trim;
 			srcStep += trim;
 			dstStep += trim;
 		}
-		if (x + w > Canvas2D.right) {
-			int trim = x + w - Canvas2D.right;
+		if (x + w > Graphics2D.right) {
+			int trim = x + w - Graphics2D.right;
 			w -= trim;
 			srcStep += trim;
 			dstStep += trim;
 		}
 		if (w > 0 && h > 0) {
-			copyImage(h, data, palette, w, dstOff, srcOff, Canvas2D.dst, dstStep, srcStep);
+			copyImage(h, data, palette, w, dstOff, srcOff, Graphics2D.dst, dstStep, srcStep);
 		}
 	}
 

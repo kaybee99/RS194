@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 import javax.imageio.ImageIO;
 
-public class Bitmap extends Canvas2D {
+public class Bitmap extends Graphics2D {
 
 	private static final Logger logger = Logger.getLogger(Bitmap.class.toString());
 
@@ -108,7 +108,7 @@ public class Bitmap extends Canvas2D {
 	}
 
 	public void prepare() {
-		Canvas2D.prepare(pixels, width, height);
+		Graphics2D.prepare(pixels, width, height);
 	}
 
 	public void replace(int rgbA, int rgbB) {
@@ -123,43 +123,43 @@ public class Bitmap extends Canvas2D {
 		x += clipX;
 		y += clipY;
 
-		int dstOff = x + y * Canvas2D.dstW;
+		int dstOff = x + y * Graphics2D.dstW;
 		int srcOff = 0;
 		int h = height;
 		int w = width;
-		int dstStep = Canvas2D.dstW - w;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
 
-		if (y < Canvas2D.top) {
-			int cutoff = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int cutoff = Graphics2D.top - y;
 			h -= cutoff;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += cutoff * w;
-			dstOff += cutoff * Canvas2D.dstW;
+			dstOff += cutoff * Graphics2D.dstW;
 		}
 
-		if (y + h > Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom;
+		if (y + h > Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom;
 		}
 
-		if (x < Canvas2D.left) {
-			int cutoff = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int cutoff = Graphics2D.left - x;
 			w -= cutoff;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += cutoff;
 			dstOff += cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
-		if (x + w > Canvas2D.right) {
-			int i_22_ = x + w - Canvas2D.right;
+		if (x + w > Graphics2D.right) {
+			int i_22_ = x + w - Graphics2D.right;
 			w -= i_22_;
 			srcStep += i_22_;
 			dstStep += i_22_;
 		}
 
 		if (w > 0 && h > 0) {
-			copyImage(w, h, pixels, srcOff, srcStep, Canvas2D.dst, dstOff, dstStep);
+			copyImage(w, h, pixels, srcOff, srcStep, Graphics2D.dst, dstOff, dstStep);
 		}
 	}
 
@@ -188,44 +188,44 @@ public class Bitmap extends Canvas2D {
 		x += clipX;
 		y += clipY;
 
-		int dstOff = x + y * Canvas2D.dstW;
+		int dstOff = x + y * Graphics2D.dstW;
 		int srcOff = 0;
 		int w = width;
 		int h = height;
-		int dstStep = Canvas2D.dstW - w;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
 
-		if (y < Canvas2D.top) {
-			int cutoff = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int cutoff = Graphics2D.top - y;
 			h -= cutoff;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += cutoff * w;
-			dstOff += cutoff * Canvas2D.dstW;
+			dstOff += cutoff * Graphics2D.dstW;
 		}
 
-		if (y + h > Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom;
+		if (y + h > Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom;
 		}
 
-		if (x < Canvas2D.left) {
-			int cutoff = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int cutoff = Graphics2D.left - x;
 			w -= cutoff;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += cutoff;
 			dstOff += cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
-		if (x + w > Canvas2D.right) {
-			int cutoff = x + w - Canvas2D.right;
+		if (x + w > Graphics2D.right) {
+			int cutoff = x + w - Graphics2D.right;
 			w -= cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
 		if (w > 0 && h > 0) {
-			copyImage(h, w, pixels, srcOff, srcStep, Canvas2D.dst, dstOff, dstStep, 0);
+			copyImage(h, w, pixels, srcOff, srcStep, Graphics2D.dst, dstOff, dstStep, 0);
 		}
 	}
 
@@ -286,44 +286,44 @@ public class Bitmap extends Canvas2D {
 		x += clipX;
 		y += clipY;
 
-		int dstOff = x + y * Canvas2D.dstW;
+		int dstOff = x + y * Graphics2D.dstW;
 		int srcOff = 0;
 		int w = width;
 		int h = height;
-		int dstStep = Canvas2D.dstW - w;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
 
-		if (y < Canvas2D.top) {
-			int cutoff = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int cutoff = Graphics2D.top - y;
 			h -= cutoff;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += cutoff * w;
-			dstOff += cutoff * Canvas2D.dstW;
+			dstOff += cutoff * Graphics2D.dstW;
 		}
 
-		if (y + h > Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom;
+		if (y + h > Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom;
 		}
 
-		if (x < Canvas2D.left) {
-			int cutoff = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int cutoff = Graphics2D.left - x;
 			w -= cutoff;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += cutoff;
 			dstOff += cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
-		if (x + w > Canvas2D.right) {
-			int cutoff = x + w - Canvas2D.right;
+		if (x + w > Graphics2D.right) {
+			int cutoff = x + w - Graphics2D.right;
 			w -= cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
 		if (w > 0 && h > 0) {
-			copyImage(w, h, pixels, srcOff, srcStep, Canvas2D.dst, dstOff, dstStep, alpha, 0);
+			copyImage(w, h, pixels, srcOff, srcStep, Graphics2D.dst, dstOff, dstStep, alpha, 0);
 		}
 	}
 
@@ -354,7 +354,7 @@ public class Bitmap extends Canvas2D {
 
 			int offX = (pivotX << 16) + (cy * sin + cx * cos);
 			int offY = (pivotY << 16) + (cy * cos - cx * sin);
-			int baseOffset = x + (y * Canvas2D.dstW);
+			int baseOffset = x + (y * Graphics2D.dstW);
 
 			for (y = 0; y < h; y++) {
 				int start = lineStart[y];
@@ -362,13 +362,13 @@ public class Bitmap extends Canvas2D {
 				int dstX = offX + cos * start;
 				int dstY = offY - sin * start;
 				for (x = 0; x < lineWidth[y]; x++) {
-					Canvas2D.dst[off++] = (pixels[(dstX >> 16) + (dstY >> 16) * width]);
+					Graphics2D.dst[off++] = (pixels[(dstX >> 16) + (dstY >> 16) * width]);
 					dstX += cos;
 					dstY -= sin;
 				}
 				offX += sin;
 				offY += cos;
-				baseOffset += Canvas2D.dstW;
+				baseOffset += Graphics2D.dstW;
 			}
 		} catch (Exception e) {
 		}
@@ -384,7 +384,7 @@ public class Bitmap extends Canvas2D {
 
 			int offX = (pivotX << 16) + (cy * sin + cx * cos);
 			int offY = (pivotY << 16) + (cy * cos - cx * sin);
-			int baseOffset = x + (y * Canvas2D.dstW);
+			int baseOffset = x + (y * Graphics2D.dstW);
 
 			for (y = 0; y < h; y++) {
 				int off = baseOffset;
@@ -394,7 +394,7 @@ public class Bitmap extends Canvas2D {
 					int rgb = pixels[(dstX >> 16) + (dstY >> 16) * width];
 
 					if (rgb != 0) {
-						Canvas2D.dst[off++] = rgb;
+						Graphics2D.dst[off++] = rgb;
 					} else {
 						off++;
 					}
@@ -403,7 +403,7 @@ public class Bitmap extends Canvas2D {
 				}
 				offX += sin;
 				offY += cos;
-				baseOffset += Canvas2D.dstW;
+				baseOffset += Graphics2D.dstW;
 			}
 		} catch (Exception e) {
 			logger.log(Level.WARNING, "Error drawing rotated bitmap", e);
@@ -414,45 +414,45 @@ public class Bitmap extends Canvas2D {
 		x += clipX;
 		y += clipY;
 
-		int dstOff = x + y * Canvas2D.dstW;
+		int dstOff = x + y * Graphics2D.dstW;
 		int srcOff = 0;
 
 		int h = height;
 		int w = width;
 
-		int dstStep = Canvas2D.dstW - w;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
 
-		if (y < Canvas2D.top) {
-			int i = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int i = Graphics2D.top - y;
 			h -= i;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += i * w;
-			dstOff += i * Canvas2D.dstW;
+			dstOff += i * Graphics2D.dstW;
 		}
 
-		if (y + h > Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom;
+		if (y + h > Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom;
 		}
 
-		if (x < Canvas2D.left) {
-			int i = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int i = Graphics2D.left - x;
 			w -= i;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += i;
 			dstOff += i;
 			srcStep += i;
 			dstStep += i;
 		}
-		if (x + w > Canvas2D.right) {
-			int i = x + w - Canvas2D.right;
+		if (x + w > Graphics2D.right) {
+			int i = x + w - Graphics2D.right;
 			w -= i;
 			srcStep += i;
 			dstStep += i;
 		}
 
 		if (w > 0 && h > 0) {
-			copyImage(Canvas2D.dst, srcOff, 0, h, srcStep, dstOff, dstStep, pixels, mask.data, w);
+			copyImage(Graphics2D.dst, srcOff, 0, h, srcStep, dstOff, dstStep, pixels, mask.data, w);
 		}
 	}
 

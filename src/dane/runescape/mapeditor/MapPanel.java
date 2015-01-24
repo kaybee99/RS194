@@ -39,7 +39,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.SwingUtilities;
 
-import com.runescape.Canvas3D;
+import com.runescape.Graphics3D;
 import com.runescape.FloorType;
 import com.runescape.Landscape;
 import com.runescape.Scene;
@@ -170,7 +170,7 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 
 				if (overlayFlo != null) {
 					if (overlayFlo.textureIndex >= 0) {
-						g.setColor(new Color(Canvas3D.getTextureColor(overlayFlo.textureIndex)));
+						g.setColor(new Color(Graphics3D.getTextureColor(overlayFlo.textureIndex)));
 					} else {
 						g.setColor(new Color(overlayFlo.rgb));
 					}
@@ -180,7 +180,7 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 
 				if (underlayFlo != null) {
 					if (underlayFlo.textureIndex >= 0) {
-						g.setColor(new Color(Canvas3D.getTextureColor(underlayFlo.textureIndex)));
+						g.setColor(new Color(Graphics3D.getTextureColor(underlayFlo.textureIndex)));
 					} else {
 						g.setColor(new Color(underlayFlo.rgb));
 					}

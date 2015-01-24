@@ -35,7 +35,7 @@ public class ImageProducer extends Link {
 	}
 	
 	public final void prepare() {
-		Canvas2D.prepare(pixels, width, height);
+		Graphics2D.prepare(pixels, width, height);
 	}
 	
 	public void draw(Graphics g, int x, int y) {

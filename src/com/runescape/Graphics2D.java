@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class Canvas2D extends CacheLink {
+public class Graphics2D extends CacheLink {
 
 	public static int[] dst;
 	public static int dstW;
@@ -53,7 +53,6 @@ public class Canvas2D extends CacheLink {
 
 	public static void clear() {
 		int len = dstW * dstH;
-
 		for (int i = 0; i < len; i++) {
 			dst[i] = 0;
 		}

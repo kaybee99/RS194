@@ -36,7 +36,7 @@ public final class Scene {
 	public static int mouseY;
 
 	public static int clickedTileX = -1;
-	public static int clickedTileZ = -1;
+	public static int clickedTileY = -1;
 
 	public int tileSizeX;
 	public int tileSizeY;
@@ -649,7 +649,7 @@ public final class Scene {
 								int minimapColor = 0;
 
 								if (color != -1) {
-									minimapColor = Canvas3D.palette[adjustColorLightness(color, 96)];
+									minimapColor = Graphics3D.palette[adjustColorLightness(color, 96)];
 								}
 
 								if (overlayFloorIndex == 0) {
@@ -670,7 +670,7 @@ public final class Scene {
 									int hsl;
 
 									if (textureIndex >= 0) {
-										rgb = Canvas3D.getTextureColor(textureIndex);
+										rgb = Graphics3D.getTextureColor(textureIndex);
 										hsl = -1;
 									} else if (f.rgb == 0xFF00FF) {
 										rgb = 0;
@@ -678,7 +678,7 @@ public final class Scene {
 										textureIndex = -1;
 									} else {
 										hsl = getColor(f.hue, f.saturation, f.lightness);
-										rgb = Canvas3D.palette[adjustHSLLightness0(hsl, 96)];
+										rgb = Graphics3D.palette[adjustHSLLightness0(hsl, 96)];
 									}
 
 									landscape.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
@@ -918,7 +918,7 @@ public final class Scene {
 	}
 
 	private static int getCosineLerp(int a, int b, int ft, int frac) {
-		int f = (65536 - (Canvas3D.cos[ft * 1024 / frac]) >> 1);
+		int f = (65536 - (Graphics3D.cos[ft * 1024 / frac]) >> 1);
 		return (a * (65536 - f) >> 16) + (b * f >> 16);
 	}
 

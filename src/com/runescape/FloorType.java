@@ -112,52 +112,52 @@ public class FloorType {
 		double g = (double) (color >> 8 & 0xff) / 256.0;
 		double b = (double) (color & 0xff) / 256.0;
 
-		double r1 = r;
+		double u = r;
 
-		if (g < r1) {
-			r1 = g;
+		if (g < u) {
+			u = g;
 		}
 
-		if (b < r1) {
-			r1 = b;
+		if (b < u) {
+			u = b;
 		}
 
-		double r2 = r;
+		double v = r;
 
-		if (g > r2) {
-			r2 = g;
+		if (g > v) {
+			v = g;
 		}
 
-		if (b > r2) {
-			r2 = b;
+		if (b > v) {
+			v = b;
 		}
 
-		double hue1 = 0.0;
-		double sat1 = 0.0;
-		double light1 = (r1 + r2) / 2.0;
+		double hue = 0.0;
+		double saturation = 0.0;
+		double lightness = (u + v) / 2.0;
 
-		if (r1 != r2) {
-			if (light1 < 0.5) {
-				sat1 = (r2 - r1) / (r2 + r1);
+		if (u != v) {
+			if (lightness < 0.5) {
+				saturation = (v - u) / (v + u);
 			}
-			if (light1 >= 0.5) {
-				sat1 = (r2 - r1) / (2.0 - r2 - r1);
+			if (lightness >= 0.5) {
+				saturation = (v - u) / (2.0 - v - u);
 			}
 
-			if (r == r2) {
-				hue1 = (g - b) / (r2 - r1);
-			} else if (g == r2) {
-				hue1 = 2.0 + (b - r) / (r2 - r1);
-			} else if (b == r2) {
-				hue1 = 4.0 + (r - g) / (r2 - r1);
+			if (r == v) {
+				hue = (g - b) / (v - u);
+			} else if (g == v) {
+				hue = 2.0 + (b - r) / (v - u);
+			} else if (b == v) {
+				hue = 4.0 + (r - g) / (v - u);
 			}
 		}
 
-		hue1 /= 6.0;
+		hue /= 6.0;
 
-		this.hue = (int) (hue1 * 256.0);
-		this.saturation = (int) (sat1 * 256.0);
-		this.lightness = (int) (light1 * 256.0);
+		this.hue = (int) (hue * 256.0);
+		this.saturation = (int) (saturation * 256.0);
+		this.lightness = (int) (lightness * 256.0);
 
 		if (this.saturation < 0) {
 			this.saturation = 0;
@@ -171,17 +171,17 @@ public class FloorType {
 			this.lightness = 255;
 		}
 
-		if (light1 > 0.5) {
-			this.blendHueMultiplier = (int) ((1.0 - light1) * sat1 * 512.0);
+		if (lightness > 0.5) {
+			this.blendHueMultiplier = (int) ((1.0 - lightness) * saturation * 512.0);
 		} else {
-			this.blendHueMultiplier = (int) (light1 * sat1 * 512.0);
+			this.blendHueMultiplier = (int) (lightness * saturation * 512.0);
 		}
 
 		if (this.blendHueMultiplier < 1) {
 			this.blendHueMultiplier = 1;
 		}
 
-		this.blendHue = (int) (hue1 * (double) this.blendHueMultiplier);
+		this.blendHue = (int) (hue * (double) this.blendHueMultiplier);
 	}
 
 	/**

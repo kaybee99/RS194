@@ -2,9 +2,9 @@ package com.runescape;
 
 import java.util.logging.Logger;
 
-public class Canvas3D extends Canvas2D {
+public class Graphics3D extends Graphics2D {
 
-	private static final Logger logger = Logger.getLogger(Canvas3D.class.getName());
+	private static final Logger logger = Logger.getLogger(Graphics3D.class.getName());
 
 	/**
 	 * Whether to use less intensive procedures and memory storage.
@@ -124,17 +124,17 @@ public class Canvas3D extends Canvas2D {
 
 	/**
 	 * Generates the vertical pixel offsets using the width and height set in
-	 * {@link Canvas2D}.
+	 * {@link Graphics2D}.
 	 *
 	 * @return the int[] of y offsets.
 	 */
 	public static final int[] prepareOffsets() {
-		offsets = new int[Canvas2D.dstH];
-		for (int y = 0; y < Canvas2D.dstH; y++) {
-			offsets[y] = Canvas2D.dstW * y;
+		offsets = new int[Graphics2D.dstH];
+		for (int y = 0; y < Graphics2D.dstH; y++) {
+			offsets[y] = Graphics2D.dstW * y;
 		}
-		centerX = Canvas2D.dstW / 2;
-		centerY = Canvas2D.dstH / 2;
+		centerX = Graphics2D.dstW / 2;
+		centerY = Graphics2D.dstH / 2;
 		return offsets;
 	}
 
@@ -509,16 +509,16 @@ public class Canvas3D extends Canvas2D {
 		}
 
 		if (yA <= yB && yA <= yC) {
-			if (yA >= Canvas2D.bottom) {
+			if (yA >= Graphics2D.bottom) {
 				return;
 			}
 
-			if (yB > Canvas2D.bottom) {
-				yB = Canvas2D.bottom;
+			if (yB > Graphics2D.bottom) {
+				yB = Graphics2D.bottom;
 			}
 
-			if (yC > Canvas2D.bottom) {
-				yC = Canvas2D.bottom;
+			if (yC > Graphics2D.bottom) {
+				yC = Graphics2D.bottom;
 			}
 
 			if (yB < yC) {
@@ -562,7 +562,7 @@ public class Canvas3D extends Canvas2D {
 					while (--yB >= 0) {
 						// Notice the right shifts of 7
 						// Those are transforming the 17.15 fixed points to 24.8! How exciting!
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
 
 						// approach xC to xA
 						xC += slopeCA;
@@ -573,12 +573,12 @@ public class Canvas3D extends Canvas2D {
 						colorA += lightSlopeAB;
 
 						// move yA down a row of pixels.
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 
 					// while we have a vertical gap between B and C
 					while (--yC >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
 
 						xC += slopeCA;
 						colorC += lightSlopeCA;
@@ -586,7 +586,7 @@ public class Canvas3D extends Canvas2D {
 						xB += slopeBC;
 						colorB += lightSlopeBC;
 
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 				} else {
 					yC -= yB;
@@ -594,21 +594,21 @@ public class Canvas3D extends Canvas2D {
 					yA = offsets[yA];
 
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
 						xC += slopeCA;
 						xA += slopeAB;
 						colorC += lightSlopeCA;
 						colorA += lightSlopeAB;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 
 					while (--yC >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
 						xC += slopeCA;
 						xB += slopeBC;
 						colorC += lightSlopeCA;
 						colorB += lightSlopeBC;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 				}
 			} else {
@@ -638,21 +638,21 @@ public class Canvas3D extends Canvas2D {
 					yA = offsets[yA];
 
 					while (--yC >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
 						xB += slopeCA;
 						xA += slopeAB;
 						colorB += lightSlopeCA;
 						colorA += lightSlopeAB;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
 						xC += slopeBC;
 						xA += slopeAB;
 						colorC += lightSlopeBC;
 						colorA += lightSlopeAB;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 				} else {
 					yB -= yC;
@@ -660,32 +660,32 @@ public class Canvas3D extends Canvas2D {
 					yA = offsets[yA];
 
 					while (--yC >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
 						xB += slopeCA;
 						xA += slopeAB;
 						colorB += lightSlopeCA;
 						colorA += lightSlopeAB;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yA, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
 						xC += slopeBC;
 						xA += slopeAB;
 						colorC += lightSlopeBC;
 						colorA += lightSlopeAB;
-						yA += Canvas2D.dstW;
+						yA += Graphics2D.dstW;
 					}
 				}
 			}
 		} else if (yB <= yC) {
-			if (yB < Canvas2D.bottom) {
-				if (yC > Canvas2D.bottom) {
-					yC = Canvas2D.bottom;
+			if (yB < Graphics2D.bottom) {
+				if (yC > Graphics2D.bottom) {
+					yC = Graphics2D.bottom;
 				}
 
-				if (yA > Canvas2D.bottom) {
-					yA = Canvas2D.bottom;
+				if (yA > Graphics2D.bottom) {
+					yA = Graphics2D.bottom;
 				}
 
 				if (yC < yA) {
@@ -710,40 +710,40 @@ public class Canvas3D extends Canvas2D {
 						yC -= yB;
 						yB = offsets[yB];
 						while (--yC >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
 							xA += slopeAB;
 							xB += slopeBC;
 							colorA += lightSlopeAB;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yA >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
 							xA += slopeAB;
 							xC += slopeCA;
 							colorA += lightSlopeAB;
 							colorC += lightSlopeCA;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					} else {
 						yA -= yC;
 						yC -= yB;
 						yB = offsets[yB];
 						while (--yC >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
 							xA += slopeAB;
 							xB += slopeBC;
 							colorA += lightSlopeAB;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yA >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
 							xA += slopeAB;
 							xC += slopeCA;
 							colorA += lightSlopeAB;
 							colorC += lightSlopeCA;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					}
 				} else {
@@ -768,50 +768,50 @@ public class Canvas3D extends Canvas2D {
 						yA -= yB;
 						yB = offsets[yB];
 						while (--yA >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
 							xC += slopeAB;
 							xB += slopeBC;
 							colorC += lightSlopeAB;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yC >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
 							xA += slopeCA;
 							xB += slopeBC;
 							colorA += lightSlopeCA;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					} else {
 						yC -= yA;
 						yA -= yB;
 						yB = offsets[yB];
 						while (--yA >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
 							xC += slopeAB;
 							xB += slopeBC;
 							colorC += lightSlopeAB;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yC >= 0) {
-							drawGradientScanline(Canvas2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+							drawGradientScanline(Graphics2D.dst, yB, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
 							xA += slopeCA;
 							xB += slopeBC;
 							colorA += lightSlopeCA;
 							colorB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					}
 				}
 			}
-		} else if (yC < Canvas2D.bottom) {
-			if (yA > Canvas2D.bottom) {
-				yA = Canvas2D.bottom;
+		} else if (yC < Graphics2D.bottom) {
+			if (yA > Graphics2D.bottom) {
+				yA = Graphics2D.bottom;
 			}
-			if (yB > Canvas2D.bottom) {
-				yB = Canvas2D.bottom;
+			if (yB > Graphics2D.bottom) {
+				yB = Graphics2D.bottom;
 			}
 			if (yA < yB) {
 				xB = xC <<= 16;
@@ -835,40 +835,40 @@ public class Canvas3D extends Canvas2D {
 					yA -= yC;
 					yC = offsets[yC];
 					while (--yA >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
 						xB += slopeBC;
 						xC += slopeCA;
 						colorB += lightSlopeBC;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xB >> 16, xA >> 16, colorB >> 7, colorA >> 7);
 						xB += slopeBC;
 						xA += slopeAB;
 						colorB += lightSlopeBC;
 						colorA += lightSlopeAB;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				} else {
 					yB -= yA;
 					yA -= yC;
 					yC = offsets[yC];
 					while (--yA >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
 						xB += slopeBC;
 						xC += slopeCA;
 						colorB += lightSlopeBC;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xA >> 16, xB >> 16, colorA >> 7, colorB >> 7);
 						xB += slopeBC;
 						xA += slopeAB;
 						colorB += lightSlopeBC;
 						colorA += lightSlopeAB;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				}
 			} else {
@@ -893,40 +893,40 @@ public class Canvas3D extends Canvas2D {
 					yB -= yC;
 					yC = offsets[yC];
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xA >> 16, xC >> 16, colorA >> 7, colorC >> 7);
 						xA += slopeBC;
 						xC += slopeCA;
 						colorA += lightSlopeBC;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yA >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xB >> 16, xC >> 16, colorB >> 7, colorC >> 7);
 						xB += slopeAB;
 						xC += slopeCA;
 						colorB += lightSlopeAB;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				} else {
 					yA -= yB;
 					yB -= yC;
 					yC = offsets[yC];
 					while (--yB >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xC >> 16, xA >> 16, colorC >> 7, colorA >> 7);
 						xA += slopeBC;
 						xC += slopeCA;
 						colorA += lightSlopeBC;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yA >= 0) {
-						drawGradientScanline(Canvas2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
+						drawGradientScanline(Graphics2D.dst, yC, 0, 0, xC >> 16, xB >> 16, colorC >> 7, colorB >> 7);
 						xB += slopeAB;
 						xC += slopeCA;
 						colorB += lightSlopeAB;
 						colorC += lightSlopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				}
 			}
@@ -959,8 +959,8 @@ public class Canvas3D extends Canvas2D {
 					lightnessSlope = 0;
 				}
 
-				if (xB > Canvas2D.dstXBound) {
-					xB = Canvas2D.dstXBound;
+				if (xB > Graphics2D.dstXBound) {
+					xB = Graphics2D.dstXBound;
 				}
 
 				// clip off screen part and recalculate initial color
@@ -1043,8 +1043,8 @@ public class Canvas3D extends Canvas2D {
 			int lightnessSlope = (colorB - colorA) / (xB - xA);
 
 			if (verifyBounds) {
-				if (xB > Canvas2D.dstXBound) {
-					xB = Canvas2D.dstXBound;
+				if (xB > Graphics2D.dstXBound) {
+					xB = Graphics2D.dstXBound;
 				}
 
 				if (xA < 0) {
@@ -1125,122 +1125,221 @@ public class Canvas3D extends Canvas2D {
 			slopeCA = (xA - xC << 16) / (yA - yC);
 		}
 
+		// A is above B and C
 		if (yA <= yB && yA <= yC) {
-			if (yA < Canvas2D.bottom) {
-				if (yB > Canvas2D.bottom) {
-					yB = Canvas2D.bottom;
+
+			// A is below the bottom of our drawing area.
+			if (yA >= Graphics2D.bottom) {
+				return;
+			}
+
+			// Clamp B's Y
+			if (yB > Graphics2D.bottom) {
+				yB = Graphics2D.bottom;
+			}
+
+			// Clamp C's Y
+			if (yC > Graphics2D.bottom) {
+				yC = Graphics2D.bottom;
+			}
+
+			// B is above C
+			if (yB < yC) {
+				// xC is now xA and they are both 16.16
+				xC = xA <<= 16;
+
+				// A is above our drawing area
+				if (yA < 0) {
+					xC -= slopeCA * yA;
+					xA -= slopeAB * yA;
+					yA = 0;
 				}
 
-				if (yC > Canvas2D.bottom) {
-					yC = Canvas2D.bottom;
+				// 32.0 -> 16.16
+				xB <<= 16;
+
+				// B is above our drawing area
+				if (yB < 0) {
+					xB -= slopeBC * yB;
+					yB = 0;
 				}
 
-				if (yB < yC) {
-					xC = xA <<= 16;
+				//
+				// If A isn't in parallel horizontally with B and the slope from C to A is lower than the slope from A to B.
+				// Or, if A and B are in parallel horizontally and the slope from C to A is greater than the slope from B to C.
+				//
+				// if statement:
+				//
+				// yA != yB && slopeCA < slopeAB:
+				// A (3, 4)
+				// |\
+				// |  \
+				// |    \B (8, 8)
+				// |    /
+				// |  /
+				// |/
+				// C (3, 12)
+				// slopeAB = (8 - 3) / (8 - 4) = 5 / 4 = 1.25
+				// slopeBC = (3 - 8) / (12 - 8) = -5 / 4 = -1.25
+				// slopeCA = 0
+				//
+				//
+				// if statement:
+				//
+				// yA == yB && slopeCA > slopeBC
+				// A (3, 4)___B (8, 4)
+				// |         /
+				// |      /
+				// |   /
+				// |/
+				// C (3, 8)
+				//
+				// slopeAB = (8 - 3) / (4 - 4) = 0
+				// slopeBC = (3 - 8) / (8 - 4) = -5 / 4 = -1.25
+				// slopeCA = (3 - 3) / (4 - 8) = 0 / -4 = 0
+				//
+				//
+				// slopeAB = (xB - xA) / (yB - yA)
+				// slopeBC = (xC - xB) / (yC - yB)
+				// slopeCA = (xA - xC) / (yA - yC)
+				if (yA != yB && slopeCA < slopeAB || yA == yB && slopeCA > slopeBC) {
+					// yC is now the distance from yB to yC in pixels
+					yC -= yB;
 
-					if (yA < 0) {
-						xC -= slopeCA * yA;
-						xA -= slopeAB * yA;
-						yA = 0;
+					// yB is now the distance from yA to yB in pixels
+					yB -= yA;
+
+					// yA is now the offset for our current Y position.
+					yA = offsets[yA];
+
+					// While we still have a vertical space between A and B
+					while (--yB >= 0) {
+						// Draw our scanline from xC (start) to xA (end) starting at the offset provided by yA
+						drawScanline(Graphics2D.dst, yA, color, 0, xC >> 16, xA >> 16);
+
+						// approach xC to xA
+						xC += slopeCA;
+
+						// approach xA to xB
+						xA += slopeAB;
+
+						// Go down a line
+						yA += Graphics2D.dstW;
 					}
 
-					xB <<= 16;
+					// While we still have a vertical space between B and C
+					while (--yC >= 0) {
+						// Draw our scanline from xC (start) to xB (end) starting at the offset provided by yA
+						drawScanline(Graphics2D.dst, yA, color, 0, xC >> 16, xB >> 16);
 
-					if (yB < 0) {
-						xB -= slopeBC * yB;
-						yB = 0;
-					}
+						// Approach C to A horizontally
+						xC += slopeCA;
 
-					if (yA != yB && slopeCA < slopeAB || yA == yB && slopeCA > slopeBC) {
-						yC -= yB;
-						yB -= yA;
-						yA = offsets[yA];
+						// Approach B to C horizontally
+						xB += slopeBC;
 
-						while (--yB >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xC >> 16, xA >> 16);
-							xC += slopeCA;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
-
-						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xC >> 16, xB >> 16);
-							xC += slopeCA;
-							xB += slopeBC;
-							yA += Canvas2D.dstW;
-						}
-					} else {
-						yC -= yB;
-						yB -= yA;
-						yA = offsets[yA];
-						while (--yB >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xA >> 16, xC >> 16);
-							xC += slopeCA;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
-						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xB >> 16, xC >> 16);
-							xC += slopeCA;
-							xB += slopeBC;
-							yA += Canvas2D.dstW;
-						}
+						// Move down a line
+						yA += Graphics2D.dstW;
 					}
 				} else {
-					xB = xA <<= 16;
-					if (yA < 0) {
-						xB -= slopeCA * yA;
-						xA -= slopeAB * yA;
-						yA = 0;
+					// yC is now the distance from yB to yC in pixels
+					yC -= yB;
+
+					// yB is now the distance from yA to yB in pixels
+					yB -= yA;
+
+					// yA is now the offset for our current Y position.
+					yA = offsets[yA];
+
+					// While we still have a vertical space between A and B
+					while (--yB >= 0) {
+						// Draw our scanline from xC (start) to xC (end) starting at the offset provided by yA
+						drawScanline(Graphics2D.dst, yA, color, 0, xA >> 16, xC >> 16);
+
+						// Approach C to A horizontally
+						xC += slopeCA;
+
+						// Aproach A to B horizontally
+						xA += slopeAB;
+
+						// Move down a line
+						yA += Graphics2D.dstW;
 					}
-					xC <<= 16;
-					if (yC < 0) {
-						xC -= slopeBC * yC;
-						yC = 0;
+
+					// While we still have a vertical space between B and C
+					while (--yC >= 0) {
+						// Draw our scanline from xB (start) to xC (end) starting at the offset provided by yA
+						drawScanline(Graphics2D.dst, yA, color, 0, xB >> 16, xC >> 16);
+
+						// Approach C to A horizontally
+						xC += slopeCA;
+
+						// Approach B to C horizontally
+						xB += slopeBC;
+
+						// Move down a line
+						yA += Graphics2D.dstW;
 					}
-					if (yA != yC && slopeCA < slopeAB || yA == yC && slopeBC > slopeAB) {
-						yB -= yC;
-						yC -= yA;
-						yA = offsets[yA];
-						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xB >> 16, xA >> 16);
-							xB += slopeCA;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
-						while (--yB >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xC >> 16, xA >> 16);
-							xC += slopeBC;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
-					} else {
-						yB -= yC;
-						yC -= yA;
-						yA = offsets[yA];
-						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xA >> 16, xB >> 16);
-							xB += slopeCA;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
-						while (--yB >= 0) {
-							drawScanline(Canvas2D.dst, yA, color, 0, xA >> 16, xC >> 16);
-							xC += slopeBC;
-							xA += slopeAB;
-							yA += Canvas2D.dstW;
-						}
+				}
+			} else {
+				xB = xA <<= 16;
+
+				if (yA < 0) {
+					xB -= slopeCA * yA;
+					xA -= slopeAB * yA;
+					yA = 0;
+				}
+
+				xC <<= 16;
+
+				if (yC < 0) {
+					xC -= slopeBC * yC;
+					yC = 0;
+				}
+
+				if (yA != yC && slopeCA < slopeAB || yA == yC && slopeBC > slopeAB) {
+					yB -= yC;
+					yC -= yA;
+					yA = offsets[yA];
+					while (--yC >= 0) {
+						drawScanline(Graphics2D.dst, yA, color, 0, xB >> 16, xA >> 16);
+						xB += slopeCA;
+						xA += slopeAB;
+						yA += Graphics2D.dstW;
+					}
+					while (--yB >= 0) {
+						drawScanline(Graphics2D.dst, yA, color, 0, xC >> 16, xA >> 16);
+						xC += slopeBC;
+						xA += slopeAB;
+						yA += Graphics2D.dstW;
+					}
+				} else {
+					yB -= yC;
+					yC -= yA;
+					yA = offsets[yA];
+					while (--yC >= 0) {
+						drawScanline(Graphics2D.dst, yA, color, 0, xA >> 16, xB >> 16);
+						xB += slopeCA;
+						xA += slopeAB;
+						yA += Graphics2D.dstW;
+					}
+					while (--yB >= 0) {
+						drawScanline(Graphics2D.dst, yA, color, 0, xA >> 16, xC >> 16);
+						xC += slopeBC;
+						xA += slopeAB;
+						yA += Graphics2D.dstW;
 					}
 				}
 			}
+			// else A is below B or C, and B is above C.
 		} else if (yB <= yC) {
-			if (yB < Canvas2D.bottom) {
-				if (yC > Canvas2D.bottom) {
-					yC = Canvas2D.bottom;
+			if (yB < Graphics2D.bottom) {
+				if (yC > Graphics2D.bottom) {
+					yC = Graphics2D.bottom;
 				}
 
-				if (yA > Canvas2D.bottom) {
-					yA = Canvas2D.bottom;
+				if (yA > Graphics2D.bottom) {
+					yA = Graphics2D.bottom;
 				}
 
 				if (yC < yA) {
@@ -1264,32 +1363,32 @@ public class Canvas3D extends Canvas2D {
 						yC -= yB;
 						yB = offsets[yB];
 						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xA >> 16, xB >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xA >> 16, xB >> 16);
 							xA += slopeAB;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yA >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xA >> 16, xC >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xA >> 16, xC >> 16);
 							xA += slopeAB;
 							xC += slopeCA;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					} else {
 						yA -= yC;
 						yC -= yB;
 						yB = offsets[yB];
 						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xB >> 16, xA >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xB >> 16, xA >> 16);
 							xA += slopeAB;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yA >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xC >> 16, xA >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xC >> 16, xA >> 16);
 							xA += slopeAB;
 							xC += slopeCA;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					}
 				} else {
@@ -1309,42 +1408,42 @@ public class Canvas3D extends Canvas2D {
 						yA -= yB;
 						yB = offsets[yB];
 						while (--yA >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xC >> 16, xB >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xC >> 16, xB >> 16);
 							xC += slopeAB;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xA >> 16, xB >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xA >> 16, xB >> 16);
 							xA += slopeCA;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					} else {
 						yC -= yA;
 						yA -= yB;
 						yB = offsets[yB];
 						while (--yA >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xB >> 16, xC >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xB >> 16, xC >> 16);
 							xC += slopeAB;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 						while (--yC >= 0) {
-							drawScanline(Canvas2D.dst, yB, color, 0, xB >> 16, xA >> 16);
+							drawScanline(Graphics2D.dst, yB, color, 0, xB >> 16, xA >> 16);
 							xA += slopeCA;
 							xB += slopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 						}
 					}
 				}
 			}
-		} else if (yC < Canvas2D.bottom) {
-			if (yA > Canvas2D.bottom) {
-				yA = Canvas2D.bottom;
+		} else if (yC < Graphics2D.bottom) {
+			if (yA > Graphics2D.bottom) {
+				yA = Graphics2D.bottom;
 			}
-			if (yB > Canvas2D.bottom) {
-				yB = Canvas2D.bottom;
+			if (yB > Graphics2D.bottom) {
+				yB = Graphics2D.bottom;
 			}
 			if (yA < yB) {
 				xB = xC <<= 16;
@@ -1363,32 +1462,32 @@ public class Canvas3D extends Canvas2D {
 					yA -= yC;
 					yC = offsets[yC];
 					while (--yA >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xB >> 16, xC >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xB >> 16, xC >> 16);
 						xB += slopeBC;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yB >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xB >> 16, xA >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xB >> 16, xA >> 16);
 						xB += slopeBC;
 						xA += slopeAB;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				} else {
 					yB -= yA;
 					yA -= yC;
 					yC = offsets[yC];
 					while (--yA >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xC >> 16, xB >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xC >> 16, xB >> 16);
 						xB += slopeBC;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yB >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xA >> 16, xB >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xA >> 16, xB >> 16);
 						xB += slopeBC;
 						xA += slopeAB;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				}
 			} else {
@@ -1408,32 +1507,32 @@ public class Canvas3D extends Canvas2D {
 					yB -= yC;
 					yC = offsets[yC];
 					while (--yB >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xA >> 16, xC >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xA >> 16, xC >> 16);
 						xA += slopeBC;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yA >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xB >> 16, xC >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xB >> 16, xC >> 16);
 						xB += slopeAB;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				} else {
 					yA -= yB;
 					yB -= yC;
 					yC = offsets[yC];
 					while (--yB >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xC >> 16, xA >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xC >> 16, xA >> 16);
 						xA += slopeBC;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 					while (--yA >= 0) {
-						drawScanline(Canvas2D.dst, yC, color, 0, xC >> 16, xB >> 16);
+						drawScanline(Graphics2D.dst, yC, color, 0, xC >> 16, xB >> 16);
 						xB += slopeAB;
 						xC += slopeCA;
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 					}
 				}
 			}
@@ -1452,52 +1551,55 @@ public class Canvas3D extends Canvas2D {
 	 */
 	public static final void drawScanline(int[] dst, int off, int rgb, int length, int xA, int xB) {
 		if (verifyBounds) {
-			if (xB > Canvas2D.dstXBound) {
-				xB = Canvas2D.dstXBound;
+			if (xB > Graphics2D.dstXBound) {
+				xB = Graphics2D.dstXBound;
 			}
+
 			if (xA < 0) {
 				xA = 0;
 			}
 		}
 
-		if (xA < xB) {
-			off += xA;
-			length = xB - xA >> 2;
+		if (xA >= xB) {
+			return;
+		}
 
-			if (alpha == 0) {
-				while (--length >= 0) {
-					dst[off++] = rgb;
-					dst[off++] = rgb;
-					dst[off++] = rgb;
-					dst[off++] = rgb;
-				}
-				length = xB - xA & 0x3;
+		off += xA;
+		length = xB - xA >> 2;
 
-				while (--length >= 0) {
-					dst[off++] = rgb;
-				}
-			} else {
-				int a0 = alpha;
-				int a1 = 256 - alpha;
-				rgb = (((rgb & 0xFF00FF) * a1 >> 8 & 0xFF00FF) + ((rgb & 0xFF00) * a1 >> 8 & 0xFF00));
+		if (alpha == 0) {
+			while (--length >= 0) {
+				dst[off++] = rgb;
+				dst[off++] = rgb;
+				dst[off++] = rgb;
+				dst[off++] = rgb;
+			}
+			length = xB - xA & 0x3;
 
-				while (--length >= 0) {
-					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
-					off++;
-					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
-					off++;
-					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
-					off++;
-					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
-					off++;
-				}
+			while (--length >= 0) {
+				dst[off++] = rgb;
+			}
+		} else {
+			int a0 = alpha;
+			int a1 = 256 - alpha;
+			rgb = (((rgb & 0xFF00FF) * a1 >> 8 & 0xFF00FF) + ((rgb & 0xFF00) * a1 >> 8 & 0xFF00));
 
-				length = xB - xA & 0x3;
+			while (--length >= 0) {
+				dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
+				off++;
+				dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
+				off++;
+				dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
+				off++;
+				dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
+				off++;
+			}
 
-				while (--length >= 0) {
-					dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
-					off++;
-				}
+			length = xB - xA & 0x3;
+
+			while (--length >= 0) {
+				dst[off] = (rgb + ((dst[off] & 0xFF00FF) * a0 >> 8 & 0xFF00FF) + ((dst[off] & 0xFF00) * a0 >> 8 & 0xFF00));
+				off++;
 			}
 		}
 	}
@@ -1564,13 +1666,13 @@ public class Canvas3D extends Canvas2D {
 		}
 
 		if (yA <= yB && yA <= yC) {
-			if (yA < Canvas2D.bottom) {
-				if (yB > Canvas2D.bottom) {
-					yB = Canvas2D.bottom;
+			if (yA < Graphics2D.bottom) {
+				if (yB > Graphics2D.bottom) {
+					yB = Graphics2D.bottom;
 				}
 
-				if (yC > Canvas2D.bottom) {
-					yC = Canvas2D.bottom;
+				if (yC > Graphics2D.bottom) {
+					yC = Graphics2D.bottom;
 				}
 
 				if (yB < yC) {
@@ -1607,14 +1709,14 @@ public class Canvas3D extends Canvas2D {
 						yA = offsets[yA];
 
 						while (--yB >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeCA;
 							xA += slopeAB;
 
 							lC += lightSlopeCA;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1622,14 +1724,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeCA;
 							xB += slopeBC;
 
 							lC += lightSlopeCA;
 							lB += lightSlopeBC;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1641,14 +1743,14 @@ public class Canvas3D extends Canvas2D {
 						yA = offsets[yA];
 
 						while (--yB >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeCA;
 							xA += slopeAB;
 
 							lC += lightSlopeCA;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1656,14 +1758,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeCA;
 							xB += slopeBC;
 
 							lC += lightSlopeCA;
 							lB += lightSlopeBC;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1704,14 +1806,14 @@ public class Canvas3D extends Canvas2D {
 						yA = offsets[yA];
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xB += slopeCA;
 							xA += slopeAB;
 
 							lB += lightSlopeCA;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1719,14 +1821,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yB >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeBC;
 							xA += slopeAB;
 
 							lC += lightSlopeBC;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1738,14 +1840,14 @@ public class Canvas3D extends Canvas2D {
 						yA = offsets[yA];
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 							xB += slopeCA;
 							xA += slopeAB;
 
 							lB += lightSlopeCA;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1753,14 +1855,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yB >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yA, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yA, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeBC;
 							xA += slopeAB;
 
 							lC += lightSlopeBC;
 							lA += lightSlopeAB;
 
-							yA += Canvas2D.dstW;
+							yA += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1770,13 +1872,13 @@ public class Canvas3D extends Canvas2D {
 				}
 			}
 		} else if (yB <= yC) {
-			if (yB < Canvas2D.bottom) {
-				if (yC > Canvas2D.bottom) {
-					yC = Canvas2D.bottom;
+			if (yB < Graphics2D.bottom) {
+				if (yC > Graphics2D.bottom) {
+					yC = Graphics2D.bottom;
 				}
 
-				if (yA > Canvas2D.bottom) {
-					yA = Canvas2D.bottom;
+				if (yA > Graphics2D.bottom) {
+					yA = Graphics2D.bottom;
 				}
 
 				if (yC < yA) {
@@ -1813,24 +1915,24 @@ public class Canvas3D extends Canvas2D {
 						yB = offsets[yB];
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeAB;
 							xB += slopeBC;
 							lA += lightSlopeAB;
 							lB += lightSlopeBC;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 							vA += oA;
 							vB += oB;
 							vC += oC;
 						}
 
 						while (--yA >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeAB;
 							xC += slopeCA;
 							lA += lightSlopeAB;
 							lC += lightSlopeCA;
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 							vA += oA;
 							vB += oB;
 							vC += oC;
@@ -1841,14 +1943,14 @@ public class Canvas3D extends Canvas2D {
 						yB = offsets[yB];
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeAB;
 							xB += slopeBC;
 
 							lA += lightSlopeAB;
 							lB += lightSlopeBC;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1856,14 +1958,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yA >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeAB;
 							xC += slopeCA;
 
 							lA += lightSlopeAB;
 							lC += lightSlopeCA;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1904,14 +2006,14 @@ public class Canvas3D extends Canvas2D {
 						yB = offsets[yB];
 
 						while (--yA >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeAB;
 							xB += slopeBC;
 
 							lC += lightSlopeAB;
 							lB += lightSlopeBC;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1919,14 +2021,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeCA;
 							xB += slopeBC;
 
 							lA += lightSlopeCA;
 							lB += lightSlopeBC;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1938,14 +2040,14 @@ public class Canvas3D extends Canvas2D {
 						yB = offsets[yB];
 
 						while (--yA >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 							xC += slopeAB;
 							xB += slopeBC;
 
 							lC += lightSlopeAB;
 							lB += lightSlopeBC;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1953,14 +2055,14 @@ public class Canvas3D extends Canvas2D {
 						}
 
 						while (--yC >= 0) {
-							drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yB, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+							drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yB, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 							xA += slopeCA;
 							xB += slopeBC;
 
 							lA += lightSlopeCA;
 							lB += lightSlopeBC;
 
-							yB += Canvas2D.dstW;
+							yB += Graphics2D.dstW;
 
 							vA += oA;
 							vB += oB;
@@ -1969,13 +2071,13 @@ public class Canvas3D extends Canvas2D {
 					}
 				}
 			}
-		} else if (yC < Canvas2D.bottom) {
-			if (yA > Canvas2D.bottom) {
-				yA = Canvas2D.bottom;
+		} else if (yC < Graphics2D.bottom) {
+			if (yA > Graphics2D.bottom) {
+				yA = Graphics2D.bottom;
 			}
 
-			if (yB > Canvas2D.bottom) {
-				yB = Canvas2D.bottom;
+			if (yB > Graphics2D.bottom) {
+				yB = Graphics2D.bottom;
 			}
 
 			if (yA < yB) {
@@ -2012,14 +2114,14 @@ public class Canvas3D extends Canvas2D {
 					yC = offsets[yC];
 
 					while (--yA >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeBC;
 						xC += slopeCA;
 
 						lB += lightSlopeBC;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2027,14 +2129,14 @@ public class Canvas3D extends Canvas2D {
 					}
 
 					while (--yB >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xB >> 16, xA >> 16, lB >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeBC;
 						xA += slopeAB;
 
 						lB += lightSlopeBC;
 						lA += lightSlopeAB;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2046,14 +2148,14 @@ public class Canvas3D extends Canvas2D {
 					yC = offsets[yC];
 
 					while (--yA >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeBC;
 						xC += slopeCA;
 
 						lB += lightSlopeBC;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2061,14 +2163,14 @@ public class Canvas3D extends Canvas2D {
 					}
 
 					while (--yB >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xA >> 16, xB >> 16, lA >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeBC;
 						xA += slopeAB;
 
 						lB += lightSlopeBC;
 						lA += lightSlopeAB;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2109,14 +2211,14 @@ public class Canvas3D extends Canvas2D {
 					yC = offsets[yC];
 
 					while (--yB >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xA >> 16, xC >> 16, lA >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 						xA += slopeBC;
 						xC += slopeCA;
 
 						lA += lightSlopeBC;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2124,14 +2226,14 @@ public class Canvas3D extends Canvas2D {
 					}
 
 					while (--yA >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xB >> 16, xC >> 16, lB >> 8, lC >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeAB;
 						xC += slopeCA;
 
 						lB += lightSlopeAB;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2143,14 +2245,14 @@ public class Canvas3D extends Canvas2D {
 					yC = offsets[yC];
 
 					while (--yB >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xC >> 16, xA >> 16, lC >> 8, lA >> 8, vA, vB, vC, hA, hB, hC);
 						xA += slopeBC;
 						xC += slopeCA;
 
 						lA += lightSlopeBC;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2158,14 +2260,14 @@ public class Canvas3D extends Canvas2D {
 					}
 
 					while (--yA >= 0) {
-						drawTexturedScanline(Canvas2D.dst, texels, 0, 0, yC, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
+						drawTexturedScanline(Graphics2D.dst, texels, 0, 0, yC, xC >> 16, xB >> 16, lC >> 8, lB >> 8, vA, vB, vC, hA, hB, hC);
 						xB += slopeAB;
 						xC += slopeCA;
 
 						lB += lightSlopeAB;
 						lC += lightSlopeCA;
 
-						yC += Canvas2D.dstW;
+						yC += Graphics2D.dstW;
 
 						vA += oA;
 						vB += oB;
@@ -2206,8 +2308,8 @@ public class Canvas3D extends Canvas2D {
 		if (verifyBounds) {
 			lightnessSlope = (lB - lA) / (xB - xA);
 
-			if (xB > Canvas2D.dstXBound) {
-				xB = Canvas2D.dstXBound;
+			if (xB > Graphics2D.dstXBound) {
+				xB = Graphics2D.dstXBound;
 			}
 
 			if (xA < 0) {

@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class BitmapFont extends Canvas2D {
+public final class BitmapFont extends Graphics2D {
 
 	public static int[] CHAR_LOOKUP = new int[256];
 
@@ -204,42 +204,42 @@ public final class BitmapFont extends Canvas2D {
 	}
 
 	private void drawChar(byte[] data, int x, int y, int w, int h, int rgb) {
-		int dstOff = x + y * Canvas2D.dstW;
-		int dstStep = Canvas2D.dstW - w;
+		int dstOff = x + y * Graphics2D.dstW;
+		int dstStep = Graphics2D.dstW - w;
 		int srcStep = 0;
 		int srcOff = 0;
 
-		if (y < Canvas2D.top) {
-			int cutoff = Canvas2D.top - y;
+		if (y < Graphics2D.top) {
+			int cutoff = Graphics2D.top - y;
 			h -= cutoff;
-			y = Canvas2D.top;
+			y = Graphics2D.top;
 			srcOff += cutoff * w;
-			dstOff += cutoff * Canvas2D.dstW;
+			dstOff += cutoff * Graphics2D.dstW;
 		}
 
-		if (y + h >= Canvas2D.bottom) {
-			h -= y + h - Canvas2D.bottom + 1;
+		if (y + h >= Graphics2D.bottom) {
+			h -= y + h - Graphics2D.bottom + 1;
 		}
 
-		if (x < Canvas2D.left) {
-			int cutoff = Canvas2D.left - x;
+		if (x < Graphics2D.left) {
+			int cutoff = Graphics2D.left - x;
 			w -= cutoff;
-			x = Canvas2D.left;
+			x = Graphics2D.left;
 			srcOff += cutoff;
 			dstOff += cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
-		if (x + w >= Canvas2D.right) {
-			int cutoff = x + w - Canvas2D.right + 1;
+		if (x + w >= Graphics2D.right) {
+			int cutoff = x + w - Graphics2D.right + 1;
 			w -= cutoff;
 			srcStep += cutoff;
 			dstStep += cutoff;
 		}
 
 		if (w > 0 && h > 0) {
-			drawMask(Canvas2D.dst, data, rgb, srcOff, dstOff, w, h, dstStep, srcStep);
+			drawMask(Graphics2D.dst, data, rgb, srcOff, dstOff, w, h, dstStep, srcStep);
 		}
 	}
 
