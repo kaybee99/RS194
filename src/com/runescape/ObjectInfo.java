@@ -227,9 +227,9 @@ public class ObjectInfo {
 		int centerX = Graphics3D.centerX;
 		int centerY = Graphics3D.centerY;
 		int[] offsets = Graphics3D.offsets;
-		int[] data = Graphics2D.dst;
-		int width = Graphics2D.dstW;
-		int height = Graphics2D.dstH;
+		int[] data = Graphics2D.target;
+		int width = Graphics2D.targetWidth;
+		int height = Graphics2D.targetHeight;
 
 		Graphics3D.texturedShading = false;
 		Graphics2D.prepare(b.pixels, 32, 32);

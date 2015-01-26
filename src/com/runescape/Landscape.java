@@ -1860,10 +1860,10 @@ public final class Landscape {
 		boolean hovered = false;
 
 		if (((x2 - x3) * (y1 - y3) - (y2 - y3) * (x1 - x3)) > 0) {
-			Graphics3D.verifyBounds = false;
+			Graphics3D.testX = false;
 
-			if (x2 < 0 || x3 < 0 || x1 < 0 || x2 > Graphics2D.dstXBound || x3 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound) {
-				Graphics3D.verifyBounds = true;
+			if (x2 < 0 || x3 < 0 || x1 < 0 || x2 > Graphics2D.rightX || x3 > Graphics2D.rightX || x1 > Graphics2D.rightX) {
+				Graphics3D.testX = true;
 			}
 
 			if (within) {
@@ -1898,10 +1898,10 @@ public final class Landscape {
 		}
 
 		if (((x0 - x1) * (y3 - y1) - (y0 - y1) * (x3 - x1)) > 0) {
-			Graphics3D.verifyBounds = false;
+			Graphics3D.testX = false;
 
-			if (x0 < 0 || x1 < 0 || x3 < 0 || x0 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound || x3 > Graphics2D.dstXBound) {
-				Graphics3D.verifyBounds = true;
+			if (x0 < 0 || x1 < 0 || x3 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x3 > Graphics2D.rightX) {
+				Graphics3D.testX = true;
 			}
 
 			if (within) {
@@ -1936,7 +1936,7 @@ public final class Landscape {
 			int dz = Scene.hoverTileZ - tileZ;
 			int a = (dx * dx) + (dz * dz);
 
-			Graphics3D.verifyBounds = true;
+			Graphics3D.testX = true;
 
 			if (hovered || a < Scene.hoverRadiusSquared) {
 				int alpha = Graphics3D.alpha;
@@ -1997,10 +1997,10 @@ public final class Landscape {
 			boolean within = withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y2, x0, x1, x2);
 
 			if (((x0 - x1) * (y2 - y1) - (y0 - y1) * (x2 - x1)) > 0) {
-				Graphics3D.verifyBounds = false;
+				Graphics3D.testX = false;
 
-				if (x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound || x2 > Graphics2D.dstXBound) {
-					Graphics3D.verifyBounds = true;
+				if (x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x2 > Graphics2D.rightX) {
+					Graphics3D.testX = true;
 				}
 
 				if (within) {

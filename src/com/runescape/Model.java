@@ -1678,7 +1678,7 @@ public class Model extends CacheLink {
 
 					if (((x0 - x1) * (vertexScreenY[c] - vertexScreenY[b]) - ((vertexScreenY[a] - vertexScreenY[b]) * (x2 - x1))) > 0) {
 						projectTriangle[t] = false;
-						verifyTriangleBounds[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.dstXBound || x1 > Graphics2D.dstXBound || x2 > Graphics2D.dstXBound;
+						verifyTriangleBounds[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x2 > Graphics2D.rightX;
 						int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + minDepth);
 						depthTriangles[depth][depthTriangleCount[depth]++] = t;
 					}
@@ -1851,7 +1851,7 @@ public class Model extends CacheLink {
 			int b = triangleVertexB[index];
 			int c = triangleVertexC[index];
 
-			Graphics3D.verifyBounds = verifyTriangleBounds[index];
+			Graphics3D.testX = verifyTriangleBounds[index];
 
 			if (triangleAlpha == null) {
 				Graphics3D.alpha = 0;
@@ -1984,11 +1984,11 @@ public class Model extends CacheLink {
 		int yC = tmpY[2];
 
 		if (((xA - xB) * (yC - yB) - (yA - yB) * (xC - xB)) > 0) {
-			Graphics3D.verifyBounds = false;
+			Graphics3D.testX = false;
 
 			if (n == 3) {
-				if (xA < 0 || xB < 0 || xC < 0 || xA > Graphics2D.dstXBound || xB > Graphics2D.dstXBound || xC > Graphics2D.dstXBound) {
-					Graphics3D.verifyBounds = true;
+				if (xA < 0 || xB < 0 || xC < 0 || xA > Graphics2D.rightX || xB > Graphics2D.rightX || xC > Graphics2D.rightX) {
+					Graphics3D.testX = true;
 				}
 
 				int type;
@@ -2019,8 +2019,8 @@ public class Model extends CacheLink {
 			}
 
 			if (n == 4) {
-				if (xA < 0 || xB < 0 || xC < 0 || xA > Graphics2D.dstXBound || xB > Graphics2D.dstXBound || xC > Graphics2D.dstXBound || tmpX[3] < 0 || tmpX[3] > Graphics2D.dstXBound) {
-					Graphics3D.verifyBounds = true;
+				if (xA < 0 || xB < 0 || xC < 0 || xA > Graphics2D.rightX || xB > Graphics2D.rightX || xC > Graphics2D.rightX || tmpX[3] < 0 || tmpX[3] > Graphics2D.rightX) {
+					Graphics3D.testX = true;
 				}
 
 				int type;

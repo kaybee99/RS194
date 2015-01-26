@@ -2,30 +2,30 @@ package com.runescape;
 
 public class Graphics2D extends CacheLink {
 
-	public static int[] dst;
-	public static int dstW;
-	public static int dstH;
+	public static int[] target;
+	public static int targetWidth;
+	public static int targetHeight;
 	public static int top;
 	public static int bottom;
 	public static int left;
 	public static int right;
-	public static int dstXBound;
+	public static int rightX;
 	public static int centerX;
 	public static int centerY;
 
 	public static void prepare(int[] data, int w, int h) {
-		dst = data;
-		dstW = w;
-		dstH = h;
+		target = data;
+		targetWidth = w;
+		targetHeight = h;
 		setBounds(0, 0, w, h);
 	}
 
 	public static void resetBounds() {
 		left = 0;
 		top = 0;
-		right = dstW;
-		bottom = dstH;
-		dstXBound = right - 1;
+		right = targetWidth;
+		bottom = targetHeight;
+		rightX = right - 1;
 		centerX = right / 2;
 	}
 
@@ -36,33 +36,33 @@ public class Graphics2D extends CacheLink {
 		if (y0 < 0) {
 			y0 = 0;
 		}
-		if (x1 > dstW) {
-			x1 = dstW;
+		if (x1 > targetWidth) {
+			x1 = targetWidth;
 		}
-		if (y1 > dstH) {
-			y1 = dstH;
+		if (y1 > targetHeight) {
+			y1 = targetHeight;
 		}
 		left = x0;
 		top = y0;
 		right = x1;
 		bottom = y1;
-		dstXBound = right - 1;
+		rightX = right - 1;
 		centerX = right / 2;
 		centerY = bottom / 2;
 	}
 
 	public static void clear() {
-		int len = dstW * dstH;
+		int len = targetWidth * targetHeight;
 		for (int i = 0; i < len; i++) {
-			dst[i] = 0;
+			target[i] = 0;
 		}
 	}
 
 	public static void plot(int x, int y, int rgb) {
-		if (x < 0 || x >= dstW || y < 0 || y >= dstH) {
+		if (x < 0 || x >= targetWidth || y < 0 || y >= targetHeight) {
 			return;
 		}
-		dst[x + (y * dstW)] = rgb;
+		target[x + (y * targetWidth)] = rgb;
 	}
 
 	public static void drawLine(int x1, int y1, int x2, int y2, int rgb) {
@@ -131,12 +131,12 @@ public class Graphics2D extends CacheLink {
 			h = bottom - y;
 		}
 
-		int stride = dstW - w;
-		int off = x + y * dstW;
+		int stride = targetWidth - w;
+		int off = x + y * targetWidth;
 
 		for (int i = -h; i < 0; i++) {
 			for (int j = -w; j < 0; j++) {
-				dst[off++] = rgb;
+				target[off++] = rgb;
 			}
 			off += stride;
 		}
@@ -158,9 +158,9 @@ public class Graphics2D extends CacheLink {
 			if (x + len > right) {
 				len = right - x;
 			}
-			int off = x + y * dstW;
+			int off = x + y * targetWidth;
 			for (int i = 0; i < len; i++) {
-				dst[off + i] = rgb;
+				target[off + i] = rgb;
 			}
 		}
 	}
@@ -174,9 +174,9 @@ public class Graphics2D extends CacheLink {
 			if (y + len > bottom) {
 				len = bottom - y;
 			}
-			int off = x + y * dstW;
+			int off = x + y * targetWidth;
 			for (int i = 0; i < len; i++) {
-				dst[off + i * dstW] = rgb;
+				target[off + i * targetWidth] = rgb;
 			}
 		}
 	}

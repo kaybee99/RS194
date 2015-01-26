@@ -115,18 +115,18 @@ public final class IndexedBitmap extends Graphics2D {
 	public void draw(int x, int y) {
 		x += clipX;
 		y += clipY;
-		int dstOff = x + y * Graphics2D.dstW;
+		int dstOff = x + y * Graphics2D.targetWidth;
 		int srcOff = 0;
 		int h = height;
 		int w = width;
-		int dstStep = Graphics2D.dstW - w;
+		int dstStep = Graphics2D.targetWidth - w;
 		int srcStep = 0;
 		if (y < Graphics2D.top) {
 			int trim = Graphics2D.top - y;
 			h -= trim;
 			y = Graphics2D.top;
 			srcOff += trim * w;
-			dstOff += trim * Graphics2D.dstW;
+			dstOff += trim * Graphics2D.targetWidth;
 		}
 		if (y + h > Graphics2D.bottom) {
 			h -= y + h - Graphics2D.bottom;
@@ -147,7 +147,7 @@ public final class IndexedBitmap extends Graphics2D {
 			dstStep += trim;
 		}
 		if (w > 0 && h > 0) {
-			copyImage(h, data, palette, w, dstOff, srcOff, Graphics2D.dst, dstStep, srcStep);
+			copyImage(h, data, palette, w, dstOff, srcOff, Graphics2D.target, dstStep, srcStep);
 		}
 	}
 

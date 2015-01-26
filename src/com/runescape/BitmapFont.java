@@ -204,8 +204,8 @@ public final class BitmapFont extends Graphics2D {
 	}
 
 	private void drawChar(byte[] data, int x, int y, int w, int h, int rgb) {
-		int dstOff = x + y * Graphics2D.dstW;
-		int dstStep = Graphics2D.dstW - w;
+		int dstOff = x + y * Graphics2D.targetWidth;
+		int dstStep = Graphics2D.targetWidth - w;
 		int srcStep = 0;
 		int srcOff = 0;
 
@@ -214,7 +214,7 @@ public final class BitmapFont extends Graphics2D {
 			h -= cutoff;
 			y = Graphics2D.top;
 			srcOff += cutoff * w;
-			dstOff += cutoff * Graphics2D.dstW;
+			dstOff += cutoff * Graphics2D.targetWidth;
 		}
 
 		if (y + h >= Graphics2D.bottom) {
@@ -239,7 +239,7 @@ public final class BitmapFont extends Graphics2D {
 		}
 
 		if (w > 0 && h > 0) {
-			drawMask(Graphics2D.dst, data, rgb, srcOff, dstOff, w, h, dstStep, srcStep);
+			drawMask(Graphics2D.target, data, rgb, srcOff, dstOff, w, h, dstStep, srcStep);
 		}
 	}
 
