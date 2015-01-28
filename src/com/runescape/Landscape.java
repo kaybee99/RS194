@@ -40,7 +40,7 @@ public final class Landscape {
 	public static final int MAX_OCCLUDER_PLANES = 4;
 	public static int[] planeOccluderCount = new int[MAX_OCCLUDER_PLANES];
 	static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
-	public static int activeOcludderN;
+	public static int activeOccluderCount;
 	static Occluder[] activeOcludders = new Occluder[500];
 	public static LinkedList tileQueue = new LinkedList();
 
@@ -235,20 +235,20 @@ public final class Landscape {
 		planeTiles[3][x][z] = null;
 	}
 
-	public static void addOccluder(int type, int minSceneX, int maxSceneX, int minSceneY, int maxSceneY, int minSceneZ, int maxSceneZ, int plane) {
-		Occluder b = new Occluder();
-		b.minTileX = minSceneX / 128;
-		b.maxTileX = maxSceneX / 128;
-		b.minTileZ = minSceneZ / 128;
-		b.maxTileZ = maxSceneZ / 128;
-		b.type = type;
-		b.minSceneX = minSceneX;
-		b.maxSceneX = maxSceneX;
-		b.minSceneZ = minSceneZ;
-		b.maxSceneZ = maxSceneZ;
-		b.minSceneY = minSceneY;
-		b.maxSceneY = maxSceneY;
-		planeOccluders[plane][planeOccluderCount[plane]++] = b;
+	public static void addOccluder(int type, int minX, int minY, int minZ, int maxX, int maxY, int maxZ, int plane) {
+		Occluder o = new Occluder();
+		o.minTileX = minX / 128;
+		o.maxTileX = maxX / 128;
+		o.minTileZ = minZ / 128;
+		o.maxTileZ = maxZ / 128;
+		o.type = type;
+		o.minX = minX;
+		o.maxX = maxX;
+		o.minZ = minZ;
+		o.maxZ = maxZ;
+		o.minY = minY;
+		o.maxY = maxY;
+		planeOccluders[plane][planeOccluderCount[plane]++] = o;
 	}
 
 	public void setDrawPlane(int plane, int x, int z, int drawY) {
@@ -1344,12 +1344,12 @@ public final class Landscape {
 					boolean tileVisible = false;
 
 					if (tile.underlay != null) {
-						if (!culledTile(tileRenderPlane, tileX, tileZ)) {
+						if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
 							tileVisible = true;
 							drawTileUnderlay(tile.underlay, tileRenderPlane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
 						}
 					} else if (tile.overlay != null) {
-						if (!culledTile(tileRenderPlane, tileX, tileZ)) {
+						if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
 							tileVisible = true;
 							drawTileOverlay(tile.overlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
 						}
@@ -1402,16 +1402,16 @@ public final class Landscape {
 							tile.anInt985 = 0;
 						}
 
-						if ((wall.type1 & drawType) != 0 && !culledWall(tileRenderPlane, tileX, tileZ, wall.type1)) {
+						if ((wall.type1 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
 							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 						}
 
-						if ((wall.type2 & drawType) != 0 && !culledWall(tileRenderPlane, tileX, tileZ, wall.type2)) {
+						if ((wall.type2 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
 							wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 						}
 					}
 
-					if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
+					if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
 						if ((decoration.type & drawType) != 0) {
 							decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
 						} else if ((decoration.type & 0x300) != 0) {
@@ -1514,7 +1514,7 @@ public final class Landscape {
 					if (visible) {
 						WallLocation wall = tile.wall;
 
-						if (!culledWall(tileRenderPlane, tileX, tileZ, wall.type1)) {
+						if (!isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
 							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 						}
 
@@ -1573,20 +1573,20 @@ public final class Landscape {
 
 							drawnLocs[locCount++] = l;
 
-							int maxTileX = cameraTileX - l.minTileX;
-							int minTileX = l.maxTileX - cameraTileX;
+							int dx0 = cameraTileX - l.minTileX;
+							int dx1 = l.maxTileX - cameraTileX;
 
-							if (minTileX > maxTileX) {
-								maxTileX = minTileX;
+							if (dx1 > dx0) {
+								dx0 = dx1;
 							}
 
-							int maxTileY = cameraTileZ - l.minTileZ;
-							int minTileY = l.maxTileZ - cameraTileZ;
+							int dy0 = cameraTileZ - l.minTileZ;
+							int dy1 = l.maxTileZ - cameraTileZ;
 
-							if (minTileY > maxTileY) {
-								l.drawPriority = maxTileX + minTileY;
+							if (dy1 > dy0) {
+								l.drawPriority = dx0 + dy1;
 							} else {
-								l.drawPriority = maxTileX + maxTileY;
+								l.drawPriority = dx0 + dy0;
 							}
 						}
 					}
@@ -1616,7 +1616,7 @@ public final class Landscape {
 							m = l.renderable.getDrawModel();
 						}
 
-						if (!culledArea(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.maxBoundY)) {
+						if (!isAreaOccluded(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.maxBoundY)) {
 							m.draw(l.yaw, pitchSin, pitchCos, yawSin, yawCos, l.sceneX - cameraX, l.sceneY - cameraY, l.sceneZ - cameraZ, l.bitset);
 						}
 
@@ -1687,7 +1687,7 @@ public final class Landscape {
 					if (tile.anInt988 != 0) {
 						WallDecorationLocation decoration = tile.wallDecoration;
 
-						if (decoration != null && !culled(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
+						if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
 							if ((decoration.type & tile.anInt988) != 0) {
 								decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
 							} else if ((decoration.type & 0x300) != 0) {
@@ -1728,11 +1728,11 @@ public final class Landscape {
 						WallLocation wall = tile.wall;
 
 						if (wall != null) {
-							if ((wall.type2 & tile.anInt988) != 0 && !culledWall(tileRenderPlane, tileX, tileZ, wall.type2)) {
+							if ((wall.type2 & tile.anInt988) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
 								wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 							}
 
-							if ((wall.type1 & tile.anInt988) != 0 && !culledWall(tileRenderPlane, tileX, tileZ, wall.type1)) {
+							if ((wall.type1 & tile.anInt988) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
 								wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 							}
 						}
@@ -2073,16 +2073,16 @@ public final class Landscape {
 	}
 
 	private void updateOccluders() {
-		int cullingBoxN = planeOccluderCount[topTileY];
+		int occluderCount = planeOccluderCount[topTileY];
 		Occluder[] occluders = planeOccluders[topTileY];
 
-		activeOcludderN = 0;
+		activeOccluderCount = 0;
 
-		if (!Scene.enableOcclusion) {
+		if (!Scene.occlusionEnabled) {
 			return;
 		}
 
-		for (int n = 0; n < cullingBoxN; n++) {
+		for (int n = 0; n < occluderCount; n++) {
 			Occluder o = occluders[n];
 
 			if (o.type == 1) {
@@ -2111,28 +2111,24 @@ public final class Landscape {
 					}
 
 					if (visible) {
-						int dx = cameraX - o.minSceneX;
+						int dx = cameraX - o.minX;
 
 						if (dx > 32) {
-							o.testType = 1;
+							o.testDirection = 1;
 						} else {
 							if (dx >= -32) {
 								continue;
 							}
 
-							o.testType = 2;
+							o.testDirection = 2;
 							dx = -dx;
 						}
 
-						o.anInt310 = (o.minSceneZ - cameraZ << 8) / dx;
-						o.anInt311 = (o.maxSceneZ - cameraZ << 8) / dx;
-						o.anInt312 = (o.minSceneY - cameraY << 8) / dx;
-						o.anInt313 = (o.maxSceneY - cameraY << 8) / dx;
-
-						// System.out.println(o.testType + ": " + o.anInt310 +
-						// ", " + o.anInt311 + ", " + o.anInt312 + ", " +
-						// o.anInt313);
-						activeOcludders[activeOcludderN++] = o;
+						o.anInt310 = (o.minZ - cameraZ << 8) / dx;
+						o.anInt311 = (o.maxZ - cameraZ << 8) / dx;
+						o.anInt312 = (o.minY - cameraY << 8) / dx;
+						o.anInt313 = (o.maxY - cameraY << 8) / dx;
+						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
 			} else if (o.type == 2) {
@@ -2159,31 +2155,27 @@ public final class Landscape {
 						}
 					}
 					if (visible) {
-						int z = cameraZ - o.minSceneZ;
+						int z = cameraZ - o.minZ;
 
 						if (z > 32) {
-							o.testType = 3;
+							o.testDirection = 3;
 						} else {
 							if (z >= -32) {
 								continue;
 							}
-							o.testType = 4;
+							o.testDirection = 4;
 							z = -z;
 						}
 
-						o.anInt308 = (o.minSceneX - cameraX << 8) / z;
-						o.anInt309 = (o.maxSceneX - cameraX << 8) / z;
-						o.anInt312 = (o.minSceneY - cameraY << 8) / z;
-						o.anInt313 = (o.maxSceneY - cameraY << 8) / z;
-
-						// System.out.println(o.testType + ": " + o.anInt308 +
-						// ", " + o.anInt309 + ", " + o.anInt312 + ", " +
-						// o.anInt313);
-						activeOcludders[activeOcludderN++] = o;
+						o.anInt308 = (o.minX - cameraX << 8) / z;
+						o.anInt309 = (o.maxX - cameraX << 8) / z;
+						o.anInt312 = (o.minY - cameraY << 8) / z;
+						o.anInt313 = (o.maxY - cameraY << 8) / z;
+						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
 			} else if (o.type == 4) {
-				int y = o.minSceneY - cameraY;
+				int y = o.minY - cameraY;
 
 				if (y > 128) {
 					int minTileY = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
@@ -2226,16 +2218,12 @@ public final class Landscape {
 						}
 
 						if (visible) {
-							o.testType = 5;
-							o.anInt308 = (o.minSceneX - cameraX << 8) / y;
-							o.anInt309 = (o.maxSceneX - cameraX << 8) / y;
-							o.anInt310 = (o.minSceneZ - cameraZ << 8) / y;
-							o.anInt311 = (o.maxSceneZ - cameraZ << 8) / y;
-
-							// System.out.println(o.testType + ": " + o.anInt308
-							// + ", " + o.anInt309 + ", " + o.anInt310 + ", " +
-							// o.anInt311);
-							activeOcludders[activeOcludderN++] = o;
+							o.testDirection = 5;
+							o.anInt308 = (o.minX - cameraX << 8) / y;
+							o.anInt309 = (o.maxX - cameraX << 8) / y;
+							o.anInt310 = (o.minZ - cameraZ << 8) / y;
+							o.anInt311 = (o.maxZ - cameraZ << 8) / y;
+							activeOcludders[activeOccluderCount++] = o;
 						}
 					}
 				}
@@ -2243,7 +2231,7 @@ public final class Landscape {
 		}
 	}
 
-	private boolean culledTile(int plane, int tileX, int tileY) {
+	private boolean isTileOccluded(int plane, int tileX, int tileY) {
 		int cycle = levelTileCycle[plane][tileX][tileY];
 
 		if (cycle == -cullCycle) {
@@ -2257,7 +2245,7 @@ public final class Landscape {
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		if (culled(sceneX + 1, heightmap[plane][tileX][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY], sceneZ + 1) && culled(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && culled(sceneX + 1, heightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
+		if (isOccluded(sceneX + 1, heightmap[plane][tileX][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && isOccluded(sceneX + 1, heightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
 			levelTileCycle[plane][tileX][tileY] = cullCycle;
 			return true;
 		}
@@ -2266,8 +2254,8 @@ public final class Landscape {
 		return false;
 	}
 
-	private boolean culledWall(int plane, int tileX, int tileY, int type) {
-		if (!culledTile(plane, tileX, tileY)) {
+	private boolean isWallOccluded(int plane, int tileX, int tileY, int type) {
+		if (!isTileOccluded(plane, tileX, tileY)) {
 			return false;
 		}
 
@@ -2282,145 +2270,145 @@ public final class Landscape {
 		if (type < 16) {
 			if (type == 1) {
 				if (sceneX > cameraX) {
-					if (!culled(sceneX, sceneY, sceneZ)) {
+					if (!isOccluded(sceneX, sceneY, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX, sceneY, sceneZ + 128)) {
+					if (!isOccluded(sceneX, sceneY, sceneZ + 128)) {
 						return false;
 					}
 				}
 
 				if (plane > 0) {
-					if (!culled(sceneX, planeY0, sceneZ)) {
+					if (!isOccluded(sceneX, planeY0, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX, planeY0, sceneZ + 128)) {
+					if (!isOccluded(sceneX, planeY0, sceneZ + 128)) {
 						return false;
 					}
 				}
 
-				if (!culled(sceneX, planeY1, sceneZ)) {
+				if (!isOccluded(sceneX, planeY1, sceneZ)) {
 					return false;
 				}
 
-				return culled(sceneX, planeY1, sceneZ + 128);
+				return isOccluded(sceneX, planeY1, sceneZ + 128);
 			}
 
 			if (type == 2) {
 				if (sceneZ < cameraZ) {
-					if (!culled(sceneX, sceneY, sceneZ + 128)) {
+					if (!isOccluded(sceneX, sceneY, sceneZ + 128)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, sceneY, sceneZ + 128)) {
+					if (!isOccluded(sceneX + 128, sceneY, sceneZ + 128)) {
 						return false;
 					}
 				}
 				if (plane > 0) {
-					if (!culled(sceneX, planeY0, sceneZ + 128)) {
+					if (!isOccluded(sceneX, planeY0, sceneZ + 128)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, planeY0, sceneZ + 128)) {
+					if (!isOccluded(sceneX + 128, planeY0, sceneZ + 128)) {
 						return false;
 					}
 				}
-				if (!culled(sceneX, planeY1, sceneZ + 128)) {
+				if (!isOccluded(sceneX, planeY1, sceneZ + 128)) {
 					return false;
 				}
-				return culled(sceneX + 128, planeY1, sceneZ + 128);
+				return isOccluded(sceneX + 128, planeY1, sceneZ + 128);
 			}
 
 			if (type == 4) {
 				if (sceneX < cameraZ) {
-					if (!culled(sceneX + 128, sceneY, sceneZ)) {
+					if (!isOccluded(sceneX + 128, sceneY, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, sceneY, sceneZ + 128)) {
+					if (!isOccluded(sceneX + 128, sceneY, sceneZ + 128)) {
 						return false;
 					}
 				}
 
 				if (plane > 0) {
-					if (!culled(sceneX + 128, planeY0, sceneZ)) {
+					if (!isOccluded(sceneX + 128, planeY0, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, planeY0, sceneZ + 128)) {
+					if (!isOccluded(sceneX + 128, planeY0, sceneZ + 128)) {
 						return false;
 					}
 				}
 
-				if (!culled(sceneX + 128, planeY1, sceneZ)) {
+				if (!isOccluded(sceneX + 128, planeY1, sceneZ)) {
 					return false;
 				}
 
-				return culled(sceneX + 128, planeY1, sceneZ + 128);
+				return isOccluded(sceneX + 128, planeY1, sceneZ + 128);
 			}
 
 			if (type == 8) {
 				if (sceneZ > cameraZ) {
-					if (!culled(sceneX, sceneY, sceneZ)) {
+					if (!isOccluded(sceneX, sceneY, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, sceneY, sceneZ)) {
+					if (!isOccluded(sceneX + 128, sceneY, sceneZ)) {
 						return false;
 					}
 				}
 
 				if (plane > 0) {
-					if (!culled(sceneX, planeY0, sceneZ)) {
+					if (!isOccluded(sceneX, planeY0, sceneZ)) {
 						return false;
 					}
-					if (!culled(sceneX + 128, planeY0, sceneZ)) {
+					if (!isOccluded(sceneX + 128, planeY0, sceneZ)) {
 						return false;
 					}
 				}
 
-				if (!culled(sceneX, planeY1, sceneZ)) {
+				if (!isOccluded(sceneX, planeY1, sceneZ)) {
 					return false;
 				}
 
-				return culled(sceneX + 128, planeY1, sceneZ);
+				return isOccluded(sceneX + 128, planeY1, sceneZ);
 			}
 		}
 
-		if (!culled(sceneX + 64, planeY2, sceneZ + 64)) {
+		if (!isOccluded(sceneX + 64, planeY2, sceneZ + 64)) {
 			return false;
 		}
 
 		if (type == 16) {
-			return culled(sceneX, planeY1, sceneZ + 128);
+			return isOccluded(sceneX, planeY1, sceneZ + 128);
 		} else if (type == 32) {
-			return culled(sceneX + 128, planeY1, sceneZ + 128);
+			return isOccluded(sceneX + 128, planeY1, sceneZ + 128);
 		} else if (type == 64) {
-			return culled(sceneX + 128, planeY1, sceneZ);
+			return isOccluded(sceneX + 128, planeY1, sceneZ);
 		} else if (type == 128) {
-			return culled(sceneX, planeY1, sceneZ);
+			return isOccluded(sceneX, planeY1, sceneZ);
 		}
 
 		System.out.println("Warning unsupported wall type");
 		return true;
 	}
 
-	private boolean culled(int plane, int tileX, int tileY, int height) {
-		if (!culledTile(plane, tileX, tileY)) {
+	private boolean isOccluded(int plane, int tileX, int tileY, int height) {
+		if (!isTileOccluded(plane, tileX, tileY)) {
 			return false;
 		}
 
 		int sceneX = tileX << 7;
 		int sceneZ = tileY << 7;
 
-		return culled(sceneX + 1, heightmap[plane][tileX][tileY] - height, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY] - height), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY + 1] - height), sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][tileX][tileY + 1] - height), sceneZ + 128 - 1);
+		return isOccluded(sceneX + 1, heightmap[plane][tileX][tileY] - height, sceneZ + 1) && isOccluded(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY] - height), sceneZ + 1) && isOccluded(sceneX + 128 - 1, (heightmap[plane][tileX + 1][tileY + 1] - height), sceneZ + 128 - 1) && isOccluded(sceneX + 1, (heightmap[plane][tileX][tileY + 1] - height), sceneZ + 128 - 1);
 	}
 
-	private boolean culledArea(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int height) {
+	private boolean isAreaOccluded(int plane, int minTileX, int maxTileX, int minTileY, int maxTileY, int height) {
 		if (minTileX == maxTileX && minTileY == maxTileY) {
-			if (!culledTile(plane, minTileX, minTileY)) {
+			if (!isTileOccluded(plane, minTileX, minTileY)) {
 				return false;
 			}
 
 			int sceneX = minTileX << 7;
 			int sceneZ = minTileY << 7;
 
-			return culled(sceneX + 1, heightmap[plane][minTileX][minTileY] - height, sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY] - height), sceneZ + 1) && culled(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY + 1]) - height, sceneZ + 128 - 1) && culled(sceneX + 1, (heightmap[plane][minTileX][minTileY + 1] - height), sceneZ + 128 - 1);
+			return isOccluded(sceneX + 1, heightmap[plane][minTileX][minTileY] - height, sceneZ + 1) && isOccluded(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY] - height), sceneZ + 1) && isOccluded(sceneX + 128 - 1, (heightmap[plane][minTileX + 1][minTileY + 1]) - height, sceneZ + 128 - 1) && isOccluded(sceneX + 1, (heightmap[plane][minTileX][minTileY + 1] - height), sceneZ + 128 - 1);
 		}
 
 		for (int x = minTileX; x <= maxTileX; x++) {
@@ -2435,94 +2423,91 @@ public final class Landscape {
 		int minSceneZ = (minTileY << 7) + 2;
 		int minSceneY = heightmap[plane][minTileX][minTileY] - height;
 
-		if (!culled(minSceneX, minSceneY, minSceneZ)) {
+		if (!isOccluded(minSceneX, minSceneY, minSceneZ)) {
 			return false;
 		}
 
 		int maxSceneX = (maxTileX << 7) - 1;
 
-		if (!culled(maxSceneX, minSceneY, minSceneZ)) {
+		if (!isOccluded(maxSceneX, minSceneY, minSceneZ)) {
 			return false;
 		}
 
 		int maxSceneY = (maxTileY << 7) - 1;
 
-		if (!culled(minSceneX, minSceneY, maxSceneY)) {
+		if (!isOccluded(minSceneX, minSceneY, maxSceneY)) {
 			return false;
 		}
 
-		if (!culled(maxSceneX, minSceneY, maxSceneY)) {
-			return false;
-		}
-		return true;
+		return isOccluded(maxSceneX, minSceneY, maxSceneY);
 	}
 
-	private boolean culled(int sceneX, int sceneY, int sceneZ) {
-		for (int n = 0; n < activeOcludderN; n++) {
-			Occluder b = activeOcludders[n];
+	private boolean isOccluded(int x, int y, int z) {
+		for (int n = 0; n < activeOccluderCount; n++) {
+			Occluder o = activeOcludders[n];
 
-			if (b.testType == 1) {
-				int x = b.minSceneX - sceneX;
+			if (o.testDirection == 1) {
+				int dx = o.minX - x;
 
-				if (x > 0) {
-					int minSceneZ = b.minSceneZ + (b.anInt310 * x >> 8);
-					int maxSceneZ = b.maxSceneZ + (b.anInt311 * x >> 8);
-					int minSceneY = b.minSceneY + (b.anInt312 * x >> 8);
-					int maxSceneY = b.maxSceneY + (b.anInt313 * x >> 8);
+				if (dx > 0) {
+					int minZ = o.minZ + (o.anInt310 * dx >> 8);
+					int maxZ = o.maxZ + (o.anInt311 * dx >> 8);
+					int minY = o.minY + (o.anInt312 * dx >> 8);
+					int maxY = o.maxY + (o.anInt313 * dx >> 8);
 
-					if (sceneZ >= minSceneZ && sceneZ <= maxSceneZ && sceneY >= minSceneY && sceneY <= maxSceneY) {
+					if (z >= minZ && z <= maxZ && y >= minY && y <= maxY) {
 						return true;
 					}
 				}
-			} else if (b.testType == 2) {
-				int x = sceneX - b.minSceneX;
+			} else if (o.testDirection == 2) {
+				int dx = x - o.minX;
 
-				if (x > 0) {
-					int minSceneZ = b.minSceneZ + (b.anInt310 * x >> 8);
-					int maxSceneZ = b.maxSceneZ + (b.anInt311 * x >> 8);
-					int minSceneY = b.minSceneY + (b.anInt312 * x >> 8);
-					int maxSceneY = b.maxSceneY + (b.anInt313 * x >> 8);
+				if (dx > 0) {
+					int minZ = o.minZ + (o.anInt310 * dx >> 8);
+					int maxZ = o.maxZ + (o.anInt311 * dx >> 8);
+					int minY = o.minY + (o.anInt312 * dx >> 8);
+					int maxY = o.maxY + (o.anInt313 * dx >> 8);
 
-					if (sceneZ >= minSceneZ && sceneZ <= maxSceneZ && sceneY >= minSceneY && sceneY <= maxSceneY) {
+					if (z >= minZ && z <= maxZ && y >= minY && y <= maxY) {
 						return true;
 					}
 				}
-			} else if (b.testType == 3) {
-				int z = b.minSceneZ - sceneZ;
+			} else if (o.testDirection == 3) {
+				int dz = o.minZ - z;
 
-				if (z > 0) {
-					int minSceneX = b.minSceneX + (b.anInt308 * z >> 8);
-					int maxSceneX = b.maxSceneX + (b.anInt309 * z >> 8);
-					int minSceneY = b.minSceneY + (b.anInt312 * z >> 8);
-					int maxSceneY = b.maxSceneY + (b.anInt313 * z >> 8);
+				if (dz > 0) {
+					int minX = o.minX + (o.anInt308 * dz >> 8);
+					int maxX = o.maxX + (o.anInt309 * dz >> 8);
+					int minY = o.minY + (o.anInt312 * dz >> 8);
+					int maxY = o.maxY + (o.anInt313 * dz >> 8);
 
-					if (sceneX >= minSceneX && sceneX <= maxSceneX && sceneY >= minSceneY && sceneY <= maxSceneY) {
+					if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 						return true;
 					}
 				}
-			} else if (b.testType == 4) {
-				int z = sceneZ - b.minSceneZ;
+			} else if (o.testDirection == 4) {
+				int dz = z - o.minZ;
 
-				if (z > 0) {
-					int minSceneX = b.minSceneX + (b.anInt308 * z >> 8);
-					int maxSceneX = b.maxSceneX + (b.anInt309 * z >> 8);
-					int minSceneY = b.minSceneY + (b.anInt312 * z >> 8);
-					int maxSceneY = b.maxSceneY + (b.anInt313 * z >> 8);
+				if (dz > 0) {
+					int minX = o.minX + (o.anInt308 * dz >> 8);
+					int maxX = o.maxX + (o.anInt309 * dz >> 8);
+					int minY = o.minY + (o.anInt312 * dz >> 8);
+					int maxY = o.maxY + (o.anInt313 * dz >> 8);
 
-					if (sceneX >= minSceneX && sceneX <= maxSceneX && sceneY >= minSceneY && sceneY <= maxSceneY) {
+					if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 						return true;
 					}
 				}
-			} else if (b.testType == 5) {
-				int y = sceneY - b.minSceneY;
+			} else if (o.testDirection == 5) {
+				int dy = y - o.minY;
 
-				if (y > 0) {
-					int minSceneX = b.minSceneX + (b.anInt308 * y >> 8);
-					int maxSceneX = b.maxSceneX + (b.anInt309 * y >> 8);
-					int minSceneZ = b.minSceneZ + (b.anInt310 * y >> 8);
-					int maxSceneZ = b.maxSceneZ + (b.anInt311 * y >> 8);
+				if (dy > 0) {
+					int minX = o.minX + (o.anInt308 * dy >> 8);
+					int maxX = o.maxX + (o.anInt309 * dy >> 8);
+					int minZ = o.minZ + (o.anInt310 * dy >> 8);
+					int maxZ = o.maxZ + (o.anInt311 * dy >> 8);
 
-					if (sceneX >= minSceneX && sceneX <= maxSceneX && sceneZ >= minSceneZ && sceneZ <= maxSceneZ) {
+					if (x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
 						return true;
 					}
 				}

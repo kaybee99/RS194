@@ -1,6 +1,6 @@
 package com.runescape;
 
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class Graphics3D extends Graphics2D {
 
@@ -93,8 +93,8 @@ public class Graphics3D extends Graphics2D {
 	public static int cycle;
 
 	/**
-	 * Stores RGB values that can be looked up in the HSL
-	 * format:<br/><code>(hue << 10) | (saturation << 7) | lightness</code>
+	 * Stores RGB values that can be looked up with an HSL
+	 * value:<br/><code>(hue << 10) | (saturation << 7) | lightness</code>
 	 */
 	public static int[] palette;
 

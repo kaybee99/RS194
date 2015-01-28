@@ -1,5 +1,8 @@
 package com.runescape;
 
+import java.awt.*;
+import java.awt.image.*;
+
 public final class Scene {
 
 	public static final int VIEW_DIAMETER = 104;
@@ -26,7 +29,7 @@ public final class Scene {
 	public static boolean lowmemory = true;
 	public static int builtPlane;
 
-	public static boolean enableOcclusion = true;
+	public static boolean occlusionEnabled = true;
 	public static boolean checkClick;
 
 	public static int clickX;
@@ -39,7 +42,7 @@ public final class Scene {
 	public static int clickedTileY = -1;
 
 	public int tileSizeX;
-	public int tileSizeY;
+	public int tileSizeZ;
 	public int[][][] heightmap;
 	public byte[][][] renderflags;
 	public byte[][][] planeUnderlayFloorIndices;
@@ -53,25 +56,25 @@ public final class Scene {
 	public int[] blendedLightness;
 	public int[] blendedHueMultiplier;
 	public int[] blendDirectionTracker;
-	public int[][][] cullingflags;
+	public int[][][] occludeflags;
 
 	public Scene(int sizeX, int sizeY, byte[][][] renderFlags, int[][][] heightmap) {
 		this.tileSizeX = sizeX;
-		this.tileSizeY = sizeY;
+		this.tileSizeZ = sizeY;
 		this.heightmap = heightmap;
 		this.renderflags = renderFlags;
-		this.planeUnderlayFloorIndices = new byte[4][tileSizeX][tileSizeY];
-		this.planeOverlayFloorIndices = new byte[4][tileSizeX][tileSizeY];
-		this.planeOverlayTypes = new byte[4][tileSizeX][tileSizeY];
-		this.planeOverlayRotations = new byte[4][tileSizeX][tileSizeY];
-		this.cullingflags = new int[4][tileSizeX + 1][tileSizeY + 1];
-		this.shadowmap = new byte[4][tileSizeX + 1][tileSizeY + 1];
-		this.lightmap = new int[tileSizeX + 1][tileSizeY + 1];
-		this.blendedHue = new int[tileSizeY];
-		this.blendedSaturation = new int[tileSizeY];
-		this.blendedLightness = new int[tileSizeY];
-		this.blendedHueMultiplier = new int[tileSizeY];
-		this.blendDirectionTracker = new int[tileSizeY];
+		this.planeUnderlayFloorIndices = new byte[4][tileSizeX][tileSizeZ];
+		this.planeOverlayFloorIndices = new byte[4][tileSizeX][tileSizeZ];
+		this.planeOverlayTypes = new byte[4][tileSizeX][tileSizeZ];
+		this.planeOverlayRotations = new byte[4][tileSizeX][tileSizeZ];
+		this.occludeflags = new int[4][tileSizeX + 1][tileSizeZ + 1];
+		this.shadowmap = new byte[4][tileSizeX + 1][tileSizeZ + 1];
+		this.lightmap = new int[tileSizeX + 1][tileSizeZ + 1];
+		this.blendedHue = new int[tileSizeZ];
+		this.blendedSaturation = new int[tileSizeZ];
+		this.blendedLightness = new int[tileSizeZ];
+		this.blendedHueMultiplier = new int[tileSizeZ];
+		this.blendDirectionTracker = new int[tileSizeZ];
 	}
 
 	public final void clearLandscape(int tileX, int tileY, int width, int height) {
@@ -85,7 +88,7 @@ public final class Scene {
 
 		for (int y = tileY; y < tileY + height; y++) {
 			for (int x = tileX; x < tileX + width; x++) {
-				if (x >= 0 && x < tileSizeX && y >= 0 && y < tileSizeY) {
+				if (x >= 0 && x < tileSizeX && y >= 0 && y < tileSizeZ) {
 					planeOverlayFloorIndices[0][x][y] = water;
 
 					for (int plane = 0; plane < 4; plane++) {
@@ -301,7 +304,7 @@ public final class Scene {
 			landscape.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (type >= 12 && type <= 17 && type != 13 && plane > 0) {
-				cullingflags[plane][tileX][tileY] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
+				occludeflags[plane][tileX][tileY] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
 			}
 
 			if (l.hasCollision) {
@@ -322,7 +325,7 @@ public final class Scene {
 				}
 
 				if (l.culls) {
-					cullingflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
 				}
 			} else if (rotation == 1) {
 				if (l.hasShadow) {
@@ -331,7 +334,7 @@ public final class Scene {
 				}
 
 				if (l.culls) {
-					cullingflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
 				}
 			} else if (rotation == 2) {
 				if (l.hasShadow) {
@@ -340,7 +343,7 @@ public final class Scene {
 				}
 
 				if (l.culls) {
-					cullingflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
 				}
 			} else if (rotation == 3) {
 				if (l.hasShadow) {
@@ -349,7 +352,7 @@ public final class Scene {
 				}
 
 				if (l.culls) {
-					cullingflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
 				}
 			}
 
@@ -383,17 +386,17 @@ public final class Scene {
 
 			if (l.culls) {
 				if (rotation == 0) {
-					cullingflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
-					cullingflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
 				} else if (rotation == 1) {
-					cullingflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
-					cullingflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX][tileY + 1] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
 				} else if (rotation == 2) {
-					cullingflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
-					cullingflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX + 1][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
 				} else if (rotation == 3) {
-					cullingflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
-					cullingflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
+					occludeflags[plane][tileX][tileY] |= 0x400 | 0x80 | 0x10 | 0x2;
+					occludeflags[plane][tileX][tileY] |= 0x200 | 0x40 | 0x8 | 0x1;
 				}
 			}
 
@@ -501,7 +504,7 @@ public final class Scene {
 			int lightLength = (int) Math.sqrt((double) (lightX * lightX + lightY * lightY + lightZ * lightZ));
 			int specularDistribution = (lightSpecularFactor * lightLength) >> 8;
 
-			for (int tileY = 1; tileY < tileSizeY - 1; tileY++) {
+			for (int tileY = 1; tileY < tileSizeZ - 1; tileY++) {
 				for (int tileX = 1; tileX < tileSizeX - 1; tileX++) {
 					int x = heightmap[plane][tileX + 1][tileY] - heightmap[plane][tileX - 1][tileY];
 					int y = heightmap[plane][tileX][tileY + 1] - heightmap[plane][tileX][tileY - 1];
@@ -521,7 +524,7 @@ public final class Scene {
 				}
 			}
 
-			for (int y = 0; y < tileSizeY; y++) {
+			for (int y = 0; y < tileSizeZ; y++) {
 				blendedHue[y] = 0;
 				blendedSaturation[y] = 0;
 				blendedLightness[y] = 0;
@@ -530,7 +533,7 @@ public final class Scene {
 			}
 
 			for (int x = -5; x < tileSizeX + 5; x++) {
-				for (int y = 0; y < tileSizeY; y++) {
+				for (int y = 0; y < tileSizeZ; y++) {
 					int dx = x + 5;
 
 					if (dx >= 0 && dx < tileSizeX) {
@@ -569,10 +572,10 @@ public final class Scene {
 					int hueDivisor = 0;
 					int directionTracker = 0;
 
-					for (int y = -5; y < tileSizeY + 5; y++) {
+					for (int y = -5; y < tileSizeZ + 5; y++) {
 						int yD = y + 5;
 
-						if (yD >= 0 && yD < tileSizeY) {
+						if (yD >= 0 && yD < tileSizeZ) {
 							hue += blendedHue[yD];
 							saturation += blendedSaturation[yD];
 							lightness += blendedLightness[yD];
@@ -582,7 +585,7 @@ public final class Scene {
 
 						yD = y - 5;
 
-						if (yD >= 0 && yD < tileSizeY) {
+						if (yD >= 0 && yD < tileSizeZ) {
 							hue -= blendedHue[yD];
 							saturation -= blendedSaturation[yD];
 							lightness -= blendedLightness[yD];
@@ -590,7 +593,7 @@ public final class Scene {
 							directionTracker -= blendDirectionTracker[yD];
 						}
 
-						if (y >= 1 && y < tileSizeY - 1) {
+						if (y >= 1 && y < tileSizeZ - 1) {
 							if (lowmemory) {
 								int p = plane;
 
@@ -642,7 +645,13 @@ public final class Scene {
 									}
 
 									if (hideUnderlay && southwestY == southeastY && southwestY == northeastY && southwestY == northwestY) {
-										cullingflags[plane][x][y] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
+										// Occlusion flags enabled:
+										// FLAG		PLANE
+										// C		0
+										// A | B	1
+										// B | C	2
+										// A		3
+										occludeflags[plane][x][y] |= 0b1_110_011_100;
 									}
 								}
 
@@ -689,19 +698,19 @@ public final class Scene {
 				}
 			}
 
-			for (int z = 1; z < tileSizeY - 1; z++) {
+			for (int z = 1; z < tileSizeZ - 1; z++) {
 				for (int x = 1; x < tileSizeX - 1; x++) {
-					int drawY = plane;
+					int drawPlane = plane;
 
-					if (drawY > 0 && ((renderflags[1][x][z] & 0x2) != 0)) {
-						drawY--;
+					if (drawPlane > 0 && ((renderflags[1][x][z] & 0x2) != 0)) {
+						drawPlane--;
 					}
 
 					if ((renderflags[plane][x][z] & 0x8) != 0) {
-						drawY = 0;
+						drawPlane = 0;
 					}
 
-					landscape.setDrawPlane(plane, x, z, drawY);
+					landscape.setDrawPlane(plane, x, z, drawPlane);
 				}
 			}
 		}
@@ -709,176 +718,201 @@ public final class Scene {
 		landscape.applyLighting(-50, -10, -50, 64, 768);
 
 		for (int tileX = 0; tileX < tileSizeX; tileX++) {
-			for (int tileY = 0; tileY < tileSizeY; tileY++) {
+			for (int tileY = 0; tileY < tileSizeZ; tileY++) {
 				if ((renderflags[1][tileX][tileY] & 0x2) == 2) {
 					landscape.setBridge(tileX, tileY);
 				}
 			}
 		}
 
-		if (Scene.enableOcclusion) {
-			int rule0 = 0x1;
-			int rule1 = 0x2;
-			int rule2 = 0x4;
+		if (Scene.occlusionEnabled) {
+			int flagA = 0xb1;	// 0x1
+			int flagB = 0xb10;	// 0x2
+			int flagC = 0xb100;	// 0x4
+
+			BufferedImage image = new BufferedImage(tileSizeX, tileSizeZ, BufferedImage.TYPE_INT_RGB);
+			Graphics g = image.getGraphics();
+			g.setColor(Color.WHITE);
 
 			for (int plane = 0; plane < 4; plane++) {
 				if (plane > 0) {
-					rule0 <<= 3;
-					rule1 <<= 3;
-					rule2 <<= 3;
+					flagA <<= 3; // same flags, different plane.
+					flagB <<= 3;
+					flagC <<= 3;
 				}
 
 				for (int p = 0; p <= plane; p++) {
-					for (int tileY = 0; tileY <= tileSizeY; tileY++) {
+					for (int tileZ = 0; tileZ <= tileSizeZ; tileZ++) {
 						for (int tileX = 0; tileX <= tileSizeX; tileX++) {
 
-							if ((cullingflags[p][tileX][tileY] & rule0) != 0) {
-								int minTileY = tileY;
-								int maxTileY = tileY;
+							if ((occludeflags[p][tileX][tileZ] & flagA) != 0) {
+								int minTileZ = tileZ;
+								int maxTileZ = tileZ;
+
 								int minPlane = p;
 								int maxPlane = p;
 
-								for (; minTileY > 0; minTileY--) {
-									if ((cullingflags[p][tileX][minTileY - 1] & rule0) == 0) {
+								FIND_MIN_TILE_Z:
+								for (; minTileZ > 0; minTileZ--) {
+									if ((occludeflags[p][tileX][minTileZ - 1] & flagA) == 0) {
 										break;
 									}
 								}
 
-								for (; maxTileY < tileSizeY; maxTileY++) {
-									if ((cullingflags[p][tileX][maxTileY + 1] & rule0) == 0) {
+								FIND_MAX_TILE_Z:
+								for (; maxTileZ < tileSizeZ; maxTileZ++) {
+									if ((occludeflags[p][tileX][maxTileZ + 1] & flagA) == 0) {
 										break;
 									}
 								}
 
-								findMinPlane:
+								FIND_MIN_PLANE:
 								for (; minPlane > 0; minPlane--) {
-									for (int y = minTileY; y <= maxTileY; y++) {
-										if ((cullingflags[minPlane - 1][tileX][y] & rule0) == 0) {
-											break findMinPlane;
+									for (int y = minTileZ; y <= maxTileZ; y++) {
+										if ((occludeflags[minPlane - 1][tileX][y] & flagA) == 0) {
+											break FIND_MIN_PLANE;
 										}
 									}
 								}
 
-								findMaxPlane:
+								FIND_MAX_PLANE:
 								for (; maxPlane < plane; maxPlane++) {
-									for (int x = minTileY; x <= maxTileY; x++) {
-										if ((cullingflags[maxPlane + 1][tileX][x] & rule0) == 0) {
-											break findMaxPlane;
+									for (int x = minTileZ; x <= maxTileZ; x++) {
+										if ((occludeflags[maxPlane + 1][tileX][x] & flagA) == 0) {
+											break FIND_MAX_PLANE;
 										}
 									}
 								}
 
-								int surface = ((maxPlane + 1 - minPlane) * (maxTileY - minTileY + 1));
+								int area = ((maxPlane - minPlane) + 1) * ((maxTileZ - minTileZ) + 1);
 
-								if (surface >= 8) {
-									int minY = heightmap[maxPlane][tileX][minTileY] - 240;
-									int maxY = heightmap[minPlane][tileX][minTileY];
+								if (area >= 8) {
+									int minY = heightmap[maxPlane][tileX][minTileZ] - 240;
+									int maxY = heightmap[minPlane][tileX][minTileZ];
 
-									Landscape.addOccluder(1, tileX * 128, tileX * 128, minY, maxY, minTileY * 128, maxTileY * 128 + 128, plane);
+									// Creates a box of an occluder
+									Landscape.addOccluder(0b1,
+										tileX * 128, minY, minTileZ * 128,
+										tileX * 128, maxY, (maxTileZ * 128) + 128,
+										plane);
 
-									for (int p1 = minPlane; p1 <= maxPlane; p1++) {
-										for (int y = minTileY; y <= maxTileY; y++) {
-											cullingflags[p1][tileX][y] &= rule0 ^ 0xFFFFFFFF;
+									// Removes occlusion flag A from the flags
+									for (int fromPlane = minPlane; fromPlane <= maxPlane; fromPlane++) {
+										for (int fromZ = minTileZ; fromZ <= maxTileZ; fromZ++) {
+											occludeflags[fromPlane][tileX][fromZ] &= flagA ^ 0xFFFFFFFF;
 										}
 									}
 								}
 							}
 
-							if ((cullingflags[p][tileX][tileY] & rule1) != 0) {
-								int minX = tileX;
-								int maxX = tileX;
+							if ((occludeflags[p][tileX][tileZ] & flagB) != 0) {
+								int minTileX = tileX;
+								int maxTileX = tileX;
 								int minPlane = p;
 								int maxPlane = p;
 
-								for (; minX > 0; minX--) {
-									if (((cullingflags[p][minX - 1][tileY]) & rule1) == 0) {
+								FIND_MIN_TILE_X:
+								for (; minTileX > 0; minTileX--) {
+									if (((occludeflags[p][minTileX - 1][tileZ]) & flagB) == 0) {
 										break;
 									}
 								}
 
-								for (; maxX < tileSizeX; maxX++) {
-									if (((cullingflags[p][maxX + 1][tileY]) & rule1) == 0) {
+								FIND_MAX_TILE_X:
+								for (; maxTileX < tileSizeX; maxTileX++) {
+									if (((occludeflags[p][maxTileX + 1][tileZ]) & flagB) == 0) {
 										break;
 									}
 								}
 
-								findMinPlane:
+								FIND_MIN_PLANE:
 								for (; minPlane > 0; minPlane--) {
-									for (int x = minX; x <= maxX; x++) {
-										if (((cullingflags[minPlane - 1][x][tileY]) & rule1) == 0) {
-											break findMinPlane;
+									for (int x = minTileX; x <= maxTileX; x++) {
+										if (((occludeflags[minPlane - 1][x][tileZ]) & flagB) == 0) {
+											break FIND_MIN_PLANE;
 										}
 									}
 								}
 
-								findMaxPlane:
+								FIND_MAX_PLANE:
 								for (; maxPlane < plane; maxPlane++) {
-									for (int x = minX; x <= maxX; x++) {
-										if (((cullingflags[maxPlane + 1][x][tileY]) & rule1) == 0) {
-											break findMaxPlane;
+									for (int x = minTileX; x <= maxTileX; x++) {
+										if (((occludeflags[maxPlane + 1][x][tileZ]) & flagB) == 0) {
+											break FIND_MAX_PLANE;
 										}
 									}
 								}
 
-								int surface = ((maxPlane + 1 - minPlane) * (maxX - minX + 1));
+								int area = ((maxPlane - minPlane) + 1) * ((maxTileX - minTileX) + 1);
 
-								if (surface >= 8) {
-									int minY = heightmap[maxPlane][minX][tileY] - 240;
-									int maxY = heightmap[minPlane][minX][tileY];
+								if (area >= 8) {
+									int minY = heightmap[maxPlane][minTileX][tileZ] - 240;
+									int maxY = heightmap[minPlane][minTileX][tileZ];
 
-									Landscape.addOccluder(2, minX * 128, maxX * 128 + 128, minY, maxY, tileY * 128, tileY * 128, plane);
+									Landscape.addOccluder(0b10,
+										minTileX * 128, minY, tileZ * 128,
+										(maxTileX * 128) + 128, maxY, tileZ * 128,
+										plane);
 
 									for (int p1 = minPlane; p1 <= maxPlane; p1++) {
-										for (int x = minX; x <= maxX; x++) {
-											cullingflags[p1][x][tileY] &= rule1 ^ 0xffffffff;
+										for (int x = minTileX; x <= maxTileX; x++) {
+											occludeflags[p1][x][tileZ] &= flagB ^ 0xffffffff;
 										}
 									}
 								}
 							}
 
-							if (!lowmemory && (cullingflags[p][tileX][tileY] & rule2) != 0) {
-								int minX = tileX;
-								int maxX = tileX;
-								int minY = tileY;
-								int maxY = tileY;
+							// if high memory and this tile has rule2 flags
+							if (!lowmemory && (occludeflags[p][tileX][tileZ] & flagC) != 0) {
+								int minTileX = tileX;
+								int maxTileX = tileX;
+								int minTileZ = tileZ;
+								int maxTileZ = tileZ;
 
-								for (; minY > 0; minY--) {
-									if (((cullingflags[p][tileX][minY - 1]) & rule2) == 0) {
+								FIND_MIN_TILE_Z:
+								for (; minTileZ > 0; minTileZ--) {
+									if (((occludeflags[p][tileX][minTileZ - 1]) & flagC) == 0) {
 										break;
 									}
 								}
 
-								for (; maxY < tileSizeY; maxY++) {
-									if (((cullingflags[p][tileX][maxY + 1]) & rule2) == 0) {
+								FIND_MAX_TILE_Z:
+								for (; maxTileZ < tileSizeZ; maxTileZ++) {
+									if (((occludeflags[p][tileX][maxTileZ + 1]) & flagC) == 0) {
 										break;
 									}
 								}
 
 								FIND_MIN_X:
-								for (; minX > 0; minX--) {
-									for (int y = minY; y <= maxY; y++) {
-										if (((cullingflags[p][minX - 1][y]) & rule2) == 0) {
+								for (; minTileX > 0; minTileX--) {
+									for (int y = minTileZ; y <= maxTileZ; y++) {
+										if (((occludeflags[p][minTileX - 1][y]) & flagC) == 0) {
 											break FIND_MIN_X;
 										}
 									}
 								}
 
-								FIND_MAX_X:
-								for (; maxX < tileSizeX; maxX++) {
-									for (int y = minY; y <= maxY; y++) {
-										if (((cullingflags[p][maxX + 1][y]) & rule2) == 0) {
-											break FIND_MAX_X;
+								FIND_MAX_TILE_X:
+								for (; maxTileX < tileSizeX; maxTileX++) {
+									for (int y = minTileZ; y <= maxTileZ; y++) {
+										if (((occludeflags[p][maxTileX + 1][y]) & flagC) == 0) {
+											break FIND_MAX_TILE_X;
 										}
 									}
 								}
 
-								if ((maxX - minX + 1) * (maxY - minY + 1) >= 4) {
-									int z = heightmap[p][minX][minY];
-									Landscape.addOccluder(4, minX * 128, maxX * 128 + 128, z, z, minY * 128, maxY * 128 + 128, plane);
+								int area = ((maxTileX - minTileX) + 1) * ((maxTileZ - minTileZ) + 1);
 
-									for (int x = minX; x <= maxX; x++) {
-										for (int y = minY; y <= maxY; y++) {
-											cullingflags[p][x][y] &= rule2 ^ 0xffffffff;
+								if (area >= 4) {
+									int z = heightmap[p][minTileX][minTileZ];
+									Landscape.addOccluder(0b100,
+										minTileX * 128, z, minTileZ * 128,
+										(maxTileX * 128) + 128, z, (maxTileZ * 128) + 128,
+										plane);
+
+									for (int x = minTileX; x <= maxTileX; x++) {
+										for (int y = minTileZ; y <= maxTileZ; y++) {
+											occludeflags[p][x][y] &= flagC ^ 0xffffffff;
 										}
 									}
 								}

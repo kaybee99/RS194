@@ -1,7 +1,6 @@
 package com.runescape;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 public class Model extends CacheLink {
 
@@ -1902,7 +1901,6 @@ public class Model extends CacheLink {
 		int zB = projectSceneZ[b];
 		int zC = projectSceneZ[c];
 
-		// TODO: document properly
 		if (zA >= Scene.NEAR_Z) {
 			tmpX[n] = vertexScreenX[a];
 			tmpY[n] = vertexScreenY[a];

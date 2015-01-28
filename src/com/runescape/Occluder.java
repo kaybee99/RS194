@@ -6,15 +6,15 @@ final class Occluder {
 	int maxTileX;
 	int minTileZ;
 	int maxTileZ;
-	int minSceneX;
-	int maxSceneX;
-	int minSceneZ;
-	int maxSceneZ;
-	int minSceneY;
-	int maxSceneY;
+	int minX;
+	int maxX;
+	int minZ;
+	int maxZ;
+	int minY;
+	int maxY;
 
 	int type;
-	int testType;
+	int testDirection;
 
 	int anInt308;
 	int anInt309;
