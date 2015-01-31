@@ -1146,29 +1146,29 @@ public class Model extends CacheLink {
 						vertexY[v] -= transformY;
 						vertexZ[v] -= transformZ;
 
-						int yaw = (x & 0xFF) * 8;
-						int roll = (y & 0xFF) * 8;
-						int pitch = (z & 0xFF) * 8;
+						int pitch = (x & 0xFF) * 8;
+						int yaw = (y & 0xFF) * 8;
+						int roll = (z & 0xFF) * 8;
 
-						if (pitch != 0) {
-							int s = sin[pitch];
-							int c = cos[pitch];
+						if (roll != 0) {
+							int s = sin[roll];
+							int c = cos[roll];
 							int x0 = ((vertexY[v] * s + vertexX[v] * c) >> 16);
 							vertexY[v] = (vertexY[v] * c - vertexX[v] * s) >> 16;
 							vertexX[v] = x0;
 						}
 
-						if (yaw != 0) {
-							int s = sin[yaw];
-							int c = cos[yaw];
+						if (pitch != 0) {
+							int s = sin[pitch];
+							int c = cos[pitch];
 							int y0 = ((vertexY[v] * c - vertexZ[v] * s) >> 16);
 							vertexZ[v] = (vertexY[v] * s + vertexZ[v] * c) >> 16;
 							vertexY[v] = y0;
 						}
 
-						if (roll != 0) {
-							int s = sin[roll];
-							int c = cos[roll];
+						if (yaw != 0) {
+							int s = sin[yaw];
+							int c = cos[yaw];
 							int x0 = ((vertexZ[v] * s + vertexX[v] * c) >> 16);
 							vertexZ[v] = (vertexZ[v] * c - vertexX[v] * s) >> 16;
 							vertexX[v] = x0;
