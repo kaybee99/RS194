@@ -41,8 +41,8 @@ public class LocationInfo {
 	private int scaleY;
 	private int scaleZ;
 	public int interactionSideFlags;
-	public static Table unmodifiedModelCache = new Table(500);
-	public static Table uniqueModelCache = new Table(30);
+	public static LinkedList unmodifiedModelCache = new LinkedList(500);
+	public static LinkedList uniqueModelCache = new LinkedList(30);
 
 	public static final void load(Archive a) {
 		data = new Buffer(a.get("loc.dat"));

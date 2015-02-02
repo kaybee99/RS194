@@ -18,8 +18,8 @@ public class GameInterface {
 
 	public static GameInterface[] instances;
 
-	private static Table bitmapCache;
-	private static Table modelCache;
+	private static LinkedList bitmapCache;
+	private static LinkedList modelCache;
 
 	private static Bitmap getBitmap(String name, Archive media, int index) {
 		long l = (StringUtil.getHash(name) << 4) + (long) index;
@@ -47,8 +47,8 @@ public class GameInterface {
 	}
 
 	public static void load(BitmapFont[] fonts, Archive media, Archive interfaces) {
-		bitmapCache = new Table(50000);
-		modelCache = new Table(50000);
+		bitmapCache = new LinkedList(50000);
+		modelCache = new LinkedList(50000);
 
 		Buffer b = new Buffer(interfaces.get("data", null));
 		instances = new GameInterface[b.readUShort()];

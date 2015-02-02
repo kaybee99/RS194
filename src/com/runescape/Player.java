@@ -22,7 +22,7 @@ final class Player extends Entity {
 	int locMaxTileX;
 	int locMaxTileY;
 	boolean lowmemory = false;
-	static Table uniqueModelCache = new Table(200);
+	static LinkedList uniqueModelCache = new LinkedList(200);
 
 	public final void read(Buffer b) {
 		b.position = 0;

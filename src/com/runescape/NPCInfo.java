@@ -7,7 +7,7 @@ public class NPCInfo {
 	private static Buffer data;
 	private static NPCInfo[] cache;
 	private static int cachePosition;
-	public static Table uniqueModelCache = new Table(30);
+	public static LinkedList uniqueModelCache = new LinkedList(30);
 
 	public int index;
 	public String name;

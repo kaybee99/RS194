@@ -2,80 +2,45 @@ package com.runescape;
 
 public final class LinkedList {
 
-	Link head = new Link();
-	Link selected;
+	private final int size;
+	private int available;
+	private final Array array = new Array(1024);
+	private final Deque deque = new Deque();
 
-	public LinkedList() {
-		head.previous = head;
-		head.next = head;
+	public LinkedList(int length) {
+		size = length;
+		available = length;
 	}
 
-	public void push(Link l) {
-		if (l.next != null) {
-			l.unlink();
+	public QueueLink get(long id) {
+		QueueLink l = (QueueLink) array.get(id);
+		if (l != null) {
+			deque.push(l);
 		}
-		l.next = head.next;
-		l.previous = head;
-		l.next.previous = l;
-		l.previous.next = l;
-	}
-
-	public Link poll() {
-		Link last = head.previous;
-		if (last == head) {
-			return null;
-		}
-		last.unlink();
-		return last;
-	}
-
-	public Link peekLast() {
-		Link last = head.previous;
-		if (last == head) {
-			selected = null;
-			return null;
-		}
-		selected = last.previous;
-		return last;
-	}
-
-	public Link peekFirst() {
-		Link first = head.next;
-		if (first == head) {
-			selected = null;
-			return null;
-		}
-		selected = first.next;
-		return first;
-	}
-
-	public Link getPrevious() {
-		Link l = selected;
-		if (l == head) {
-			selected = null;
-			return null;
-		}
-		selected = l.previous;
 		return l;
 	}
 
-	public Link getNext() {
-		Link l = selected;
-		if (l == head) {
-			selected = null;
-			return null;
+	public void put(QueueLink l, long id) {
+		if (available == 0) {
+			QueueLink l1 = deque.pull();
+			l1.unlink();
+			l1.unlist();
+		} else {
+			available--;
 		}
-		selected = l.next;
-		return l;
+		array.put(id, l);
+		deque.push(l);
 	}
 
 	public void clear() {
 		for (;;) {
-			Link l = head.previous;
-			if (l == head) {
+			QueueLink l = deque.pull();
+			if (l == null) {
 				break;
 			}
 			l.unlink();
+			l.unlist();
 		}
+		available = size;
 	}
 }

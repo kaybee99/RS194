@@ -2,29 +2,29 @@ package com.runescape;
 
 public final class Deque {
 
-	CacheLink head = new CacheLink();
+	QueueLink head = new QueueLink();
 
 	public Deque() {
-		head.next = head;
-		head.previous = head;
+		head.nextQueue = head;
+		head.previousQueue = head;
 	}
 
-	public void push(CacheLink l) {
-		if (l.previous != null) {
-			l.uncache();
+	public void push(QueueLink l) {
+		if (l.previousQueue != null) {
+			l.unlist();
 		}
-		l.previous = head.previous;
-		l.next = head;
-		l.previous.next = l;
-		l.next.previous = l;
+		l.previousQueue = head.previousQueue;
+		l.nextQueue = head;
+		l.previousQueue.nextQueue = l;
+		l.nextQueue.previousQueue = l;
 	}
 
-	public CacheLink pull() {
-		CacheLink l = head.next;
+	public QueueLink pull() {
+		QueueLink l = head.nextQueue;
 		if (l == head) {
 			return null;
 		}
-		l.uncache();
+		l.unlist();
 		return l;
 	}
 }

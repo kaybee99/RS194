@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class Graphics2D extends CacheLink {
+public class Graphics2D extends QueueLink {
 
 	public static int[] target;
 	public static int targetWidth;

@@ -11,7 +11,7 @@ public class SpotAnimation {
 	public boolean disposeAlpha = false;
 	public int[] oldColors = new int[6];
 	public int[] newColors = new int[6];
-	public static Table uniqueModelCache = new Table(30);
+	public static LinkedList uniqueModelCache = new LinkedList(30);
 
 	public static void load(Archive a) {
 		Buffer b = new Buffer(a.get("spotanim.dat", null));

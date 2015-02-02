@@ -2,7 +2,7 @@ package com.runescape;
 
 import java.util.logging.*;
 
-public class Model extends CacheLink {
+public class Model extends QueueLink {
 
 	/**
 	 * Used in the <i>type</i> param for the <code>transform</code> method.
@@ -29,7 +29,7 @@ public class Model extends CacheLink {
 	public static Buffer obvertex2;
 	public static Buffer obaxis;
 
-	public static boolean[] verifyTriangleBounds = new boolean[2048];
+	public static boolean[] testTriangleX = new boolean[2048];
 	public static boolean[] projectTriangle = new boolean[2048];
 
 	public static int[] vertexScreenX = new int[2048];
@@ -80,9 +80,9 @@ public class Model extends CacheLink {
 	public int[] triangleVertexB;
 	public int[] triangleVertexC;
 
-	public int[] triangleColorA;
-	public int[] triangleColorB;
-	public int[] triangleColorC;
+	public int[] colorA;
+	public int[] colorB;
+	public int[] colorC;
 
 	public int[] triangleInfo;
 	public int[] trianglePriorities;
@@ -133,7 +133,7 @@ public class Model extends CacheLink {
 		obvertex1 = null;
 		obvertex2 = null;
 		obaxis = null;
-		verifyTriangleBounds = null;
+		testTriangleX = null;
 		projectTriangle = null;
 		vertexScreenX = null;
 		vertexScreenY = null;
@@ -636,9 +636,9 @@ public class Model extends CacheLink {
 		triangleVertexB = new int[triangleCount];
 		triangleVertexC = new int[triangleCount];
 
-		triangleColorA = new int[triangleCount];
-		triangleColorB = new int[triangleCount];
-		triangleColorC = new int[triangleCount];
+		colorA = new int[triangleCount];
+		colorB = new int[triangleCount];
+		colorC = new int[triangleCount];
 
 		textureVertexA = new int[texturedCount];
 		textureVertexB = new int[texturedCount];
@@ -682,9 +682,9 @@ public class Model extends CacheLink {
 					triangleVertexB[triangleCount] = m.triangleVertexB[t] + lastVertex;
 					triangleVertexC[triangleCount] = m.triangleVertexC[t] + lastVertex;
 
-					triangleColorA[triangleCount] = m.triangleColorA[t];
-					triangleColorB[triangleCount] = m.triangleColorB[t];
-					triangleColorC[triangleCount] = m.triangleColorC[t];
+					colorA[triangleCount] = m.colorA[t];
+					colorB[triangleCount] = m.colorB[t];
+					colorC[triangleCount] = m.colorC[t];
 
 					if (keepInfo) {
 						if (m.triangleInfo == null) {
@@ -833,9 +833,9 @@ public class Model extends CacheLink {
 		triangleVertexB = m.triangleVertexB;
 		triangleVertexC = m.triangleVertexC;
 
-		triangleColorA = m.triangleColorA;
-		triangleColorB = m.triangleColorB;
-		triangleColorC = m.triangleColorC;
+		colorA = m.colorA;
+		colorB = m.colorB;
+		colorC = m.colorC;
 
 		textureVertexA = m.textureVertexA;
 		textureVertexB = m.textureVertexB;
@@ -1292,10 +1292,10 @@ public class Model extends CacheLink {
 		int lightLength = (int) Math.sqrt((double) (x * x + y * y + z * z));
 		int lightIntensity = intensity * lightLength >> 8;
 
-		if (triangleColorA == null) {
-			triangleColorA = new int[triangleCount];
-			triangleColorB = new int[triangleCount];
-			triangleColorC = new int[triangleCount];
+		if (colorA == null) {
+			colorA = new int[triangleCount];
+			colorB = new int[triangleCount];
+			colorC = new int[triangleCount];
 		}
 
 		if (normals == null) {
@@ -1361,7 +1361,7 @@ public class Model extends CacheLink {
 				n.magnitude++;
 			} else {
 				int lightness = baseLightness + (x * x0 + y * y0 + z * z0) / (lightIntensity + lightIntensity / 2);
-				triangleColorA[t] = adjustHSLLightness(unmodifiedTriangleColor[t], lightness, triangleInfo[t]);
+				colorA[t] = adjustHSLLightness(unmodifiedTriangleColor[t], lightness, triangleInfo[t]);
 			}
 		}
 
@@ -1398,30 +1398,30 @@ public class Model extends CacheLink {
 
 				Normal n = normals[a];
 				int lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
-				triangleColorA[t] = adjustHSLLightness(color, lightness, 0);
+				colorA[t] = adjustHSLLightness(color, lightness, 0);
 
 				n = normals[b];
 				lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
-				triangleColorB[t] = adjustHSLLightness(color, lightness, 0);
+				colorB[t] = adjustHSLLightness(color, lightness, 0);
 
 				n = normals[c];
 				lightness = minIntensity + ((x * n.x + y * n.y + z * n.z) / (intensity * n.magnitude));
-				triangleColorC[t] = adjustHSLLightness(color, lightness, 0);
+				colorC[t] = adjustHSLLightness(color, lightness, 0);
 			} else if ((triangleInfo[t] & 0x1) == 0) {
 				int color = unmodifiedTriangleColor[t];
 				int info = triangleInfo[t];
 
 				Normal v = normals[a];
 				int lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
-				triangleColorA[t] = adjustHSLLightness(color, lightness, info);
+				colorA[t] = adjustHSLLightness(color, lightness, info);
 
 				v = normals[b];
 				lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
-				triangleColorB[t] = adjustHSLLightness(color, lightness, info);
+				colorB[t] = adjustHSLLightness(color, lightness, info);
 
 				v = normals[c];
 				lightness = minIntensity + ((x * v.x + y * v.y + z * v.z) / (intensity * v.magnitude));
-				triangleColorC[t] = adjustHSLLightness(color, lightness, info);
+				colorC[t] = adjustHSLLightness(color, lightness, info);
 			}
 		}
 
@@ -1677,7 +1677,7 @@ public class Model extends CacheLink {
 
 					if (((x0 - x1) * (vertexScreenY[c] - vertexScreenY[b]) - ((vertexScreenY[a] - vertexScreenY[b]) * (x2 - x1))) > 0) {
 						projectTriangle[t] = false;
-						verifyTriangleBounds[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x2 > Graphics2D.rightX;
+						testTriangleX[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x2 > Graphics2D.rightX;
 						int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + minDepth);
 						depthTriangles[depth][depthTriangleCount[depth]++] = t;
 					}
@@ -1850,7 +1850,7 @@ public class Model extends CacheLink {
 			int b = triangleVertexB[index];
 			int c = triangleVertexC[index];
 
-			Graphics3D.testX = verifyTriangleBounds[index];
+			Graphics3D.testX = testTriangleX[index];
 
 			if (triangleAlpha == null) {
 				Graphics3D.alpha = 0;
@@ -1867,23 +1867,23 @@ public class Model extends CacheLink {
 			}
 
 			if (type == 0) {
-				Graphics3D.fillShadedTriangle(vertexScreenX[a], vertexScreenY[a], vertexScreenX[b], vertexScreenY[b], vertexScreenX[c], vertexScreenY[c], triangleColorA[index], triangleColorB[index], triangleColorC[index]);
+				Graphics3D.fillShadedTriangle(vertexScreenX[a], vertexScreenY[a], vertexScreenX[b], vertexScreenY[b], vertexScreenX[c], vertexScreenY[c], colorA[index], colorB[index], colorC[index]);
 			} else if (type == 1) {
-				Graphics3D.fillTriangle(vertexScreenX[a], vertexScreenY[a], vertexScreenX[b], vertexScreenY[b], vertexScreenX[c], vertexScreenY[c], palette[triangleColorA[index]]);
+				Graphics3D.fillTriangle(vertexScreenX[a], vertexScreenY[a], vertexScreenX[b], vertexScreenY[b], vertexScreenX[c], vertexScreenY[c], palette[colorA[index]]);
 			} else if (type == 2) {
 				// texture triangle
 				int t = triangleInfo[index] >> 2;
 				int ta = textureVertexA[t];
 				int tb = textureVertexB[t];
 				int tc = textureVertexC[t];
-				Graphics3D.fillTexturedTriangle(vertexScreenY[a], vertexScreenY[b], vertexScreenY[c], vertexScreenX[a], vertexScreenX[b], vertexScreenX[c], triangleColorA[index], triangleColorB[index], triangleColorC[index], projectSceneX[ta], projectSceneX[tb], projectSceneX[tc], projectSceneY[ta], projectSceneY[tb], projectSceneY[tc], projectSceneZ[ta], projectSceneZ[tb], projectSceneZ[tc], unmodifiedTriangleColor[index]);
+				Graphics3D.fillTexturedTriangle(vertexScreenY[a], vertexScreenY[b], vertexScreenY[c], vertexScreenX[a], vertexScreenX[b], vertexScreenX[c], colorA[index], colorB[index], colorC[index], projectSceneX[ta], projectSceneX[tb], projectSceneX[tc], projectSceneY[ta], projectSceneY[tb], projectSceneY[tc], projectSceneZ[ta], projectSceneZ[tb], projectSceneZ[tc], unmodifiedTriangleColor[index]);
 			} else if (type == 3) {
 				// texture triangle
 				int t = triangleInfo[index] >> 2;
 				int ta = textureVertexA[t];
 				int tb = textureVertexB[t];
 				int tc = textureVertexC[t];
-				Graphics3D.fillTexturedTriangle(vertexScreenY[a], vertexScreenY[b], vertexScreenY[c], vertexScreenX[a], vertexScreenX[b], vertexScreenX[c], triangleColorA[index], triangleColorA[index], triangleColorA[index], projectSceneX[ta], projectSceneX[tb], projectSceneX[tc], projectSceneY[ta], projectSceneY[tb], projectSceneY[tc], projectSceneZ[ta], projectSceneZ[tb], projectSceneZ[tc], unmodifiedTriangleColor[index]);
+				Graphics3D.fillTexturedTriangle(vertexScreenY[a], vertexScreenY[b], vertexScreenY[c], vertexScreenX[a], vertexScreenX[b], vertexScreenX[c], colorA[index], colorA[index], colorA[index], projectSceneX[ta], projectSceneX[tb], projectSceneX[tc], projectSceneY[ta], projectSceneY[tb], projectSceneY[tc], projectSceneZ[ta], projectSceneZ[tb], projectSceneZ[tc], unmodifiedTriangleColor[index]);
 			}
 		}
 	}
@@ -1904,72 +1904,72 @@ public class Model extends CacheLink {
 		if (zA >= Scene.NEAR_Z) {
 			tmpX[n] = vertexScreenX[a];
 			tmpY[n] = vertexScreenY[a];
-			tmpColor[n++] = triangleColorA[index];
+			tmpColor[n++] = colorA[index];
 		} else {
 			int x = projectSceneX[a];
 			int y = projectSceneY[a];
-			int color = triangleColorA[index];
+			int color = colorA[index];
 
 			if (zC >= Scene.NEAR_Z) {
 				int interpolant = (Scene.NEAR_Z - zA) * oneOverFixed1616[zC - zA];
 				tmpX[n] = centerX + ((x + (((projectSceneX[c] - x) * interpolant) >> 16)) << 9) / Scene.NEAR_Z;
 				tmpY[n] = centerY + ((y + (((projectSceneY[c] - y) * interpolant) >> 16)) << 9) / Scene.NEAR_Z;
-				tmpColor[n++] = color + ((triangleColorC[index] - color) * interpolant >> 16);
+				tmpColor[n++] = color + ((colorC[index] - color) * interpolant >> 16);
 			}
 
 			if (zB >= Scene.NEAR_Z) {
 				int interpolant = (Scene.NEAR_Z - zA) * oneOverFixed1616[zB - zA];
 				tmpX[n] = (centerX + (x + ((projectSceneX[b] - x) * interpolant >> 16) << 9) / Scene.NEAR_Z);
 				tmpY[n] = (centerY + (y + ((projectSceneY[b] - y) * interpolant >> 16) << 9) / Scene.NEAR_Z);
-				tmpColor[n++] = color + ((triangleColorB[index] - color) * interpolant >> 16);
+				tmpColor[n++] = color + ((colorB[index] - color) * interpolant >> 16);
 			}
 		}
 
 		if (zB >= Scene.NEAR_Z) {
 			tmpX[n] = vertexScreenX[b];
 			tmpY[n] = vertexScreenY[b];
-			tmpColor[n++] = triangleColorB[index];
+			tmpColor[n++] = colorB[index];
 		} else {
 			int x = projectSceneX[b];
 			int y = projectSceneY[b];
-			int color = triangleColorB[index];
+			int color = colorB[index];
 
 			if (zA >= Scene.NEAR_Z) {
 				int mul = (Scene.NEAR_Z - zB) * oneOverFixed1616[zA - zB];
 				tmpX[n] = (centerX + (x + ((projectSceneX[a] - x) * mul >> 16) << 9) / Scene.NEAR_Z);
 				tmpY[n] = (centerY + (y + ((projectSceneY[a] - y) * mul >> 16) << 9) / Scene.NEAR_Z);
-				tmpColor[n++] = color + ((triangleColorA[index] - color) * mul >> 16);
+				tmpColor[n++] = color + ((colorA[index] - color) * mul >> 16);
 			}
 
 			if (zC >= Scene.NEAR_Z) {
 				int mul = (Scene.NEAR_Z - zB) * oneOverFixed1616[zC - zB];
 				tmpX[n] = (centerX + (x + ((projectSceneX[c] - x) * mul >> 16) << 9) / Scene.NEAR_Z);
 				tmpY[n] = (centerY + (y + ((projectSceneY[c] - y) * mul >> 16) << 9) / Scene.NEAR_Z);
-				tmpColor[n++] = color + ((triangleColorC[index] - color) * mul >> 16);
+				tmpColor[n++] = color + ((colorC[index] - color) * mul >> 16);
 			}
 		}
 
 		if (zC >= Scene.NEAR_Z) {
 			tmpX[n] = vertexScreenX[c];
 			tmpY[n] = vertexScreenY[c];
-			tmpColor[n++] = triangleColorC[index];
+			tmpColor[n++] = colorC[index];
 		} else {
 			int x = projectSceneX[c];
 			int y = projectSceneY[c];
-			int color = triangleColorC[index];
+			int color = colorC[index];
 
 			if (zB >= Scene.NEAR_Z) {
 				int mul = (Scene.NEAR_Z - zC) * (oneOverFixed1616[zB - zC]);
 
 				tmpX[n] = (centerX + (x + (((projectSceneX[b] - x) * mul) >> 16) << 9) / Scene.NEAR_Z);
 				tmpY[n] = (centerY + (y + (((projectSceneY[b] - y) * mul) >> 16) << 9) / Scene.NEAR_Z);
-				tmpColor[n++] = color + ((triangleColorB[index] - color) * mul >> 16);
+				tmpColor[n++] = color + ((colorB[index] - color) * mul >> 16);
 			}
 			if (zA >= Scene.NEAR_Z) {
 				int mul = (Scene.NEAR_Z - zC) * oneOverFixed1616[zA - zC];
 				tmpX[n] = (centerX + (x + (((projectSceneX[a] - x) * mul) >> 16) << 9) / Scene.NEAR_Z);
 				tmpY[n] = (centerY + (y + (((projectSceneY[a] - y) * mul) >> 16) << 9) / Scene.NEAR_Z);
-				tmpColor[n++] = color + ((triangleColorA[index] - color) * mul >> 16);
+				tmpColor[n++] = color + ((colorA[index] - color) * mul >> 16);
 			}
 		}
 
@@ -2000,7 +2000,7 @@ public class Model extends CacheLink {
 				if (type == 0) {
 					Graphics3D.fillShadedTriangle(xA, yA, xB, yB, xC, yC, tmpColor[0], tmpColor[1], tmpColor[2]);
 				} else if (type == 1) {
-					Graphics3D.fillTriangle(xA, yA, xB, yB, xC, yC, (palette[(triangleColorA[index])]));
+					Graphics3D.fillTriangle(xA, yA, xB, yB, xC, yC, (palette[(colorA[index])]));
 				} else if (type == 2) {
 					int t = triangleInfo[index] >> 2;
 					int tA = textureVertexA[t];
@@ -2012,7 +2012,7 @@ public class Model extends CacheLink {
 					int tA = textureVertexA[t];
 					int tB = textureVertexB[t];
 					int tC = textureVertexC[t];
-					Graphics3D.fillTexturedTriangle(yA, yB, yC, xA, xB, xC, triangleColorA[index], triangleColorA[index], triangleColorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
+					Graphics3D.fillTexturedTriangle(yA, yB, yC, xA, xB, xC, colorA[index], colorA[index], colorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
 				}
 			}
 
@@ -2033,7 +2033,7 @@ public class Model extends CacheLink {
 					Graphics3D.fillShadedTriangle(xA, yA, xB, yB, xC, yC, tmpColor[0], tmpColor[1], tmpColor[2]);
 					Graphics3D.fillShadedTriangle(xA, yA, xC, yC, tmpX[3], tmpY[3], tmpColor[0], tmpColor[2], tmpColor[3]);
 				} else if (type == 1) {
-					int rgb = palette[triangleColorA[index]];
+					int rgb = palette[colorA[index]];
 					Graphics3D.fillTriangle(xA, yA, xB, yB, xC, yC, rgb);
 					Graphics3D.fillTriangle(xA, yA, xC, yC, tmpX[3], tmpY[3], rgb);
 				} else if (type == 2) {
@@ -2048,8 +2048,8 @@ public class Model extends CacheLink {
 					int tA = textureVertexA[t];
 					int tB = textureVertexB[t];
 					int tC = textureVertexC[t];
-					Graphics3D.fillTexturedTriangle(yA, yB, yC, xA, xB, xC, triangleColorA[index], triangleColorA[index], triangleColorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
-					Graphics3D.fillTexturedTriangle(yA, yC, tmpY[3], xA, xC, tmpX[3], triangleColorA[index], triangleColorA[index], triangleColorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
+					Graphics3D.fillTexturedTriangle(yA, yB, yC, xA, xB, xC, colorA[index], colorA[index], colorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
+					Graphics3D.fillTexturedTriangle(yA, yC, tmpY[3], xA, xC, tmpX[3], colorA[index], colorA[index], colorA[index], projectSceneX[tA], projectSceneX[tB], projectSceneX[tC], projectSceneY[tA], projectSceneY[tB], projectSceneY[tC], projectSceneZ[tA], projectSceneZ[tB], projectSceneZ[tC], unmodifiedTriangleColor[index]);
 				}
 			}
 		}

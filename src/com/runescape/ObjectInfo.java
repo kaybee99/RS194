@@ -7,8 +7,8 @@ public class ObjectInfo {
 	private static Buffer buffer;
 	private static ObjectInfo[] cache;
 	private static int cachepos;
-	public static Table uniqueModelCache = new Table(50);
-	static Table uniqueBitmapCache = new Table(200);
+	public static LinkedList uniqueModelCache = new LinkedList(50);
+	static LinkedList uniqueBitmapCache = new LinkedList(200);
 
 	public int index = -1;
 	public int modelIndex;

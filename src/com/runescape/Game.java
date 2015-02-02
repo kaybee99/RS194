@@ -1,20 +1,15 @@
 package com.runescape;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.InetAddress;
-import java.net.Socket;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.CRC32;
-import net.burtleburtle.bob.rand.IsaacRandom;
+import com.runescape.Graphics2D;
+import com.runescape.StringBuffer;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.math.*;
+import java.net.*;
+import java.util.logging.*;
+import java.util.zip.*;
+import net.burtleburtle.bob.rand.*;
 
 /**
  * The RuneScape game class for revision #194.
@@ -175,12 +170,12 @@ public class Game extends GameShell {
 	public int[] deadEntityIndices = new int[1000];
 
 	/* Linked Entites */
-	public LinkedList[][][] planeObjStacks = new LinkedList[4][104][104];
-	public LinkedList projectiles = new LinkedList();
-	public LinkedList sequencedLocs = new LinkedList();
-	public LinkedList spawntLocs = new LinkedList();
-	public LinkedList spotanims = new LinkedList();
-	public LinkedList temporaryLocs = new LinkedList();
+	public Chain[][][] planeObjStacks = new Chain[4][104][104];
+	public Chain projectiles = new Chain();
+	public Chain sequencedLocs = new Chain();
+	public Chain spawntLocs = new Chain();
+	public Chain spotanims = new Chain();
+	public Chain temporaryLocs = new Chain();
 
 	/* Networking */
 	public int netHeartbeatCycle;
@@ -1859,7 +1854,7 @@ public class Game extends GameShell {
 						}
 					}
 
-					spawntLocs = new LinkedList();
+					spawntLocs = new Chain();
 					friendCount = 0;
 					chatInterfaceIndex = -1;
 					viewportInterfaceIndex = -1;
@@ -3705,6 +3700,7 @@ public class Game extends GameShell {
 		int southY = ((planeHeightmaps[plane][tileX][tileY] * (128 - tileLocalX) + planeHeightmaps[plane][tileX + 1][tileY] * tileLocalX) >> 7);
 		int northY = (planeHeightmaps[plane][tileX][tileY + 1] * (128 - tileLocalX) + (planeHeightmaps[plane][tileX + 1][tileY + 1] * tileLocalX)) >> 7;
 
+		// (l * min) / max;
 		return southY * (128 - tileLocalY) + northY * tileLocalY >> 7;
 	}
 
@@ -5542,7 +5538,7 @@ public class Game extends GameShell {
 				o.index = index;
 
 				if (planeObjStacks[currentPlane][x][y] == null) {
-					planeObjStacks[currentPlane][x][y] = new LinkedList();
+					planeObjStacks[currentPlane][x][y] = new Chain();
 				}
 
 				planeObjStacks[currentPlane][x][y].push(o);
@@ -5555,7 +5551,7 @@ public class Game extends GameShell {
 			int index = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
-				LinkedList stack = planeObjStacks[currentPlane][x][z];
+				Chain stack = planeObjStacks[currentPlane][x][z];
 
 				if (stack != null) {
 					for (ObjectStack s = (ObjectStack) stack.peekLast(); s != null; s = (ObjectStack) stack.getPrevious()) {
@@ -5619,7 +5615,7 @@ public class Game extends GameShell {
 				ObjectStack gi = new ObjectStack();
 				gi.index = i_558_;
 				if (planeObjStacks[currentPlane][x][y] == null) {
-					planeObjStacks[currentPlane][x][y] = new LinkedList();
+					planeObjStacks[currentPlane][x][y] = new Chain();
 				}
 				planeObjStacks[currentPlane][x][y].push(gi);
 				updateObjectStack(x, y);
@@ -5696,7 +5692,7 @@ public class Game extends GameShell {
 	}
 
 	public final void updateObjectStack(int x, int y) {
-		LinkedList stack = planeObjStacks[currentPlane][x][y];
+		Chain stack = planeObjStacks[currentPlane][x][y];
 
 		if (stack == null) {
 			landscape.removeObject(x, y, currentPlane);
@@ -7018,7 +7014,7 @@ public class Game extends GameShell {
 			}
 
 			if (hovertype == 3) {
-				LinkedList stack = planeObjStacks[currentPlane][tileX][tileY];
+				Chain stack = planeObjStacks[currentPlane][tileX][tileY];
 
 				if (stack != null) {
 					for (ObjectStack o = (ObjectStack) stack.peekFirst(); o != null; o = (ObjectStack) stack.getNext()) {
@@ -8221,7 +8217,7 @@ public class Game extends GameShell {
 
 		for (int tileX = 0; tileX < 104; tileX++) {
 			for (int tileY = 0; tileY < 104; tileY++) {
-				LinkedList c = planeObjStacks[currentPlane][tileX][tileY];
+				Chain c = planeObjStacks[currentPlane][tileX][tileY];
 				if (c != null) {
 					x = (((tileX * 4) + 2) - playerX);
 					y = (((tileY * 4) + 2) - playerY);

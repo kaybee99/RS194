@@ -14,15 +14,15 @@ public final class Landscape {
 	public Location[] locs = new Location[5000];
 	public int[][][] levelTileCycle;
 	public static int lastTileUpdateCount;
-	public static int tileUpdateN;
-	public static int topTileY;
-	public static int cullCycle;
+	public static int tileUpdateCount;
+	public static int topPlane;
+	public static int cycle;
 	public static int minTileX;
 	public static int maxTileX;
-	public static int minTileZ;
-	public static int maxTileZ;
+	public static int minTileY;
+	public static int maxTileY;
 	public static int cameraTileX;
-	public static int cameraTileZ;
+	public static int cameraTileY;
 	public static int cameraX;
 	public static int cameraY;
 	public static int cameraZ;
@@ -42,7 +42,7 @@ public final class Landscape {
 	static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
 	public static int activeOccluderCount;
 	static Occluder[] activeOcludders = new Occluder[500];
-	public static LinkedList tileQueue = new LinkedList();
+	public static Chain tileQueue = new Chain();
 
 	// @formatter:off
 	public static final int[] DIRECTION_DRAW_TYPE = {
@@ -1063,7 +1063,7 @@ public final class Landscape {
 		Scene.clickedTileY = -1;
 	}
 
-	public void draw(int cameraX, int cameraY, int cameraZ, int pitch, int yaw, int topY) {
+	public void draw(int cameraX, int cameraY, int cameraZ, int pitch, int yaw, int topPlane) {
 		if (cameraX < 0) {
 			cameraX = 0;
 		} else if (cameraX >= tileCountX * 128) {
@@ -1076,7 +1076,7 @@ public final class Landscape {
 			cameraZ = tileCountZ * 128 - 1;
 		}
 
-		cullCycle++;
+		cycle++;
 		Landscape.pitchSin = Model.sin[pitch];
 		Landscape.pitchCos = Model.cos[pitch];
 		Landscape.yawSin = Model.sin[yaw];
@@ -1086,46 +1086,43 @@ public final class Landscape {
 		Landscape.cameraY = cameraY;
 		Landscape.cameraZ = cameraZ;
 		Landscape.cameraTileX = cameraX / 128;
-		Landscape.cameraTileZ = cameraZ / 128;
-		Landscape.topTileY = topY;
+		Landscape.cameraTileY = cameraZ / 128;
+		Landscape.topPlane = topPlane;
 
 		minTileX = cameraTileX - Scene.VIEW_RADIUS;
+		minTileY = cameraTileY - Scene.VIEW_RADIUS;
+		maxTileX = cameraTileX + Scene.VIEW_RADIUS;
+		maxTileY = cameraTileY + Scene.VIEW_RADIUS;
 
 		if (minTileX < 0) {
 			minTileX = 0;
 		}
 
-		minTileZ = cameraTileZ - Scene.VIEW_RADIUS;
-
-		if (minTileZ < 0) {
-			minTileZ = 0;
+		if (minTileY < 0) {
+			minTileY = 0;
 		}
-
-		maxTileX = cameraTileX + Scene.VIEW_RADIUS;
 
 		if (maxTileX > tileCountX) {
 			maxTileX = tileCountX;
 		}
 
-		maxTileZ = cameraTileZ + Scene.VIEW_RADIUS;
-
-		if (maxTileZ > tileCountZ) {
-			maxTileZ = tileCountZ;
+		if (maxTileY > tileCountZ) {
+			maxTileY = tileCountZ;
 		}
 
 		updateOccluders();
 
-		tileUpdateN = 0;
+		tileUpdateCount = 0;
 
-		for (int y = minPlane; y < planeCount; y++) {
-			Tile[][] tiles = planeTiles[y];
+		for (int z = minPlane; z < planeCount; z++) {
+			Tile[][] tiles = planeTiles[z];
 
 			for (int x = minTileX; x < maxTileX; x++) {
-				for (int z = minTileZ; z < maxTileZ; z++) {
-					Tile t = tiles[x][z];
+				for (int y = minTileY; y < maxTileY; y++) {
+					Tile t = tiles[x][y];
 
 					if (t != null) {
-						if (t.drawY > topY || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][z - cameraTileZ + Scene.VIEW_RADIUS] && heightmap[y][x][z] - cameraY < 2000) {
+						if (t.drawY > topPlane || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][y - cameraTileY + Scene.VIEW_RADIUS] && heightmap[y][x][y] - cameraY < 2000) {
 							t.draw = false;
 							t.update = false;
 							t.anInt985 = 0;
@@ -1133,14 +1130,14 @@ public final class Landscape {
 							t.draw = true;
 							t.update = true;
 							t.drawLocs = t.locN > 0;
-							tileUpdateN++;
+							tileUpdateCount++;
 						}
 					}
 				}
 			}
 		}
 
-		lastTileUpdateCount = tileUpdateN;
+		lastTileUpdateCount = tileUpdateCount;
 
 		for (int z = minPlane; z < planeCount; z++) {
 			Tile[][] tiles = planeTiles[z];
@@ -1151,17 +1148,17 @@ public final class Landscape {
 
 				if (x1 >= minTileX || x2 < maxTileX) {
 					for (int y = -Scene.VIEW_RADIUS; y <= 0; y++) {
-						int z1 = cameraTileZ + y;
-						int z2 = cameraTileZ - y;
+						int z1 = cameraTileY + y;
+						int z2 = cameraTileY - y;
 
 						if (x1 >= minTileX) {
-							if (z1 >= minTileZ) {
+							if (z1 >= minTileY) {
 								Tile t = tiles[x1][z1];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
 							}
-							if (z2 < maxTileZ) {
+							if (z2 < maxTileY) {
 								Tile t = tiles[x1][z2];
 								if (t != null && t.draw) {
 									draw(t, true);
@@ -1170,13 +1167,13 @@ public final class Landscape {
 						}
 
 						if (x2 < maxTileX) {
-							if (z1 >= minTileZ) {
+							if (z1 >= minTileY) {
 								Tile t = tiles[x2][z1];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
 							}
-							if (z2 < maxTileZ) {
+							if (z2 < maxTileY) {
 								Tile t = tiles[x2][z2];
 								if (t != null && t.draw) {
 									draw(t, true);
@@ -1184,7 +1181,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileUpdateN == 0) {
+						if (tileUpdateCount == 0) {
 							Scene.checkClick = false;
 							return;
 						}
@@ -1202,17 +1199,17 @@ public final class Landscape {
 
 				if (x1 >= minTileX || x2 < maxTileX) {
 					for (int z = -Scene.VIEW_RADIUS; z <= 0; z++) {
-						int z1 = cameraTileZ + z;
-						int z2 = cameraTileZ - z;
+						int z1 = cameraTileY + z;
+						int z2 = cameraTileY - z;
 
 						if (x1 >= minTileX) {
-							if (z1 >= minTileZ) {
+							if (z1 >= minTileY) {
 								Tile t = tiles[x1][z1];
 								if (t != null && t.draw) {
 									draw(t, false);
 								}
 							}
-							if (z2 < maxTileZ) {
+							if (z2 < maxTileY) {
 								Tile t = tiles[x1][z2];
 								if (t != null && t.draw) {
 									draw(t, false);
@@ -1221,13 +1218,13 @@ public final class Landscape {
 						}
 
 						if (x2 < maxTileX) {
-							if (z1 >= minTileZ) {
+							if (z1 >= minTileY) {
 								Tile t = tiles[x2][z1];
 								if (t != null && t.draw) {
 									draw(t, false);
 								}
 							}
-							if (z2 < maxTileZ) {
+							if (z2 < maxTileY) {
 								Tile t = tiles[x2][z2];
 								if (t != null && t.draw) {
 									draw(t, false);
@@ -1235,7 +1232,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileUpdateN == 0) {
+						if (tileUpdateCount == 0) {
 							Scene.checkClick = false;
 							return;
 						}
@@ -1288,7 +1285,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileZ <= cameraTileZ && tileZ > minTileZ) {
+						if (tileZ <= cameraTileY && tileZ > minTileY) {
 							Tile t = tiles[tileX][tileZ - 1];
 
 							if (t != null && t.update && (t.draw || ((tile.flags & 0x8) == 0))) {
@@ -1296,7 +1293,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileZ >= cameraTileZ && tileZ < maxTileZ - 1) {
+						if (tileZ >= cameraTileY && tileZ < maxTileY - 1) {
 							Tile t = tiles[tileX][tileZ + 1];
 
 							if (t != null && t.update && (t.draw || ((tile.flags & 0x2) == 0))) {
@@ -1369,9 +1366,9 @@ public final class Landscape {
 							direction += 0x2;
 						}
 
-						if (cameraTileZ == tileZ) {
+						if (cameraTileY == tileZ) {
 							direction += 0x2 | 0x1;
-						} else if (cameraTileZ > tileZ) {
+						} else if (cameraTileY > tileZ) {
 							direction += 0x4 | 0x2;
 						}
 
@@ -1475,7 +1472,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileZ < cameraTileZ && (flags & 0x2) != 0) {
+						if (tileZ < cameraTileY && (flags & 0x2) != 0) {
 							Tile t = tiles[tileX][tileZ + 1];
 
 							if (t != null && t.update) {
@@ -1491,7 +1488,7 @@ public final class Landscape {
 							}
 						}
 
-						if (tileZ > cameraTileZ && (flags & 0x8) != 0) {
+						if (tileZ > cameraTileY && (flags & 0x8) != 0) {
 							Tile t = tiles[tileX][tileZ - 1];
 
 							if (t != null && t.update) {
@@ -1505,7 +1502,7 @@ public final class Landscape {
 					boolean visible = true;
 
 					for (int n = 0; n < tile.locN; n++) {
-						if (tile.locs[n].cycle != cullCycle && ((tile.locFlags[n] & tile.anInt985) == tile.anInt986)) {
+						if (tile.locs[n].cycle != cycle && ((tile.locFlags[n] & tile.anInt985) == tile.anInt986)) {
 							visible = false;
 							break;
 						}
@@ -1530,7 +1527,7 @@ public final class Landscape {
 					for (int n = 0; n < locN; n++) {
 						Location l = tile.locs[n];
 
-						if (l.cycle != cullCycle) {
+						if (l.cycle != cycle) {
 							for (int x = l.minTileX; x <= l.maxTileX; x++) {
 								for (int y = l.minTileZ; y <= l.maxTileZ; y++) {
 									Tile t = tiles[x][y];
@@ -1580,8 +1577,8 @@ public final class Landscape {
 								dx0 = dx1;
 							}
 
-							int dy0 = cameraTileZ - l.minTileZ;
-							int dy1 = l.maxTileZ - cameraTileZ;
+							int dy0 = cameraTileY - l.minTileZ;
+							int dy1 = l.maxTileZ - cameraTileY;
 
 							if (dy1 > dy0) {
 								l.drawPriority = dx0 + dy1;
@@ -1598,7 +1595,7 @@ public final class Landscape {
 						for (int n = 0; n < locCount; n++) {
 							Location l = drawnLocs[n];
 
-							if (l.drawPriority > maxPriority && l.cycle != cullCycle) {
+							if (l.drawPriority > maxPriority && l.cycle != cycle) {
 								maxPriority = l.drawPriority;
 								index = n;
 							}
@@ -1609,7 +1606,7 @@ public final class Landscape {
 						}
 
 						Location l = drawnLocs[index];
-						l.cycle = cullCycle;
+						l.cycle = cycle;
 						Model m = l.model;
 
 						if (m == null) {
@@ -1659,7 +1656,7 @@ public final class Landscape {
 						}
 					}
 
-					if (tileZ <= cameraTileZ && tileZ > minTileZ) {
+					if (tileZ <= cameraTileY && tileZ > minTileY) {
 						Tile t = tiles[tileX][tileZ - 1];
 
 						if (t != null && t.update) {
@@ -1667,7 +1664,7 @@ public final class Landscape {
 						}
 					}
 
-					if (tileZ >= cameraTileZ && tileZ < maxTileZ - 1) {
+					if (tileZ >= cameraTileY && tileZ < maxTileY - 1) {
 						Tile t = tiles[tileX][tileZ + 1];
 
 						if (t != null && t.update) {
@@ -1676,7 +1673,7 @@ public final class Landscape {
 					}
 
 					tile.update = false;
-					tileUpdateN--;
+					tileUpdateCount--;
 
 					ObjectLocation object = tile.obj;
 
@@ -1754,7 +1751,7 @@ public final class Landscape {
 						}
 					}
 
-					if (tileZ < cameraTileZ) {
+					if (tileZ < cameraTileY) {
 						Tile t = tiles[tileX][tileZ + 1];
 
 						if (t != null && t.update) {
@@ -1770,7 +1767,7 @@ public final class Landscape {
 						}
 					}
 
-					if (tileZ > cameraTileZ) {
+					if (tileZ > cameraTileY) {
 						Tile t = tiles[tileX][tileZ - 1];
 
 						if (t != null && t.update) {
@@ -2073,8 +2070,8 @@ public final class Landscape {
 	}
 
 	private void updateOccluders() {
-		int occluderCount = planeOccluderCount[topTileY];
-		Occluder[] occluders = planeOccluders[topTileY];
+		int occluderCount = planeOccluderCount[topPlane];
+		Occluder[] occluders = planeOccluders[topPlane];
 
 		activeOccluderCount = 0;
 
@@ -2089,13 +2086,13 @@ public final class Landscape {
 				int tileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
 
 				if (tileX >= 0 && tileX <= Scene.VIEW_DIAMETER) {
-					int minTileY = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int minTileY = o.minTileZ - cameraTileY + Scene.VIEW_RADIUS;
 
 					if (minTileY < 0) {
 						minTileY = 0;
 					}
 
-					int maxTileX = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int maxTileX = o.maxTileZ - cameraTileY + Scene.VIEW_RADIUS;
 
 					if (maxTileX > Scene.VIEW_DIAMETER) {
 						maxTileX = Scene.VIEW_DIAMETER;
@@ -2132,7 +2129,7 @@ public final class Landscape {
 					}
 				}
 			} else if (o.type == 2) {
-				int tileY = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+				int tileY = o.minTileZ - cameraTileY + Scene.VIEW_RADIUS;
 
 				if (tileY >= 0 && tileY <= Scene.VIEW_DIAMETER) {
 					int minTileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
@@ -2178,13 +2175,13 @@ public final class Landscape {
 				int y = o.minY - cameraY;
 
 				if (y > 128) {
-					int minTileY = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int minTileY = o.minTileZ - cameraTileY + Scene.VIEW_RADIUS;
 
 					if (minTileY < 0) {
 						minTileY = 0;
 					}
 
-					int maxTileY = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int maxTileY = o.maxTileZ - cameraTileY + Scene.VIEW_RADIUS;
 
 					if (maxTileY > Scene.VIEW_DIAMETER) {
 						maxTileY = Scene.VIEW_DIAMETER;
@@ -2234,11 +2231,11 @@ public final class Landscape {
 	private boolean isTileOccluded(int plane, int tileX, int tileY) {
 		int cycle = levelTileCycle[plane][tileX][tileY];
 
-		if (cycle == -cullCycle) {
+		if (cycle == -Landscape.cycle) {
 			return false;
 		}
 
-		if (cycle == cullCycle) {
+		if (cycle == Landscape.cycle) {
 			return true;
 		}
 
@@ -2246,11 +2243,11 @@ public final class Landscape {
 		int sceneZ = tileY << 7;
 
 		if (isOccluded(sceneX + 1, heightmap[plane][tileX][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && isOccluded(sceneX + 1, heightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
-			levelTileCycle[plane][tileX][tileY] = cullCycle;
+			levelTileCycle[plane][tileX][tileY] = Landscape.cycle;
 			return true;
 		}
 
-		levelTileCycle[plane][tileX][tileY] = -cullCycle;
+		levelTileCycle[plane][tileX][tileY] = -Landscape.cycle;
 		return false;
 	}
 
@@ -2413,7 +2410,7 @@ public final class Landscape {
 
 		for (int x = minTileX; x <= maxTileX; x++) {
 			for (int y = minTileY; y <= maxTileY; y++) {
-				if (levelTileCycle[plane][x][y] == -cullCycle) {
+				if (levelTileCycle[plane][x][y] == -cycle) {
 					return false;
 				}
 			}
