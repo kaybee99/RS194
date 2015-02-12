@@ -27,7 +27,7 @@ public class LocationInfo {
 	private boolean adjustToTerrain;
 	private boolean flatShaded;
 	public boolean culls;
-	public int seqIndex;
+	public int animIndex;
 	public int thickness;
 	private byte brightness;
 	private byte specular;
@@ -115,7 +115,7 @@ public class LocationInfo {
 		adjustToTerrain = false;
 		flatShaded = false;
 		culls = false;
-		seqIndex = -1;
+		animIndex = -1;
 		thickness = 16;
 		brightness = (byte) 0;
 		specular = (byte) 0;
@@ -180,9 +180,9 @@ public class LocationInfo {
 			} else if (opcode == 23) {
 				culls = true;
 			} else if (opcode == 24) {
-				seqIndex = b.readUShort();
-				if (seqIndex == 65535) {
-					seqIndex = -1;
+				animIndex = b.readUShort();
+				if (animIndex == 65535) {
+					animIndex = -1;
 				}
 			} else if (opcode == 25) {
 				disposeAlpha = true;

@@ -15,11 +15,11 @@ public class NPCInfo {
 	public byte size = 1;
 	public int[] modelIndices;
 	private int[] headModelIndices;
-	public int seqStand = -1;
-	public int seqWalk = -1;
-	public int seqRun = -1;
-	public int seqTurnRight = -1;
-	public int seqTurnLeft = -1;
+	public int animStandIndex = -1;
+	public int animWalkIndex = -1;
+	public int animRunIndex = -1;
+	public int animTurnRightIndex = -1;
+	public int animTurnLeftIndex = -1;
 	private boolean disposeAlpha = false;
 	public int[] oldColors;
 	public int[] newColors;
@@ -97,16 +97,16 @@ public class NPCInfo {
 			} else if (opcode == 12) {
 				size = b.readByte();
 			} else if (opcode == 13) {
-				seqStand = b.readUShort();
+				animStandIndex = b.readUShort();
 			} else if (opcode == 14) {
-				seqWalk = b.readUShort();
+				animWalkIndex = b.readUShort();
 			} else if (opcode == 16) {
 				disposeAlpha = true;
 			} else if (opcode == 17) {
-				seqWalk = b.readUShort();
-				seqRun = b.readUShort();
-				seqTurnRight = b.readUShort();
-				seqTurnLeft = b.readUShort();
+				animWalkIndex = b.readUShort();
+				animRunIndex = b.readUShort();
+				animTurnRightIndex = b.readUShort();
+				animTurnLeftIndex = b.readUShort();
 			} else if (opcode >= 30 && opcode < 40) {
 				if (actions == null) {
 					actions = new String[5];

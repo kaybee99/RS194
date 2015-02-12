@@ -20,7 +20,7 @@ final class NPC extends Entity {
 		m.translate(0, -spotanimOffsetY, 0);
 
 		m.applyGroups();
-		m.applyFrame(spotanim.seq.primaryFrames[spotanimFrame]);
+		m.applyFrame(spotanim.animation.primaryFrames[spotanimFrame]);
 
 		m.skinTriangle = null;
 		m.labelVertices = null;
@@ -30,21 +30,21 @@ final class NPC extends Entity {
 	}
 
 	public final Model getModel() {
-		if (primarySeqIndex >= 0 && primarySeqDelay == 0) {
-			int frame1 = Sequence.instance[primarySeqIndex].primaryFrames[primarySeqFrame];
+		if (primaryAnimIndex >= 0 && primaryAnimDelay == 0) {
+			int frame1 = Animation.instance[primaryAnimIndex].primaryFrames[primaryAnimFrame];
 			int frame2 = -1;
 
-			if (secondarySeqIndex >= 0 && secondarySeqIndex != seqStand) {
-				frame2 = (Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame]);
+			if (secondaryAnimIndex >= 0 && secondaryAnimIndex != animStand) {
+				frame2 = (Animation.instance[secondaryAnimIndex].primaryFrames[secondaryAnimFrame]);
 			}
 
-			return config.getModel(frame1, frame2, Sequence.instance[primarySeqIndex].labelGroups);
+			return config.getModel(frame1, frame2, Animation.instance[primaryAnimIndex].labelGroups);
 		}
 
 		int frame = -1;
 
-		if (secondarySeqIndex >= 0) {
-			frame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+		if (secondaryAnimIndex >= 0) {
+			frame = Animation.instance[secondaryAnimIndex].primaryFrames[secondaryAnimFrame];
 		}
 
 		Model m = config.getModel(frame, -1, null);

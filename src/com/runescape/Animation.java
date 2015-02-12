@@ -1,9 +1,9 @@
 package com.runescape;
 
-public class Sequence {
+public class Animation {
 
 	public static int count;
-	public static Sequence[] instance;
+	public static Animation[] instance;
 
 	public int frameCount;
 	public int[] primaryFrames;
@@ -22,12 +22,12 @@ public class Sequence {
 		count = b.readUShort();
 
 		if (instance == null) {
-			instance = new Sequence[count];
+			instance = new Animation[count];
 		}
 
 		for (int n = 0; n < count; n++) {
 			if (instance[n] == null) {
-				instance[n] = new Sequence();
+				instance[n] = new Animation();
 			}
 			instance[n].read(b);
 		}
@@ -58,7 +58,7 @@ public class Sequence {
 					frameDuration[n] = b.readUShort();
 
 					if (frameDuration[n] == 0) {
-						frameDuration[n] = SequenceFrame.instance[primaryFrames[n]].delta;
+						frameDuration[n] = AnimationFrame.instance[primaryFrames[n]].delta;
 					}
 
 					if (frameDuration[n] == 0) {

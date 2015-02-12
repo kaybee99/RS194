@@ -7,7 +7,7 @@ public class SpotAnimation {
 
 	public int index;
 	public int modelIndex;
-	public Sequence seq;
+	public Animation animation;
 	public boolean disposeAlpha = false;
 	public int[] oldColors = new int[6];
 	public int[] newColors = new int[6];
@@ -41,7 +41,7 @@ public class SpotAnimation {
 			if (opcode == 1) {
 				modelIndex = b.readUShort();
 			} else if (opcode == 2) {
-				seq = Sequence.instance[b.readUShort()];
+				animation = Animation.instance[b.readUShort()];
 			} else if (opcode == 3) {
 				disposeAlpha = true;
 			} else if (opcode >= 40 && opcode < 50) {

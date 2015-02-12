@@ -48,12 +48,12 @@ final class Player extends Entity {
 			appearanceColors[n] = i;
 		}
 
-		seqStand = b.readUShort();
-		seqTurn = b.readUShort();
-		seqWalk = b.readUShort();
-		seqRun = b.readUShort();
-		seqTurnRight = b.readUShort();
-		seqTurnLeft = b.readUShort();
+		animStand = b.readUShort();
+		animTurnIndex = b.readUShort();
+		animWalkIndex = b.readUShort();
+		animRunIndex = b.readUShort();
+		animTurnRightIndex = b.readUShort();
+		animTurnLeftIndex = b.readUShort();
 		name = StringUtil.getFormatted(StringUtil.fromBase37(b.readLong()));
 		level = b.read();
 		visible = true;
@@ -95,7 +95,7 @@ final class Player extends Entity {
 			Model m = new Model(s.getModel(), false, true, !s.disposeAlpha, true);
 			m.translate(0, -spotanimOffsetY, 0);
 			m.applyGroups();
-			m.applyFrame(s.seq.primaryFrames[spotanimFrame]);
+			m.applyFrame(s.animation.primaryFrames[spotanimFrame]);
 			m.skinTriangle = null;
 			m.labelVertices = null;
 			m.applyLighting(64, 850, -30, -50, -30, true);
@@ -150,12 +150,12 @@ final class Player extends Entity {
 		int shieldOverride = -1;
 		int weaponOverride = -1;
 
-		if (primarySeqIndex >= 0 && primarySeqDelay == 0) {
-			Sequence s = Sequence.instance[primarySeqIndex];
-			primaryFrame = s.primaryFrames[primarySeqFrame];
+		if (primaryAnimIndex >= 0 && primaryAnimDelay == 0) {
+			Animation s = Animation.instance[primaryAnimIndex];
+			primaryFrame = s.primaryFrames[primaryAnimFrame];
 
-			if (secondarySeqIndex >= 0 && secondarySeqIndex != seqStand) {
-				secondaryFrame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+			if (secondaryAnimIndex >= 0 && secondaryAnimIndex != animStand) {
+				secondaryFrame = Animation.instance[secondaryAnimIndex].primaryFrames[secondaryAnimFrame];
 			}
 
 			if (s.shieldOverride >= 0) {
@@ -167,8 +167,8 @@ final class Player extends Entity {
 				weaponOverride = s.weaponOverride;
 				bitset += (long) (shieldOverride - appearanceIndices[3] << 16);
 			}
-		} else if (secondarySeqIndex >= 0) {
-			primaryFrame = Sequence.instance[secondarySeqIndex].primaryFrames[secondarySeqFrame];
+		} else if (secondaryAnimIndex >= 0) {
+			primaryFrame = Animation.instance[secondaryAnimIndex].primaryFrames[secondaryAnimFrame];
 		}
 
 		Model m = (Model) uniqueModelCache.get(bitset);
@@ -226,7 +226,7 @@ final class Player extends Entity {
 		m = new Model(m, true);
 
 		if (primaryFrame != -1 && secondaryFrame != -1) {
-			m.applyFrames(primaryFrame, secondaryFrame, Sequence.instance[primarySeqIndex].labelGroups);
+			m.applyFrames(primaryFrame, secondaryFrame, Animation.instance[primaryAnimIndex].labelGroups);
 		} else if (primaryFrame != -1) {
 			m.applyFrame(primaryFrame);
 		}

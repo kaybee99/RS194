@@ -208,7 +208,7 @@ public final class Scene {
 		}
 	}
 
-	public final void addLoc(int locIndex, int type, SceneGraph graph, CollisionMap collision, Chain sequencedLocs, int tileX, int tileY, int plane, int rotation) {
+	public final void addLoc(int locIndex, int type, SceneGraph graph, CollisionMap collision, Chain animatedLocations, int tileX, int tileY, int plane, int rotation) {
 		if (lowmemory) {
 			int p = plane;
 
@@ -296,8 +296,8 @@ public final class Scene {
 				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
 			}
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 2, tileX, tileY, plane));
 			}
 		} else if (type >= 12) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -311,8 +311,8 @@ public final class Scene {
 				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
 			}
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 2, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 2, tileX, tileY, plane));
 			}
 		} else if (type == 0) {
 			Model m = l.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -432,8 +432,8 @@ public final class Scene {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
@@ -446,29 +446,29 @@ public final class Scene {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 256, rotation);
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 512, rotation);
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 768, rotation);
 
-			if (l.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
+			if (l.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[l.animIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		}
 	}
@@ -1027,7 +1027,7 @@ public final class Scene {
 		return (hue / 4 << 10) + (saturation / 32 << 7) + lightness / 2;
 	}
 
-	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, SceneGraph graph, CollisionMap collision, Chain sequencedLocs) {
+	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, SceneGraph graph, CollisionMap collision, Chain animatedLocations) {
 		int southwestY = planeHeightmaps[groundPlane][tileX][tileY];
 		int southeastY = planeHeightmaps[groundPlane][tileX + 1][tileY];
 		int northeastY = planeHeightmaps[groundPlane][tileX + 1][tileY + 1];
@@ -1079,8 +1079,8 @@ public final class Scene {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
 			}
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 2, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 2, tileX, tileY, plane));
 			}
 		} else if (type >= 12) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -1090,8 +1090,8 @@ public final class Scene {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
 			}
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 2, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 2, tileX, tileY, plane));
 			}
 		} else if (type == 0) {
 			Model m = c.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
@@ -1135,8 +1135,8 @@ public final class Scene {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
@@ -1149,29 +1149,29 @@ public final class Scene {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x100, rotation);
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x200, rotation);
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
 			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x300, rotation);
 
-			if (c.seqIndex != -1) {
-				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
+			if (c.animIndex != -1) {
+				animatedLocations.push(new AnimatedLocation(Animation.instance[c.animIndex], index, 1, tileX, tileY, plane));
 			}
 		}
 	}

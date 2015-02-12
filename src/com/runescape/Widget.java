@@ -220,9 +220,9 @@ public class Widget {
 				index = b.read();
 
 				if (index != 0) {
-					w.seqIndexDisabled = (index - 1 << 8) + b.read();
+					w.animIndexDisabled = (index - 1 << 8) + b.read();
 				} else {
-					w.seqIndexDisabled = -1;
+					w.animIndexDisabled = -1;
 				}
 
 				index = b.read();
@@ -294,8 +294,8 @@ public class Widget {
 
 	public int[] inventoryIndices;
 	public int[] inventoryAmount;
-	public int seqFrame;
-	public int seqCycle;
+	public int animFrame;
+	public int animCycle;
 	public int index;
 	public int parent;
 	public int type;
@@ -337,7 +337,7 @@ public class Widget {
 	public Bitmap bitmapEnabled;
 	public Model modelDisabled;
 	public Model modelEnabled;
-	public int seqIndexDisabled;
+	public int animIndexDisabled;
 	public int seqIndexEnabled;
 	public int modelZoom;
 	public int modelCameraPitch;

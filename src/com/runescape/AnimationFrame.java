@@ -1,11 +1,11 @@
 package com.runescape;
 
-public class SequenceFrame {
+public class AnimationFrame {
 
-	public static SequenceFrame[] instance;
+	public static AnimationFrame[] instance;
 
 	public int delta;
-	public SequenceTransform transform;
+	public AnimationTransform transform;
 	public int groupCount;
 	public int[] groups;
 	public int[] x;
@@ -21,7 +21,7 @@ public class SequenceFrame {
 		int frameCount = head.readUShort();
 		int totalFrames = head.readUShort();
 
-		instance = new SequenceFrame[totalFrames + 1];
+		instance = new AnimationFrame[totalFrames + 1];
 
 		int[] groups = new int[500];
 		int[] x = new int[500];
@@ -29,10 +29,10 @@ public class SequenceFrame {
 		int[] z = new int[500];
 
 		for (int frame = 0; frame < frameCount; frame++) {
-			SequenceFrame f = instance[head.readUShort()] = new SequenceFrame();
+			AnimationFrame f = instance[head.readUShort()] = new AnimationFrame();
 			f.delta = del.read();
 
-			SequenceTransform t = SequenceTransform.instance[head.readUShort()];
+			AnimationTransform t = AnimationTransform.instance[head.readUShort()];
 			f.transform = t;
 
 			int groupCount = head.read();

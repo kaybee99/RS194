@@ -172,7 +172,7 @@ public class Game extends GameShell {
 	/* Linked Entites */
 	public Chain[][][] planeObjStacks = new Chain[4][104][104];
 	public Chain projectiles = new Chain();
-	public Chain sequencedLocs = new Chain();
+	public Chain animatedLocations = new Chain();
 	public Chain spawntLocs = new Chain();
 	public Chain spotanims = new Chain();
 	public Chain temporaryLocs = new Chain();
@@ -688,13 +688,13 @@ public class Game extends GameShell {
 	public void loadModels(Archive models) {
 		drawProgress("Unpacking models", 85);
 		Model.load(models);
-		SequenceTransform.load(models);
-		SequenceFrame.load(models);
+		AnimationTransform.load(models);
+		AnimationFrame.load(models);
 	}
 
 	public void loadConfigs(Archive config) {
 		drawProgress("Unpacking config", 85);
-		Sequence.load(config);
+		Animation.load(config);
 		LocationInfo.load(config);
 		FloorType.unpack(config);
 		ObjectInfo.load(config);
@@ -2050,7 +2050,7 @@ public class Game extends GameShell {
 		temporaryLocs = null;
 		projectiles = null;
 		spotanims = null;
-		sequencedLocs = null;
+		animatedLocations = null;
 		optionParamB = null;
 		optionParamC = null;
 		optionType = null;
@@ -2079,7 +2079,7 @@ public class Game extends GameShell {
 		FloorType.instances = null;
 		IdentityKit.instance = null;
 		Widget.instances = null;
-		Sequence.instance = null;
+		Animation.instance = null;
 		SpotAnimation.instance = null;
 		SpotAnimation.uniqueModelCache = null;
 		Varp.instance = null;
@@ -2087,8 +2087,8 @@ public class Game extends GameShell {
 		Graphics3D.unload();
 		SceneGraph.unload();
 		Model.unload();
-		SequenceTransform.instance = null;
-		SequenceFrame.instance = null;
+		AnimationTransform.instance = null;
+		AnimationFrame.instance = null;
 		System.gc();
 	}
 
@@ -3215,7 +3215,7 @@ public class Game extends GameShell {
 		drawNPCs();
 		drawProjectiles();
 		drawSpotanims();
-		drawSequencedLocs();
+		drawAnimatedLocations();
 
 		int topPlane = updateCamera(localPlayer.sceneX >> 7, localPlayer.sceneZ >> 7);
 
@@ -3274,7 +3274,7 @@ public class Game extends GameShell {
 
 			p.lowmemory = false;
 
-			if ((lowmemory && playerCount > 50 || playerCount > 200) && n != -1 && (p.secondarySeqIndex == p.seqStand)) {
+			if ((lowmemory && playerCount > 50 || playerCount > 200) && n != -1 && (p.secondaryAnimIndex == p.animStand)) {
 				p.lowmemory = true;
 			}
 
@@ -3376,26 +3376,26 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void drawSequencedLocs() {
-		for (SequencedLocation l = (SequencedLocation) sequencedLocs.peekLast(); l != null; l = (SequencedLocation) sequencedLocs.getPrevious()) {
+	public void drawAnimatedLocations() {
+		for (AnimatedLocation l = (AnimatedLocation) animatedLocations.peekLast(); l != null; l = (AnimatedLocation) animatedLocations.getPrevious()) {
 			boolean append = false;
-			l.seqCycle += sceneDelta;
+			l.animCycle += sceneDelta;
 
-			if (l.seqFrame == -1) {
-				l.seqFrame = 0;
+			if (l.animFrame == -1) {
+				l.animFrame = 0;
 				append = true;
 			}
 
-			while (l.seqCycle > (l.seq.frameDuration[l.seqFrame])) {
-				l.seqCycle -= (l.seq.frameDuration[l.seqFrame]) + 1;
-				l.seqFrame++;
+			while (l.animCycle > (l.animation.frameDuration[l.animFrame])) {
+				l.animCycle -= (l.animation.frameDuration[l.animFrame]) + 1;
+				l.animFrame++;
 
 				append = true;
 
-				if (l.seqFrame >= l.seq.frameCount) {
-					l.seqFrame -= l.seq.delta;
+				if (l.animFrame >= l.animation.frameCount) {
+					l.animFrame -= l.animation.delta;
 
-					if (l.seqFrame < 0 || (l.seqFrame >= l.seq.frameCount)) {
+					if (l.animFrame < 0 || (l.animFrame >= l.animation.frameCount)) {
 						l.unlink();
 						append = false;
 						break;
@@ -3417,18 +3417,18 @@ public class Game extends GameShell {
 					l.unlink();
 				} else {
 					LocationInfo c = LocationInfo.get(l.locIndex);
-					int seqFrame = -1;
+					int animFrame = -1;
 
-					if (l.seqFrame != -1) {
-						seqFrame = l.seq.primaryFrames[l.seqFrame];
+					if (l.animFrame != -1) {
+						animFrame = l.animation.primaryFrames[l.animFrame];
 					}
 
 					if (l.classtype == 2) {
 						int rotation = graph.getInfo(l.tileX, l.tileY, l.plane, bitset) >> 6;
-						Model m = c.getModel(10, rotation, 0, 0, 0, 0, seqFrame);
+						Model m = c.getModel(10, rotation, 0, 0, 0, 0, animFrame);
 						graph.setLocModel(m, l.tileX, l.tileY, l.plane);
 					} else if (l.classtype == 1) {
-						Model m = c.getModel(4, 0, 0, 0, 0, 0, seqFrame);
+						Model m = c.getModel(4, 0, 0, 0, 0, 0, animFrame);
 						graph.setWallDecorationModel(m, l.tileX, l.tileY, l.plane);
 					}
 				}
@@ -3736,7 +3736,7 @@ public class Game extends GameShell {
 	public void clearScene() {
 		entityUpdatePlane = -1;
 		temporaryLocs.clear();
-		sequencedLocs.clear();
+		animatedLocations.clear();
 		spotanims.clear();
 		projectiles.clear();
 		Graphics3D.clearPools();
@@ -3755,7 +3755,7 @@ public class Game extends GameShell {
 	}
 
 	public void readLocscape(Scene s, byte[] src, int baseTileX, int baseTileZ) {
-		s.readLocs(src, baseTileX, baseTileZ, graph, collisions, sequencedLocs);
+		s.readLocs(src, baseTileX, baseTileZ, graph, collisions, animatedLocations);
 	}
 
 	public Scene createScene() {
@@ -4027,7 +4027,7 @@ public class Game extends GameShell {
 		}
 
 		if (e.sceneX < 0 || e.sceneZ < 0 || e.sceneX >= 13312 || e.sceneZ >= 13312) {
-			e.primarySeqIndex = -1;
+			e.primaryAnimIndex = -1;
 			e.spotanimIndex = -1;
 			e.firstMoveCycle = 0;
 			e.lastMoveCycle = 0;
@@ -4038,16 +4038,16 @@ public class Game extends GameShell {
 
 		boolean noLabels = false;
 
-		if (e.primarySeqIndex != -1 && e.primarySeqDelay == 0) {
+		if (e.primaryAnimIndex != -1 && e.primaryAnimDelay == 0) {
 			try {
-				Sequence s = Sequence.instance[e.primarySeqIndex];
+				Animation s = Animation.instance[e.primaryAnimIndex];
 
 				if (s.labelGroups == null) {
 					noLabels = true;
 					e.catchupCycles++;
 				}
 			} catch (Exception ex) {
-				System.out.println("e2: " + e.primarySeqIndex);
+				System.out.println("e2: " + e.primaryAnimIndex);
 			}
 		}
 
@@ -4079,7 +4079,7 @@ public class Game extends GameShell {
 			}
 		} else if (e.lastMoveCycle >= cycle) {
 			try {
-				if (e.lastMoveCycle == cycle || !noLabels || e.primarySeqCycle + 1 > Sequence.instance[e.primarySeqIndex].frameDuration[e.primarySeqFrame]) {
+				if (e.lastMoveCycle == cycle || !noLabels || e.primaryAnimCycle + 1 > Animation.instance[e.primaryAnimIndex].frameDuration[e.primaryAnimFrame]) {
 					// total move time in cycles (20ms/cycle)
 					int duration = e.lastMoveCycle - e.firstMoveCycle;
 
@@ -4115,7 +4115,7 @@ public class Game extends GameShell {
 
 				e.yaw = e.dstYaw;
 			} catch (Exception ex) {
-				System.out.println("e4: " + e.primarySeqIndex);
+				System.out.println("e4: " + e.primaryAnimIndex);
 			}
 		} else {
 			try {
@@ -4161,24 +4161,24 @@ public class Game extends GameShell {
 							deltaYaw -= 2048;
 						}
 
-						int seqIndex = e.seqRun;
+						int animIndex = e.animRunIndex;
 
 						if (deltaYaw >= -256 && deltaYaw <= 256) {
-							seqIndex = e.seqWalk;
+							animIndex = e.animWalkIndex;
 						} else if (deltaYaw >= 256 && deltaYaw < 768) {
-							seqIndex = e.seqTurnLeft;
+							animIndex = e.animTurnLeftIndex;
 						} else if (deltaYaw >= -768 && deltaYaw <= -256) {
-							seqIndex = e.seqTurnRight;
+							animIndex = e.animTurnRightIndex;
 						}
 
-						if (seqIndex == -1) {
-							seqIndex = e.seqWalk;
+						if (animIndex == -1) {
+							animIndex = e.animWalkIndex;
 						}
 
-						if (seqIndex != e.secondarySeqIndex) {
-							e.secondarySeqIndex = seqIndex;
-							e.secondarySeqFrame = 0;
-							e.secondarySeqCycle = 0;
+						if (animIndex != e.secondaryAnimIndex) {
+							e.secondaryAnimIndex = animIndex;
+							e.secondaryAnimFrame = 0;
+							e.secondaryAnimCycle = 0;
 						}
 
 						int speed = 4;
@@ -4233,7 +4233,7 @@ public class Game extends GameShell {
 						}
 					}
 				} else {
-					e.secondarySeqIndex = e.seqStand;
+					e.secondaryAnimIndex = e.animStand;
 				}
 			} catch (Exception exception) {
 				System.out.println("e5: " + e.pathStepCount);
@@ -4304,65 +4304,65 @@ public class Game extends GameShell {
 
 			e.yaw &= 0x7ff;
 
-			if (e.secondarySeqIndex == e.seqStand) {
-				if (e.seqTurn != -1) {
-					e.secondarySeqIndex = e.seqTurn;
+			if (e.secondaryAnimIndex == e.animStand) {
+				if (e.animTurnIndex != -1) {
+					e.secondaryAnimIndex = e.animTurnIndex;
 				} else {
-					e.secondarySeqIndex = e.seqWalk;
+					e.secondaryAnimIndex = e.animWalkIndex;
 				}
 			}
 		}
 
 		e.renderPadding = 0;
 
-		if (e.secondarySeqIndex != -1) {
+		if (e.secondaryAnimIndex != -1) {
 			try {
-				Sequence s = Sequence.instance[e.secondarySeqIndex];
-				e.secondarySeqCycle++;
+				Animation a = Animation.instance[e.secondaryAnimIndex];
+				e.secondaryAnimCycle++;
 
-				if (e.secondarySeqFrame < s.frameCount && (e.secondarySeqCycle > (s.frameDuration[e.secondarySeqFrame]))) {
-					e.secondarySeqCycle = 0;
-					e.secondarySeqFrame++;
+				if (e.secondaryAnimFrame < a.frameCount && (e.secondaryAnimCycle > (a.frameDuration[e.secondaryAnimFrame]))) {
+					e.secondaryAnimCycle = 0;
+					e.secondaryAnimFrame++;
 				}
 
-				if (e.secondarySeqFrame >= s.frameCount) {
-					e.secondarySeqCycle = 0;
-					e.secondarySeqFrame = 0;
+				if (e.secondaryAnimFrame >= a.frameCount) {
+					e.secondaryAnimCycle = 0;
+					e.secondaryAnimFrame = 0;
 				}
-			} catch (Exception exception) {
-				System.out.println("e8: " + e.secondarySeqIndex);
+			} catch (Exception ex) {
+				System.out.println("e8: " + e.secondaryAnimIndex);
 			}
 		}
 
-		if (e.primarySeqIndex != -1 && e.primarySeqDelay == 0) {
+		if (e.primaryAnimIndex != -1 && e.primaryAnimDelay == 0) {
 			try {
-				Sequence s = (Sequence.instance[e.primarySeqIndex]);
+				Animation a = Animation.instance[e.primaryAnimIndex];
 
-				for (e.primarySeqCycle++; (e.primarySeqFrame < s.frameCount && (e.primarySeqCycle > (s.frameDuration[e.primarySeqFrame]))); e.primarySeqFrame++) {
-					e.primarySeqCycle -= (s.frameDuration[e.primarySeqFrame]);
+				for (e.primaryAnimCycle++; (e.primaryAnimFrame < a.frameCount && (e.primaryAnimCycle > (a.frameDuration[e.primaryAnimFrame]))); e.primaryAnimFrame++) {
+					e.primaryAnimCycle -= (a.frameDuration[e.primaryAnimFrame]);
 				}
 
-				if (e.primarySeqFrame >= s.frameCount) {
-					e.primarySeqFrame -= s.delta;
-					e.primarySeqDelta++;
+				if (e.primaryAnimFrame >= a.frameCount) {
+					e.primaryAnimFrame -= a.delta;
+					e.primaryAnimDelta++;
 
-					if (e.primarySeqDelta >= s.length) {
-						e.primarySeqIndex = -1;
+					if (e.primaryAnimDelta >= a.length) {
+						e.primaryAnimIndex = -1;
 					}
 
-					if (e.primarySeqFrame < 0 || e.primarySeqFrame >= s.frameCount) {
-						e.primarySeqIndex = -1;
+					if (e.primaryAnimFrame < 0 || e.primaryAnimFrame >= a.frameCount) {
+						e.primaryAnimIndex = -1;
 					}
 				}
 
-				e.renderPadding = s.renderPadding;
-			} catch (Exception exception) {
-				System.out.println("e9: " + e.primarySeqIndex);
+				e.renderPadding = a.renderPadding;
+			} catch (Exception ex) {
+				System.out.println("e9: " + e.primaryAnimIndex);
 			}
 		}
 
-		if (e.primarySeqDelay > 0) {
-			e.primarySeqDelay--;
+		if (e.primaryAnimDelay > 0) {
+			e.primaryAnimDelay--;
 		}
 
 		do {
@@ -4372,13 +4372,13 @@ public class Game extends GameShell {
 						e.spotanimFrame = 0;
 					}
 
-					Sequence s = (SpotAnimation.instance[e.spotanimIndex].seq);
+					Animation a = SpotAnimation.instance[e.spotanimIndex].animation;
 
-					for (e.spotanimCycle++; (e.spotanimFrame < s.frameCount && (e.spotanimCycle > (s.frameDuration[e.spotanimFrame]))); e.spotanimFrame++) {
-						e.spotanimCycle -= (s.frameDuration[e.spotanimFrame]);
+					for (e.spotanimCycle++; (e.spotanimFrame < a.frameCount && (e.spotanimCycle > (a.frameDuration[e.spotanimFrame]))); e.spotanimFrame++) {
+						e.spotanimCycle -= (a.frameDuration[e.spotanimFrame]);
 					}
 
-					if (e.spotanimFrame < s.frameCount) {
+					if (e.spotanimFrame < a.frameCount) {
 						break;
 					}
 
@@ -4887,12 +4887,12 @@ public class Game extends GameShell {
 			} else if (packetType == 5) {
 				for (Player player : players) {
 					if (player != null) {
-						player.primarySeqIndex = -1;
+						player.primaryAnimIndex = -1;
 					}
 				}
 				for (NPC npc : npcs) {
 					if (npc != null) {
-						npc.primarySeqIndex = -1;
+						npc.primaryAnimIndex = -1;
 					}
 				}
 			} else if (packetType == 47) {
@@ -4948,7 +4948,7 @@ public class Game extends GameShell {
 				chatRedrawSettings = true;
 				chatRedraw = true;
 			} else if (packetType == 149) {
-				Widget.instances[in.readUShort()].seqIndexDisabled = in.readUShort();
+				Widget.instances[in.readUShort()].animIndexDisabled = in.readUShort();
 			} else if (packetType == 95) {
 				netTileX = in.read();
 				netTileZ = in.read();
@@ -5422,7 +5422,7 @@ public class Game extends GameShell {
 					drawPlane++;
 				}
 
-				Scene.addLoc(type, index, tileX, tileZ, plane, drawPlane, rotation, planeHeightmaps, graph, collisions[plane], sequencedLocs);
+				Scene.addLoc(type, index, tileX, tileZ, plane, drawPlane, rotation, planeHeightmaps, graph, collisions[plane], animatedLocations);
 			}
 		}
 	}
@@ -5509,7 +5509,7 @@ public class Game extends GameShell {
 			int flags = b.read();
 			int type = flags >> 2;
 			int classtype = Location.TYPE_TO_CLASS[type];
-			int seqid = b.readUShort();
+			int animIndex = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
 				int bitset = 0;
@@ -5523,7 +5523,7 @@ public class Game extends GameShell {
 				}
 
 				if (bitset != 0) {
-					sequencedLocs.push(new SequencedLocation(Sequence.instance[seqid], bitset >> 14 & 0x7fff, classtype, x, z, currentPlane));
+					animatedLocations.push(new AnimatedLocation(Animation.instance[animIndex], bitset >> 14 & 0x7fff, classtype, x, z, currentPlane));
 				}
 			}
 		} else if (opcode == 127) {
@@ -5837,24 +5837,24 @@ public class Game extends GameShell {
 			}
 
 			if ((mask & 0x2) == 2) {
-				int seqIndex = b.readUShort();
+				int animIndex = b.readUShort();
 
-				if (seqIndex == 0xFFFF) {
-					seqIndex = -1;
+				if (animIndex == 0xFFFF) {
+					animIndex = -1;
 				}
 
-				if (seqIndex == p.primarySeqIndex) {
-					p.primarySeqDelta = 0;
+				if (animIndex == p.primaryAnimIndex) {
+					p.primaryAnimDelta = 0;
 				}
 
 				int delay = b.read();
 
-				if (seqIndex == -1 || p.primarySeqIndex == -1 || Sequence.instance[seqIndex].priority > Sequence.instance[p.primarySeqIndex].priority) {
-					p.primarySeqIndex = seqIndex;
-					p.primarySeqFrame = 0;
-					p.primarySeqCycle = 0;
-					p.primarySeqDelay = delay;
-					p.primarySeqDelta = 0;
+				if (animIndex == -1 || p.primaryAnimIndex == -1 || Animation.instance[animIndex].priority > Animation.instance[p.primaryAnimIndex].priority) {
+					p.primaryAnimIndex = animIndex;
+					p.primaryAnimFrame = 0;
+					p.primaryAnimCycle = 0;
+					p.primaryAnimDelay = delay;
+					p.primaryAnimDelta = 0;
 				}
 			}
 
@@ -6029,11 +6029,11 @@ public class Game extends GameShell {
 			n.remove = false;
 			n.config = NPCInfo.get(b.readBits(11));
 			n.size = n.config.size;
-			n.seqWalk = n.config.seqWalk;
-			n.seqRun = n.config.seqRun;
-			n.seqTurnRight = n.config.seqTurnRight;
-			n.seqTurnLeft = n.config.seqTurnLeft;
-			n.seqStand = n.config.seqStand;
+			n.animWalkIndex = n.config.animWalkIndex;
+			n.animRunIndex = n.config.animRunIndex;
+			n.animTurnRightIndex = n.config.animTurnRightIndex;
+			n.animTurnLeftIndex = n.config.animTurnLeftIndex;
+			n.animStand = n.config.animStandIndex;
 
 			int x = b.readBits(5);
 
@@ -6063,24 +6063,24 @@ public class Game extends GameShell {
 			int mask = b.read();
 
 			if ((mask & 0x2) == 2) {
-				int seqIndex = b.readUShort();
+				int animIndex = b.readUShort();
 
-				if (seqIndex == 0xFFFF) {
-					seqIndex = -1;
+				if (animIndex == 0xFFFF) {
+					animIndex = -1;
 				}
 
-				if (seqIndex == npc.primarySeqIndex) {
-					npc.primarySeqDelta = 0;
+				if (animIndex == npc.primaryAnimIndex) {
+					npc.primaryAnimDelta = 0;
 				}
 
 				int delay = b.read();
 
-				if (seqIndex == -1 || npc.primarySeqIndex == -1 || (Sequence.instance[seqIndex].priority > (Sequence.instance[npc.primarySeqIndex].priority))) {
-					npc.primarySeqIndex = seqIndex;
-					npc.primarySeqFrame = 0;
-					npc.primarySeqCycle = 0;
-					npc.primarySeqDelay = delay;
-					npc.primarySeqDelta = 0;
+				if (animIndex == -1 || npc.primaryAnimIndex == -1 || (Animation.instance[animIndex].priority > (Animation.instance[npc.primaryAnimIndex].priority))) {
+					npc.primaryAnimIndex = animIndex;
+					npc.primaryAnimFrame = 0;
+					npc.primaryAnimCycle = 0;
+					npc.primaryAnimDelay = delay;
+					npc.primaryAnimDelta = 0;
 				}
 			}
 
@@ -6107,11 +6107,11 @@ public class Game extends GameShell {
 
 			if ((mask & 0x20) == 32) {
 				npc.config = NPCInfo.get(b.readUShort());
-				npc.seqWalk = npc.config.seqWalk;
-				npc.seqRun = npc.config.seqRun;
-				npc.seqTurnRight = npc.config.seqTurnRight;
-				npc.seqTurnLeft = npc.config.seqTurnLeft;
-				npc.seqStand = npc.config.seqStand;
+				npc.animWalkIndex = npc.config.animWalkIndex;
+				npc.animRunIndex = npc.config.animRunIndex;
+				npc.animTurnRightIndex = npc.config.animTurnRightIndex;
+				npc.animTurnLeftIndex = npc.config.animTurnLeftIndex;
+				npc.animStand = npc.config.animStandIndex;
 			}
 
 			if ((mask & 0x40) == 64) {
@@ -7393,11 +7393,11 @@ public class Game extends GameShell {
 					int camZ = (Graphics3D.cos[w.modelCameraPitch] * w.modelZoom) >> 16;
 					Model m;
 
-					if (w.seqIndexDisabled == -1) {
+					if (w.animIndexDisabled == -1) {
 						m = w.getModel(-1, -1, isWidgetEnabled(w));
 					} else {
-						Sequence s = Sequence.instance[w.seqIndexDisabled];
-						m = w.getModel(s.primaryFrames[w.seqFrame], s.secondaryFrames[w.seqFrame], isWidgetEnabled(w));
+						Animation a = Animation.instance[w.animIndexDisabled];
+						m = w.getModel(a.primaryFrames[w.animFrame], a.secondaryFrames[w.animFrame], isWidgetEnabled(w));
 					}
 
 					if (m != null) {
@@ -7851,8 +7851,8 @@ public class Game extends GameShell {
 				resetWidgetAnimations(child.index);
 			}
 
-			child.seqFrame = 0;
-			child.seqCycle = 0;
+			child.animFrame = 0;
+			child.animCycle = 0;
 		}
 	}
 
@@ -7871,19 +7871,19 @@ public class Game extends GameShell {
 				updated |= updateWidgetAnimations(w.index, cycle);
 			}
 
-			if (w.seqIndexDisabled != -1) {
-				Sequence s = Sequence.instance[w.seqIndexDisabled];
-				w.seqCycle += cycle;
+			if (w.animIndexDisabled != -1) {
+				Animation a = Animation.instance[w.animIndexDisabled];
+				w.animCycle += cycle;
 
-				while (w.seqCycle > s.frameDuration[w.seqFrame]) {
-					w.seqCycle -= s.frameDuration[w.seqFrame] + 1;
-					w.seqFrame++;
+				while (w.animCycle > a.frameDuration[w.animFrame]) {
+					w.animCycle -= a.frameDuration[w.animFrame] + 1;
+					w.animFrame++;
 
-					if (w.seqFrame >= s.frameCount) {
-						w.seqFrame -= s.delta;
+					if (w.animFrame >= a.frameCount) {
+						w.animFrame -= a.delta;
 
-						if (w.seqFrame < 0 || w.seqFrame >= s.frameCount) {
-							w.seqFrame = 0;
+						if (w.animFrame < 0 || w.animFrame >= a.frameCount) {
+							w.animFrame = 0;
 						}
 					}
 					updated = true;
@@ -8021,7 +8021,7 @@ public class Game extends GameShell {
 				}
 
 				m.applyGroups();
-				m.applyFrame(Sequence.instance[localPlayer.seqStand].primaryFrames[0]);
+				m.applyFrame(Animation.instance[localPlayer.animStand].primaryFrames[0]);
 				m.applyLighting(64, 850, -30, -50, -30, true);
 				w.modelDisabled = m;
 			}

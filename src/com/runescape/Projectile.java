@@ -77,12 +77,12 @@ final class Projectile extends Renderable {
 		yaw = ((int) (Math.atan2(velocityX, velocityY) * 325.949) + 1024) & 0x7FF;
 		pitch = ((int) (Math.atan2(velocityZ, velocity) * 325.949) & 0x7FF);
 
-		if (spotanim.seq != null) {
+		if (spotanim.animation != null) {
 			frameCycle += cycle;
-			while (frameCycle > spotanim.seq.frameDuration[seqFrame]) {
-				frameCycle -= (spotanim.seq.frameDuration[seqFrame] + 1);
+			while (frameCycle > spotanim.animation.frameDuration[seqFrame]) {
+				frameCycle -= (spotanim.animation.frameDuration[seqFrame] + 1);
 				seqFrame++;
-				if (seqFrame >= spotanim.seq.frameCount) {
+				if (seqFrame >= spotanim.animation.frameCount) {
 					seqFrame = 0;
 				}
 			}
@@ -94,9 +94,9 @@ final class Projectile extends Renderable {
 		Model sam = spotanim.getModel();
 		Model m = new Model(sam, false, true, !spotanim.disposeAlpha, true);
 
-		if (spotanim.seq != null) {
+		if (spotanim.animation != null) {
 			m.applyGroups();
-			m.applyFrame(spotanim.seq.primaryFrames[seqFrame]);
+			m.applyFrame(spotanim.animation.primaryFrames[seqFrame]);
 			m.skinTriangle = null;
 			m.labelVertices = null;
 		}

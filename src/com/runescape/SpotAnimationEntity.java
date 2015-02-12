@@ -25,10 +25,10 @@ final class SpotAnimationEntity extends Renderable {
 	public final void update(int cycle) {
 		frameCycle += cycle;
 
-		while (frameCycle > spotanim.seq.frameDuration[seqFrame]) {
-			frameCycle -= spotanim.seq.frameDuration[seqFrame] + 1;
+		while (frameCycle > spotanim.animation.frameDuration[seqFrame]) {
+			frameCycle -= spotanim.animation.frameDuration[seqFrame] + 1;
 			seqFrame++;
-			if (seqFrame >= spotanim.seq.frameCount) {
+			if (seqFrame >= spotanim.animation.frameCount) {
 				seqFrame = 0;
 				finished = true;
 			}
@@ -41,7 +41,7 @@ final class SpotAnimationEntity extends Renderable {
 
 		if (!finished) {
 			m.applyGroups();
-			m.applyFrame((spotanim.seq.primaryFrames[seqFrame]));
+			m.applyFrame((spotanim.animation.primaryFrames[seqFrame]));
 			m.skinTriangle = null;
 			m.labelVertices = null;
 		}

@@ -1018,8 +1018,8 @@ public class Model extends QueueLink {
 
 	public void applyFrame(int frame) {
 		if (labelVertices != null && frame != -1) {
-			SequenceFrame f = SequenceFrame.instance[frame];
-			SequenceTransform t = f.transform;
+			AnimationFrame f = AnimationFrame.instance[frame];
+			AnimationTransform t = f.transform;
 
 			transformX = 0;
 			transformY = 0;
@@ -1037,9 +1037,9 @@ public class Model extends QueueLink {
 			if (labelGroups == null || secondaryFrame == -1) {
 				applyFrame(primaryFrame);
 			} else {
-				SequenceFrame primary = SequenceFrame.instance[primaryFrame];
-				SequenceFrame secondary = SequenceFrame.instance[secondaryFrame];
-				SequenceTransform t = primary.transform;
+				AnimationFrame primary = AnimationFrame.instance[primaryFrame];
+				AnimationFrame secondary = AnimationFrame.instance[secondaryFrame];
+				AnimationTransform t = primary.transform;
 
 				transformX = 0;
 				transformY = 0;

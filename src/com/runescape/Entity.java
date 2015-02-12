@@ -9,12 +9,12 @@ public class Entity extends Renderable {
 	int renderPadding;
 	int size = 1;
 
-	int seqWalk = -1;
-	int seqRun = -1;
-	int seqTurnRight = -1;
-	int seqTurnLeft = -1;
-	int seqStand = -1;
-	int seqTurn = -1;
+	int animWalkIndex = -1;
+	int animRunIndex = -1;
+	int animTurnRightIndex = -1;
+	int animTurnLeftIndex = -1;
+	int animStand = -1;
+	int animTurnIndex = -1;
 
 	String spoken;
 	int spokenLife = 100;
@@ -34,15 +34,15 @@ public class Entity extends Renderable {
 	int focusX;
 	int focusY;
 
-	int secondarySeqIndex = -1;
-	int secondarySeqFrame;
-	int secondarySeqCycle;
+	int secondaryAnimIndex = -1;
+	int secondaryAnimFrame;
+	int secondaryAnimCycle;
 
-	int primarySeqIndex = -1;
-	int primarySeqFrame;
-	int primarySeqCycle;
-	int primarySeqDelay;
-	int primarySeqDelta;
+	int primaryAnimIndex = -1;
+	int primaryAnimFrame;
+	int primaryAnimCycle;
+	int primaryAnimDelay;
+	int primaryAnimDelta;
 
 	int spotanimIndex = -1;
 	int spotanimFrame;
@@ -71,8 +71,8 @@ public class Entity extends Renderable {
 
 	public final void setPosition(int x, int y) {
 		if (x != pathX[0] || y != pathY[0]) {
-			if (primarySeqIndex != -1 && Sequence.instance[primarySeqIndex].priority <= 1) {
-				primarySeqIndex = -1;
+			if (primaryAnimIndex != -1 && Animation.instance[primaryAnimIndex].priority <= 1) {
+				primaryAnimIndex = -1;
 			}
 
 			if (pathStepCount < 9) {
@@ -97,8 +97,8 @@ public class Entity extends Renderable {
 			int x = pathX[0] + dx;
 			int y = pathY[0] + dy;
 
-			if (primarySeqIndex != -1 && Sequence.instance[primarySeqIndex].priority <= 1) {
-				primarySeqIndex = -1;
+			if (primaryAnimIndex != -1 && Animation.instance[primaryAnimIndex].priority <= 1) {
+				primaryAnimIndex = -1;
 			}
 
 			if (pathStepCount < 9) {
