@@ -23,31 +23,14 @@
  */
 package dane.runescape.mapeditor;
 
-import java.awt.Color;
-import java.awt.Cursor;
-import java.awt.Graphics;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.util.Arrays;
-
-import javax.swing.JPanel;
-import javax.swing.JScrollBar;
-import javax.swing.SwingUtilities;
-
-import com.runescape.Graphics3D;
-import com.runescape.FloorType;
-import com.runescape.Landscape;
-import com.runescape.Scene;
-
-import dane.runescape.mapeditor.event.MapPanelEventListener;
-import dane.runescape.mapeditor.event.GameListener;
-import dane.runescape.mapeditor.event.MapPanelEvent;
-import dane.runescape.mapeditor.media.TileShape;
+import com.runescape.*;
+import dane.runescape.mapeditor.event.*;
+import dane.runescape.mapeditor.media.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.util.*;
+import javax.swing.*;
 
 /**
  * A panel that displays the two dimensional version of the scene.
@@ -138,7 +121,7 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 
 	/* Scene Load Listener */
 	@Override
-	public void onSceneCreation(int plane, Scene s, Landscape l) {
+	public void onSceneCreation(int plane, Scene s, SceneGraph sg) {
 		byte[][] overlayTypes = s.planeOverlayTypes[plane];
 		byte[][] overlayRotations = s.planeOverlayRotations[plane];
 		byte[][] underlayFlos = s.planeUnderlayFloorIndices[plane];

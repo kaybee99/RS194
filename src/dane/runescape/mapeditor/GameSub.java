@@ -23,22 +23,10 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.Archive;
-import com.runescape.Graphics2D;
-import com.runescape.Graphics3D;
-import com.runescape.Game;
-import com.runescape.GameShell;
-import com.runescape.ImageProducer;
-import com.runescape.Landscape;
-import com.runescape.Model;
-import com.runescape.Scene;
-import com.runescape.Signlink;
-import dane.runescape.mapeditor.event.MapPanelEvent;
-import dane.runescape.mapeditor.event.MapPanelEventListener;
-import dane.runescape.mapeditor.event.GameListener;
-import dane.runescape.mapeditor.util.MathUtil;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.runescape.*;
+import dane.runescape.mapeditor.event.*;
+import dane.runescape.mapeditor.util.*;
+import java.util.logging.*;
 
 /**
  * An extension of the {@link Game} class. Used for handling the drawing and
@@ -87,7 +75,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 			viewport = new ImageProducer(512, 334);
 			viewportOffsets = Graphics3D.prepareOffsets();
 
-			Landscape.init(512, 334, 500, 800);
+			SceneGraph.init(512, 334, 500, 800);
 			loadRegion(50, 50);
 		} catch (Exception e) {
 			errorLoading = true;
@@ -176,7 +164,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 		drawNPCs();
 		drawProjectiles();
 		drawSpotanims();
-		drawSequencedLocs();
+		drawAnimatedLocations();
 
 		int topPlane = updateCamera(camera.getCurrentX() >> 7, camera.getCurrentY() >> 7);
 
@@ -191,8 +179,15 @@ public class GameSub extends Game implements MapPanelEventListener {
 		Scene.mouseX = Model.mouseX;
 		Scene.mouseY = Model.mouseY;
 
-		landscape.draw(cameraX, cameraY, cameraZ, cameraPitch, cameraOrbitYaw, topPlane);
-		landscape.clearFrameLocs();
+		graph.draw(cameraX, cameraY, cameraZ, cameraPitch, cameraOrbitYaw, topPlane);
+		graph.clearFrameLocs();
+
+		for (int i = 0; i < SceneGraph.activeOccluderCount; i++) {
+			Occluder o = SceneGraph.activeOcludders[i];
+
+			setDrawPos(o.minX, o.minY, o.minZ);
+			Graphics2D.fillRect(viewportDrawX - 1, viewportDrawY - 1, 3, 3, 0xFF0000);
+		}
 
 		drawViewport2d();
 		drawCross();
@@ -207,7 +202,6 @@ public class GameSub extends Game implements MapPanelEventListener {
 		updateAnimatedTextures(startCycle);
 
 		fontSmall.draw(mouseX + ", " + mouseY + ", " + clickX + ", " + clickY, 16, 32, 0xFFFFFF);
-
 		viewport.draw(graphics, 0, 0);
 	}
 
@@ -330,9 +324,8 @@ public class GameSub extends Game implements MapPanelEventListener {
 		if (Scene.clickedTileX != -1) {
 			int tileX = Scene.clickedTileX;
 			int tileZ = Scene.clickedTileY;
-			
+
 			// do something?
-			
 			crossX = clickX;
 			crossY = clickY;
 			crossType = 1;
@@ -345,11 +338,11 @@ public class GameSub extends Game implements MapPanelEventListener {
 	@Override
 	public Scene createScene() {
 		Scene s = super.createScene();
-		this.fireSceneCreated(this.currentPlane, s, this.landscape);
+		this.fireSceneCreated(this.currentPlane, s, this.graph);
 		return s;
 	}
 
-	protected void fireSceneCreated(int plane, Scene s, Landscape land) {
+	protected void fireSceneCreated(int plane, Scene s, SceneGraph land) {
 		for (GameListener l : this.listeners.getListeners(GameListener.class)) {
 			l.onSceneCreation(plane, s, land);
 		}
