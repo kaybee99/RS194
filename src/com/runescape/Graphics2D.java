@@ -13,6 +13,9 @@ public class Graphics2D extends QueueLink {
 	public static int centerX;
 	public static int centerY;
 
+	// used for drawing circles
+	private static final int[] vertexX = new int[64], vertexY = new int[64];
+
 	public static void prepare(int[] data, int w, int h) {
 		target = data;
 		targetWidth = w;
@@ -63,6 +66,27 @@ public class Graphics2D extends QueueLink {
 			return;
 		}
 		target[x + (y * targetWidth)] = rgb;
+	}
+
+	public static void fillOval(int x, int y, int w, int h, int rgb, int segments) {
+		int cx = x + (w / 2);
+		int cy = y + (h / 2);
+
+		for (int i = 0; i < segments; i++) {
+			int angle = (i << 11) / segments;
+
+			vertexX[i] = x + ((w * Model.cos[angle]) >> 16);
+			vertexY[i] = y + ((h * Model.sin[angle]) >> 16);
+		}
+
+		for (int i = 1; i < segments; i++) {
+			x = vertexX[i - 1];
+			y = vertexY[i - 1];
+			int x1 = vertexX[i];
+			int y1 = vertexY[i];
+
+			Graphics3D.fillTriangle(cx, cy, x, y, x1, y1, rgb);
+		}
 	}
 
 	public static void drawLine(int x1, int y1, int x2, int y2, int rgb) {

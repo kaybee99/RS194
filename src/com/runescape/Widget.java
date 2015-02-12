@@ -1,6 +1,6 @@
 package com.runescape;
 
-public class GameInterface {
+public class Widget {
 
 	public static final int TYPE_PARENT = 0;
 	public static final int TYPE_UNUSED = 1;
@@ -16,7 +16,7 @@ public class GameInterface {
 	public static final int OPTIONTYPE_SELECT2 = 5;
 	public static final int OPTIONTYPE_CONTINUE = 6;
 
-	public static GameInterface[] instances;
+	public static Widget[] instances;
 
 	private static LinkedList bitmapCache;
 	private static LinkedList modelCache;
@@ -51,7 +51,7 @@ public class GameInterface {
 		modelCache = new LinkedList(50000);
 
 		Buffer b = new Buffer(interfaces.get("data", null));
-		instances = new GameInterface[b.readUShort()];
+		instances = new Widget[b.readUShort()];
 
 		int parent = -1;
 		while (b.position < b.data.length) {
@@ -62,229 +62,229 @@ public class GameInterface {
 				index = b.readUShort();
 			}
 
-			GameInterface i = instances[index] = new GameInterface();
-			i.index = index;
-			i.parent = parent;
-			i.type = b.read();
-			i.optionType = b.read();
-			i.action = b.readUShort();
-			i.width = b.readUShort();
-			i.height = b.readUShort();
-			i.hoverParentIndex = b.read();
+			Widget w = instances[index] = new Widget();
+			w.index = index;
+			w.parent = parent;
+			w.type = b.read();
+			w.optionType = b.read();
+			w.action = b.readUShort();
+			w.width = b.readUShort();
+			w.height = b.readUShort();
+			w.hoverParentIndex = b.read();
 
-			if (i.hoverParentIndex != 0) {
-				i.hoverParentIndex = ((i.hoverParentIndex - 1 << 8) + b.read());
+			if (w.hoverParentIndex != 0) {
+				w.hoverParentIndex = ((w.hoverParentIndex - 1 << 8) + b.read());
 			} else {
-				i.hoverParentIndex = -1;
+				w.hoverParentIndex = -1;
 			}
 
 			int comparatorCount = b.read();
 
 			if (comparatorCount > 0) {
-				i.cscriptComparator = new int[comparatorCount];
-				i.cscriptCompareValue = new int[comparatorCount];
+				w.cscriptComparator = new int[comparatorCount];
+				w.cscriptCompareValue = new int[comparatorCount];
 
 				for (int n = 0; n < comparatorCount; n++) {
-					i.cscriptComparator[n] = b.read();
-					i.cscriptCompareValue[n] = b.readUShort();
+					w.cscriptComparator[n] = b.read();
+					w.cscriptCompareValue[n] = b.readUShort();
 				}
 			}
 
 			int scriptCount = b.read();
 
 			if (scriptCount > 0) {
-				i.cscript = new int[scriptCount][];
+				w.cscript = new int[scriptCount][];
 
 				for (int script = 0; script < scriptCount; script++) {
 					int opcodes = b.readUShort();
-					i.cscript[script] = new int[opcodes];
+					w.cscript[script] = new int[opcodes];
 
 					for (int opcode = 0; opcode < opcodes; opcode++) {
-						i.cscript[script][opcode] = b.readUShort();
+						w.cscript[script][opcode] = b.readUShort();
 					}
 				}
 			}
 
-			if (i.type == TYPE_PARENT) {
-				i.scrollHeight = b.readUShort();
-				i.hidden = b.read() == 1;
+			if (w.type == TYPE_PARENT) {
+				w.scrollHeight = b.readUShort();
+				w.hidden = b.read() == 1;
 
 				int n = b.read();
-				i.children = new int[n];
-				i.childX = new int[n];
-				i.childY = new int[n];
+				w.children = new int[n];
+				w.childX = new int[n];
+				w.childY = new int[n];
 
 				for (int m = 0; m < n; m++) {
-					i.children[m] = b.readUShort();
-					i.childX[m] = b.readShort();
-					i.childY[m] = b.readShort();
+					w.children[m] = b.readUShort();
+					w.childX[m] = b.readShort();
+					w.childY[m] = b.readShort();
 				}
 			}
 
-			if (i.type == TYPE_UNUSED) {
-				i.unusedInt = b.readUShort();
-				i.unusedBool = b.read() == 1;
+			if (w.type == TYPE_UNUSED) {
+				w.unusedInt = b.readUShort();
+				w.unusedBool = b.read() == 1;
 			}
 
-			if (i.type == TYPE_INVENTORY) {
-				i.inventoryIndices = new int[i.width * i.height];
-				i.inventoryAmount = new int[i.width * i.height];
+			if (w.type == TYPE_INVENTORY) {
+				w.inventoryIndices = new int[w.width * w.height];
+				w.inventoryAmount = new int[w.width * w.height];
 
-				i.inventoryDummy = b.read() == 1;
-				i.inventoryHasActions = b.read() == 1;
-				i.inventoryIsUsable = b.read() == 1;
-				i.inventoryMarginX = b.read();
-				i.inventoryMarginY = b.read();
-				i.inventoryOffsetX = new int[20];
-				i.inventoryOffsetY = new int[20];
-				i.inventoryBitmap = new Bitmap[20];
+				w.inventoryDummy = b.read() == 1;
+				w.inventoryHasActions = b.read() == 1;
+				w.inventoryIsUsable = b.read() == 1;
+				w.inventoryMarginX = b.read();
+				w.inventoryMarginY = b.read();
+				w.inventoryOffsetX = new int[20];
+				w.inventoryOffsetY = new int[20];
+				w.inventoryBitmap = new Bitmap[20];
 
 				for (int n = 0; n < 20; n++) {
 					if (b.read() == 1) {
-						i.inventoryOffsetX[n] = b.readShort();
-						i.inventoryOffsetY[n] = b.readShort();
+						w.inventoryOffsetX[n] = b.readShort();
+						w.inventoryOffsetY[n] = b.readShort();
 
 						String s = b.readString();
 
 						if (media != null && s.length() > 0) {
 							int j = s.lastIndexOf(",");
-							i.inventoryBitmap[n] = getBitmap(s.substring(0, j), media, (Integer.parseInt(s.substring(j + 1))));
+							w.inventoryBitmap[n] = getBitmap(s.substring(0, j), media, (Integer.parseInt(s.substring(j + 1))));
 						}
 					}
 				}
 
-				i.inventoryActions = new String[5];
+				w.inventoryActions = new String[5];
 
 				for (int n = 0; n < 5; n++) {
-					i.inventoryActions[n] = b.readString();
+					w.inventoryActions[n] = b.readString();
 
-					if (i.inventoryActions[n].length() == 0) {
-						i.inventoryActions[n] = null;
+					if (w.inventoryActions[n].length() == 0) {
+						w.inventoryActions[n] = null;
 					}
 				}
 			}
 
-			if (i.type == TYPE_RECT) {
-				i.fill = b.read() == 1;
+			if (w.type == TYPE_RECT) {
+				w.fill = b.read() == 1;
 			}
 
-			if (i.type == TYPE_TEXT || i.type == TYPE_UNUSED) {
-				i.centered = b.read() == 1;
-				i.font = fonts[b.read()];
-				i.shadow = b.read() == 1;
+			if (w.type == TYPE_TEXT || w.type == TYPE_UNUSED) {
+				w.centered = b.read() == 1;
+				w.font = fonts[b.read()];
+				w.shadow = b.read() == 1;
 			}
 
-			if (i.type == TYPE_TEXT) {
-				i.messageDisabled = b.readString();
-				i.messageEnabled = b.readString();
+			if (w.type == TYPE_TEXT) {
+				w.messageDisabled = b.readString();
+				w.messageEnabled = b.readString();
 			}
 
-			if (i.type == TYPE_UNUSED || i.type == TYPE_RECT || i.type == TYPE_TEXT) {
-				i.colorDisabled = b.readInt();
+			if (w.type == TYPE_UNUSED || w.type == TYPE_RECT || w.type == TYPE_TEXT) {
+				w.colorDisabled = b.readInt();
 			}
 
-			if (i.type == TYPE_RECT || i.type == TYPE_TEXT) {
-				i.colorEnabled = b.readInt();
-				i.hoverColor = b.readInt();
+			if (w.type == TYPE_RECT || w.type == TYPE_TEXT) {
+				w.colorEnabled = b.readInt();
+				w.hoverColor = b.readInt();
 			}
 
-			if (i.type == TYPE_IMAGE) {
+			if (w.type == TYPE_IMAGE) {
 				String s = b.readString();
 
 				if (media != null && s.length() > 0) {
 					int j = s.lastIndexOf(",");
-					i.bitmapDisabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
+					w.bitmapDisabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
 				}
 
 				s = b.readString();
 
 				if (media != null && s.length() > 0) {
 					int j = s.lastIndexOf(",");
-					i.bitmapEnabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
+					w.bitmapEnabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
 				}
 			}
 
-			if (i.type == TYPE_MODEL) {
+			if (w.type == TYPE_MODEL) {
 				index = b.read();
 
 				if (index != 0) {
-					i.modelDisabled = getModel(((index - 1 << 8) + b.read()));
+					w.modelDisabled = getModel(((index - 1 << 8) + b.read()));
 				}
 
 				index = b.read();
 
 				if (index != 0) {
-					i.modelEnabled = getModel(((index - 1 << 8) + b.read()));
+					w.modelEnabled = getModel(((index - 1 << 8) + b.read()));
 				}
 
 				index = b.read();
 
 				if (index != 0) {
-					i.seqIndexDisabled = (index - 1 << 8) + b.read();
+					w.seqIndexDisabled = (index - 1 << 8) + b.read();
 				} else {
-					i.seqIndexDisabled = -1;
+					w.seqIndexDisabled = -1;
 				}
 
 				index = b.read();
 
 				if (index != 0) {
-					i.seqIndexEnabled = (index - 1 << 8) + b.read();
+					w.seqIndexEnabled = (index - 1 << 8) + b.read();
 				} else {
-					i.seqIndexEnabled = -1;
+					w.seqIndexEnabled = -1;
 				}
 
-				i.modelZoom = b.readUShort();
-				i.modelCameraPitch = b.readUShort();
-				i.modelYaw = b.readUShort();
+				w.modelZoom = b.readUShort();
+				w.modelCameraPitch = b.readUShort();
+				w.modelYaw = b.readUShort();
 			}
 
-			if (i.type == TYPE_INVENTORY_TEXT) {
-				i.inventoryIndices = new int[i.width * i.height];
-				i.inventoryAmount = new int[i.width * i.height];
-				i.centered = b.read() == 1;
+			if (w.type == TYPE_INVENTORY_TEXT) {
+				w.inventoryIndices = new int[w.width * w.height];
+				w.inventoryAmount = new int[w.width * w.height];
+				w.centered = b.read() == 1;
 
 				int font = b.read();
 
 				if (fonts != null) {
-					i.font = fonts[font];
+					w.font = fonts[font];
 				}
 
-				i.shadow = b.read() == 1;
-				i.colorDisabled = b.readInt();
-				i.inventoryMarginX = b.readShort();
-				i.inventoryMarginY = b.readShort();
-				i.inventoryHasActions = b.read() == 1;
-				i.inventoryActions = new String[5];
+				w.shadow = b.read() == 1;
+				w.colorDisabled = b.readInt();
+				w.inventoryMarginX = b.readShort();
+				w.inventoryMarginY = b.readShort();
+				w.inventoryHasActions = b.read() == 1;
+				w.inventoryActions = new String[5];
 
 				for (int n = 0; n < 5; n++) {
-					i.inventoryActions[n] = b.readString();
+					w.inventoryActions[n] = b.readString();
 
-					if (i.inventoryActions[n].length() == 0) {
-						i.inventoryActions[n] = null;
+					if (w.inventoryActions[n].length() == 0) {
+						w.inventoryActions[n] = null;
 					}
 				}
 			}
 
-			if (i.optionType == 2 || i.type == TYPE_INVENTORY) {
-				i.optionPrefix = b.readString();
-				i.optionSuffix = b.readString();
-				i.optionFlags = b.readUShort();
+			if (w.optionType == 2 || w.type == TYPE_INVENTORY) {
+				w.optionPrefix = b.readString();
+				w.optionSuffix = b.readString();
+				w.optionFlags = b.readUShort();
 			}
 
-			if (i.optionType == 1 || i.optionType == 4 || i.optionType == 5 || i.optionType == 6) {
-				i.option = b.readString();
+			if (w.optionType == 1 || w.optionType == 4 || w.optionType == 5 || w.optionType == 6) {
+				w.option = b.readString();
 
-				if (i.option.length() == 0) {
-					if (i.optionType == OPTIONTYPE_OK) {
-						i.option = "Ok";
+				if (w.option.length() == 0) {
+					if (w.optionType == OPTIONTYPE_OK) {
+						w.option = "Ok";
 					}
 
-					if (i.optionType == OPTIONTYPE_SELECT || i.optionType == OPTIONTYPE_SELECT2) {
-						i.option = "Select";
+					if (w.optionType == OPTIONTYPE_SELECT || w.optionType == OPTIONTYPE_SELECT2) {
+						w.option = "Select";
 					}
 
-					if (i.optionType == OPTIONTYPE_CONTINUE) {
-						i.option = "Continue";
+					if (w.optionType == OPTIONTYPE_CONTINUE) {
+						w.option = "Continue";
 					}
 				}
 			}

@@ -100,15 +100,15 @@ public class Model extends QueueLink {
 	public int maxBoundX;
 	public int maxBoundZ;
 	public int minBoundZ;
-	public int boundHeight;
+	public int boundLengthXZ;
 
 	/**
 	 * Seems inverted. Noticed a simularity in the landscape heightmap.
 	 */
 	public int maxBoundY, minBoundY;
 
-	public int maxDepth;
 	public int minDepth;
+	public int maxDepth;
 	public int objectOffsetY;
 	public int[] vertexLabel;
 	public int[] triangleSkin;
@@ -874,7 +874,7 @@ public class Model extends QueueLink {
 	 */
 	public final void calculateYBoundaries() {
 		maxBoundY = 0;
-		boundHeight = 0;
+		boundLengthXZ = 0;
 		minBoundY = 0;
 
 		for (int v = 0; v < vertexCount; v++) {
@@ -890,23 +890,23 @@ public class Model extends QueueLink {
 				minBoundY = y;
 			}
 
-			int height = x * x + z * z;
+			int lenX2Z2 = x * x + z * z;
 
-			if (height > boundHeight) {
-				boundHeight = height;
+			if (lenX2Z2 > boundLengthXZ) {
+				boundLengthXZ = lenX2Z2;
 			}
 		}
 
-		boundHeight = (int) Math.sqrt((double) boundHeight);
-		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
-		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
+		boundLengthXZ = (int) Math.sqrt((double) boundLengthXZ);
+		maxDepth = (int) Math.sqrt((double) (boundLengthXZ * boundLengthXZ + maxBoundY * maxBoundY));
+		minDepth = maxDepth + (int) Math.sqrt((double) (boundLengthXZ * boundLengthXZ + minBoundY * minBoundY));
 	}
 
 	/**
 	 * Used when normals are calculated, but no shading is applied.
 	 */
 	public void calculateBoundaries() {
-		boundHeight = 0;
+		boundLengthXZ = 0;
 
 		minBoundX = 999999;
 		maxBoundX = -999999;
@@ -948,14 +948,14 @@ public class Model extends QueueLink {
 
 			int height = x * x + z * z;
 
-			if (height > boundHeight) {
-				boundHeight = height;
+			if (height > boundLengthXZ) {
+				boundLengthXZ = height;
 			}
 		}
 
-		boundHeight = (int) Math.sqrt((double) boundHeight);
-		minDepth = (int) Math.sqrt((double) (boundHeight * boundHeight + maxBoundY * maxBoundY));
-		maxDepth = minDepth + (int) Math.sqrt((double) (boundHeight * boundHeight + minBoundY * minBoundY));
+		boundLengthXZ = (int) Math.sqrt((double) boundLengthXZ);
+		maxDepth = (int) Math.sqrt((double) (boundLengthXZ * boundLengthXZ + maxBoundY * maxBoundY));
+		minDepth = maxDepth + (int) Math.sqrt((double) (boundLengthXZ * boundLengthXZ + minBoundY * minBoundY));
 	}
 
 	public void applyGroups() {
@@ -1528,19 +1528,19 @@ public class Model extends QueueLink {
 	public final void draw(int yaw, int cameraPitchSine, int cameraPitchCosine, int cameraYawSine, int cameraYawCosine, int sceneX, int sceneY, int sceneZ, int bitset) {
 		int cameraY = sceneZ * cameraYawCosine - sceneX * cameraYawSine >> 16;
 		int farZ = sceneY * cameraPitchSine + cameraY * cameraPitchCosine >> 16;
-		int distanceZ = boundHeight * cameraPitchCosine >> 16;
+		int distanceZ = boundLengthXZ * cameraPitchCosine >> 16;
 		int nearZ = farZ + distanceZ;
 
 		if (nearZ > Scene.NEAR_Z && farZ < Scene.FAR_Z) {
 			int i_254_ = sceneZ * cameraYawSine + sceneX * cameraYawCosine >> 16;
-			int minX = i_254_ - boundHeight << 9;
+			int minX = i_254_ - boundLengthXZ << 9;
 
 			if (minX / nearZ < Graphics2D.centerX) {
-				int maxX = i_254_ + boundHeight << 9;
+				int maxX = i_254_ + boundLengthXZ << 9;
 
 				if (maxX / nearZ > -Graphics2D.centerX) {
 					int i_257_ = sceneY * cameraPitchCosine - cameraY * cameraPitchSine >> 16;
-					int i_258_ = boundHeight * cameraPitchSine >> 16;
+					int i_258_ = boundLengthXZ * cameraPitchSine >> 16;
 					int maxY = i_257_ + i_258_ << 9;
 
 					if (maxY / nearZ > -Graphics2D.centerY) {
@@ -1652,7 +1652,7 @@ public class Model extends QueueLink {
 	}
 
 	private void draw(int bitset, boolean projected, boolean hasInput) {
-		for (int d = 0; d < maxDepth; d++) {
+		for (int d = 0; d < minDepth; d++) {
 			depthTriangleCount[d] = 0;
 		}
 
@@ -1667,7 +1667,7 @@ public class Model extends QueueLink {
 
 				if (projected && (x0 == -5000 || x1 == -5000 || x2 == -5000)) {
 					projectTriangle[t] = true;
-					int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + minDepth);
+					int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + maxDepth);
 					depthTriangles[depth][depthTriangleCount[depth]++] = t;
 				} else {
 					if (hasInput && withinTriangle(mouseX, mouseY, vertexScreenY[a], vertexScreenY[b], vertexScreenY[c], x0, x1, x2)) {
@@ -1678,7 +1678,7 @@ public class Model extends QueueLink {
 					if (((x0 - x1) * (vertexScreenY[c] - vertexScreenY[b]) - ((vertexScreenY[a] - vertexScreenY[b]) * (x2 - x1))) > 0) {
 						projectTriangle[t] = false;
 						testTriangleX[t] = x0 < 0 || x1 < 0 || x2 < 0 || x0 > Graphics2D.rightX || x1 > Graphics2D.rightX || x2 > Graphics2D.rightX;
-						int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + minDepth);
+						int depth = ((vertexDepth[a] + vertexDepth[b] + vertexDepth[c]) / 3 + maxDepth);
 						depthTriangles[depth][depthTriangleCount[depth]++] = t;
 					}
 				}
@@ -1686,7 +1686,7 @@ public class Model extends QueueLink {
 		}
 
 		if (trianglePriorities == null) {
-			for (int d = maxDepth - 1; d >= 0; d--) {
+			for (int d = minDepth - 1; d >= 0; d--) {
 				int n = depthTriangleCount[d];
 				if (n > 0) {
 					int[] triangles = depthTriangles[d];
@@ -1701,7 +1701,7 @@ public class Model extends QueueLink {
 				lowPriorityDepth[p] = 0;
 			}
 
-			for (int d = maxDepth - 1; d >= 0; d--) {
+			for (int d = minDepth - 1; d >= 0; d--) {
 				int n = depthTriangleCount[d];
 				if (n > 0) {
 					int[] triangles = depthTriangles[d];

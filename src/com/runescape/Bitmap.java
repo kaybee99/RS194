@@ -1,17 +1,11 @@
 package com.runescape;
 
-import java.awt.Component;
-import java.awt.Image;
-import java.awt.MediaTracker;
-import java.awt.Toolkit;
-import java.awt.image.BufferedImage;
-import java.awt.image.PixelGrabber;
-import java.io.File;
-import java.io.IOException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
+import com.runescape.Graphics2D;
+import java.awt.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.imageio.*;
 
 public class Bitmap extends Graphics2D {
 
@@ -359,12 +353,12 @@ public class Bitmap extends Graphics2D {
 			for (y = 0; y < h; y++) {
 				int start = lineStart[y];
 				int off = baseOffset + start;
-				int dstX = offX + cos * start;
-				int dstY = offY - sin * start;
+				int srcX = offX + cos * start;
+				int srcY = offY - sin * start;
 				for (x = 0; x < lineWidth[y]; x++) {
-					Graphics2D.target[off++] = (pixels[(dstX >> 16) + (dstY >> 16) * width]);
-					dstX += cos;
-					dstY -= sin;
+					Graphics2D.target[off++] = pixels[(srcX >> 16) + (srcY >> 16) * width];
+					srcX += cos;
+					srcY -= sin;
 				}
 				offX += sin;
 				offY += cos;

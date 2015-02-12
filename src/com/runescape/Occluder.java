@@ -1,25 +1,25 @@
 package com.runescape;
 
-final class Occluder {
+public final class Occluder {
 
-	int minTileX;
-	int maxTileX;
-	int minTileZ;
-	int maxTileZ;
-	int minX;
-	int maxX;
-	int minZ;
-	int maxZ;
-	int minY;
-	int maxY;
+	public int minTileX;
+	public int maxTileX;
+	public int minTileZ;
+	public int maxTileZ;
+	public int minX;
+	public int maxX;
+	public int minZ;
+	public int maxZ;
+	public int minY;
+	public int maxY;
 
-	int type;
-	int testDirection;
+	public int type;
+	public int testDirection;
 
-	int anInt308;
-	int anInt309;
-	int anInt310;
-	int anInt311;
-	int anInt312;
-	int anInt313;
+	public int minNormalX;
+	public int maxNormalX;
+	public int minNormalZ;
+	public int maxNormalZ;
+	public int minNormalY;
+	public int maxNormalY;
 }

@@ -167,7 +167,7 @@ public final class Scene {
 		}
 	}
 
-	public final void readLocs(byte[] src, int mapBaseX, int mapBaseY, Landscape landscape, CollisionMap[] planeCollisions, Chain sequencedLocs) {
+	public final void readLocs(byte[] src, int mapBaseX, int mapBaseY, SceneGraph graph, CollisionMap[] planeCollisions, Chain sequencedLocs) {
 		Buffer b = new Buffer(src);
 		int locIndex = -1;
 
@@ -202,13 +202,13 @@ public final class Scene {
 				int tileY = x + mapBaseY;
 
 				if (tileX > 0 && tileY > 0 && tileX < 103 && tileY < 103) {
-					addLoc(locIndex, type, landscape, planeCollisions[plane], sequencedLocs, tileX, tileY, plane, rotation);
+					addLoc(locIndex, type, graph, planeCollisions[plane], sequencedLocs, tileX, tileY, plane, rotation);
 				}
 			}
 		}
 	}
 
-	public final void addLoc(int locIndex, int type, Landscape landscape, CollisionMap collision, Chain sequencedLocs, int tileX, int tileY, int plane, int rotation) {
+	public final void addLoc(int locIndex, int type, SceneGraph graph, CollisionMap collision, Chain sequencedLocs, int tileX, int tileY, int plane, int rotation) {
 		if (lowmemory) {
 			int p = plane;
 
@@ -248,7 +248,7 @@ public final class Scene {
 		if (type == 22) {
 			if (!lowmemory || l.interactable) {
 				Model m = l.getModel(22, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-				landscape.addGroundDecoration(m, plane, tileX, tileY, averageY, info, bitset);
+				graph.addGroundDecoration(m, plane, tileX, tileY, averageY, info, bitset);
 
 				if (l.hasCollision && l.interactable) {
 					collision.setBlocked(tileX, tileY);
@@ -275,10 +275,10 @@ public final class Scene {
 					sizeY = l.sizeY;
 				}
 
-				if (landscape.addLoc(m, null, tileX, tileY, sizeX, sizeY, averageY, plane, yaw, bitset, info) && l.hasShadow) {
+				if (graph.addLoc(m, null, tileX, tileY, sizeX, sizeY, averageY, plane, yaw, bitset, info) && l.hasShadow) {
 					for (int x = 0; x <= sizeX; x++) {
 						for (int y = 0; y <= sizeY; y++) {
-							int darkness = m.boundHeight / 4;
+							int darkness = m.boundLengthXZ / 4;
 
 							if (darkness > 30) {
 								darkness = 30;
@@ -301,7 +301,7 @@ public final class Scene {
 			}
 		} else if (type >= 12) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (type >= 12 && type <= 17 && type != 13 && plane > 0) {
 				occludeflags[plane][tileX][tileY] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
@@ -316,7 +316,7 @@ public final class Scene {
 			}
 		} else if (type == 0) {
 			Model m = l.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], 0);
 
 			if (rotation == 0) {
 				if (l.hasShadow) {
@@ -361,7 +361,7 @@ public final class Scene {
 			}
 		} else if (type == 1) {
 			Model m = l.getModel(1, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
 
 			if (l.hasShadow) {
 				if (rotation == 0) {
@@ -382,7 +382,7 @@ public final class Scene {
 			int nextRotation = rotation + 1 & 0x3;
 			Model model1 = l.getModel(2, rotation + 4, southwestY, southeastY, northeastY, northwestY, -1);
 			Model model2 = l.getModel(2, nextRotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWall(model1, model2, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], WALL_ROTATION_TYPE1[nextRotation]);
+			graph.addWall(model1, model2, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], WALL_ROTATION_TYPE1[nextRotation]);
 
 			if (l.culls) {
 				if (rotation == 0) {
@@ -405,7 +405,7 @@ public final class Scene {
 			}
 		} else if (type == 3) {
 			Model m = l.getModel(3, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
 
 			if (l.hasShadow) {
 				if (rotation == 0) {
@@ -423,49 +423,49 @@ public final class Scene {
 			}
 		} else if (type == 9) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (l.hasCollision) {
 				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
 			}
 		} else if (type == 4) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (l.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
-			int wallBitset = landscape.getWallBitset(tileX, tileY, plane);
+			int wallBitset = graph.getWallBitset(tileX, tileY, plane);
 
 			if (wallBitset > 0) {
 				thickness = LocationInfo.get(wallBitset >> 14 & 0x7fff).thickness;
 			}
 
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
+			graph.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (l.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 256, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 256, rotation);
 
 			if (l.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 512, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 512, rotation);
 
 			if (l.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			landscape.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 768, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 768, rotation);
 
 			if (l.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[l.seqIndex], locIndex, 1, tileX, tileY, plane));
@@ -473,7 +473,7 @@ public final class Scene {
 		}
 	}
 
-	public final void buildLandscape(CollisionMap[] planeCollisions, Landscape landscape) {
+	public final void buildLandscape(CollisionMap[] planeCollisions, SceneGraph graph) {
 		CollisionMap lastCollisionMap = null;
 
 		for (int plane = 0; plane < 4; plane++) {
@@ -662,7 +662,7 @@ public final class Scene {
 								}
 
 								if (overlayFloorIndex == 0) {
-									landscape.addTile(plane, x, y, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
+									graph.addTile(plane, x, y, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
 								} else {
 									int type = planeOverlayTypes[plane][x][y] + 1;
 									byte rotation = planeOverlayRotations[plane][x][y];
@@ -690,7 +690,7 @@ public final class Scene {
 										rgb = Graphics3D.palette[adjustHSLLightness0(hsl, 96)];
 									}
 
-									landscape.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
+									graph.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
 								}
 							}
 						}
@@ -710,17 +710,17 @@ public final class Scene {
 						drawPlane = 0;
 					}
 
-					landscape.setDrawPlane(plane, x, z, drawPlane);
+					graph.setDrawPlane(plane, x, z, drawPlane);
 				}
 			}
 		}
 
-		landscape.applyLighting(-50, -10, -50, 64, 768);
+		graph.applyLighting(-50, -10, -50, 64, 768);
 
 		for (int tileX = 0; tileX < tileSizeX; tileX++) {
 			for (int tileY = 0; tileY < tileSizeZ; tileY++) {
 				if ((renderflags[1][tileX][tileY] & 0x2) == 2) {
-					landscape.setBridge(tileX, tileY);
+					graph.setBridge(tileX, tileY);
 				}
 			}
 		}
@@ -791,7 +791,7 @@ public final class Scene {
 									int maxY = heightmap[minPlane][tileX][minTileZ];
 
 									// Creates a box of an occluder
-									Landscape.addOccluder(0b1,
+									SceneGraph.addOccluder(0b1,
 										tileX * 128, minY, minTileZ * 128,
 										tileX * 128, maxY, (maxTileZ * 128) + 128,
 										plane);
@@ -849,7 +849,7 @@ public final class Scene {
 									int minY = heightmap[maxPlane][minTileX][tileZ] - 240;
 									int maxY = heightmap[minPlane][minTileX][tileZ];
 
-									Landscape.addOccluder(0b10,
+									SceneGraph.addOccluder(0b10,
 										minTileX * 128, minY, tileZ * 128,
 										(maxTileX * 128) + 128, maxY, tileZ * 128,
 										plane);
@@ -905,7 +905,7 @@ public final class Scene {
 
 								if (area >= 4) {
 									int z = heightmap[p][minTileX][minTileZ];
-									Landscape.addOccluder(0b100,
+									SceneGraph.addOccluder(0b100,
 										minTileX * 128, z, minTileZ * 128,
 										(maxTileX * 128) + 128, z, (maxTileZ * 128) + 128,
 										plane);
@@ -1027,7 +1027,7 @@ public final class Scene {
 		return (hue / 4 << 10) + (saturation / 32 << 7) + lightness / 2;
 	}
 
-	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, Landscape land, CollisionMap collision, Chain sequencedLocs) {
+	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, SceneGraph graph, CollisionMap collision, Chain sequencedLocs) {
 		int southwestY = planeHeightmaps[groundPlane][tileX][tileY];
 		int southeastY = planeHeightmaps[groundPlane][tileX + 1][tileY];
 		int northeastY = planeHeightmaps[groundPlane][tileX + 1][tileY + 1];
@@ -1046,7 +1046,7 @@ public final class Scene {
 
 		if (type == 22) {
 			Model m = c.getModel(22, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addGroundDecoration(m, plane, tileX, tileY, averageY, info, bitset);
+			graph.addGroundDecoration(m, plane, tileX, tileY, averageY, info, bitset);
 
 			if (c.hasCollision && c.interactable) {
 				collision.setBlocked(tileX, tileY);
@@ -1072,7 +1072,7 @@ public final class Scene {
 					sizeX = c.sizeY;
 				}
 
-				land.addLoc(m, null, tileX, tileY, sizeY, sizeX, averageY, plane, yaw, bitset, info);
+				graph.addLoc(m, null, tileX, tileY, sizeY, sizeX, averageY, plane, yaw, bitset, info);
 			}
 
 			if (c.hasCollision) {
@@ -1084,7 +1084,7 @@ public final class Scene {
 			}
 		} else if (type >= 12) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
@@ -1095,14 +1095,14 @@ public final class Scene {
 			}
 		} else if (type == 0) {
 			Model m = c.getModel(0, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], 0);
 
 			if (c.hasCollision) {
 				collision.setWall(tileX, tileY, type, rotation, c.isSolid);
 			}
 		} else if (type == 1) {
 			Model m = c.getModel(1, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
 
 			if (c.hasCollision) {
 				collision.setWall(tileX, tileY, type, rotation, c.isSolid);
@@ -1112,63 +1112,63 @@ public final class Scene {
 			Model model1 = c.getModel(2, rotation + 4, southwestY, southeastY, northeastY, northwestY, -1);
 			Model model2 = c.getModel(2, nextRotation, southwestY, southeastY, northeastY, northwestY, -1);
 
-			land.addWall(model1, model2, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], WALL_ROTATION_TYPE1[nextRotation]);
+			graph.addWall(model1, model2, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE1[rotation], WALL_ROTATION_TYPE1[nextRotation]);
 
 			if (c.hasCollision) {
 				collision.setWall(tileX, tileY, type, rotation, c.isSolid);
 			}
 		} else if (type == 3) {
 			Model m = c.getModel(3, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
+			graph.addWall(m, null, plane, tileX, tileY, averageY, bitset, info, WALL_ROTATION_TYPE2[rotation], 0);
 
 			if (c.hasCollision) {
 				collision.setWall(tileX, tileY, type, rotation, c.isSolid);
 			}
 		} else if (type == 9) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
 			}
 		} else if (type == 4) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (c.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 5) {
 			int thickness = 16;
-			int wallBitset = land.getWallBitset(tileX, tileY, plane);
+			int wallBitset = graph.getWallBitset(tileX, tileY, plane);
 
 			if (wallBitset > 0) {
 				thickness = LocationInfo.get(wallBitset >> 14 & 0x7fff).thickness;
 			}
 
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
+			graph.addWallDecoration(m, tileX, tileY, averageY, WALL_DECO_ROT_SIZE_X_DIR[rotation] * thickness, WALL_DECO_ROT_SIZE_Y_DIR[rotation] * thickness, plane, bitset, info, WALL_ROTATION_TYPE1[rotation], rotation * 512);
 
 			if (c.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 6) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x100, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x100, rotation);
 
 			if (c.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 7) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x200, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x200, rotation);
 
 			if (c.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));
 			}
 		} else if (type == 8) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
-			land.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x300, rotation);
+			graph.addWallDecoration(m, tileX, tileY, averageY, 0, 0, plane, bitset, info, 0x300, rotation);
 
 			if (c.seqIndex != -1) {
 				sequencedLocs.push(new SequencedLocation(Sequence.instance[c.seqIndex], index, 1, tileX, tileY, plane));

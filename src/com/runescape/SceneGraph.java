@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class Landscape {
+public final class SceneGraph {
 
 	public static boolean lowmemory = true;
 
@@ -39,9 +39,9 @@ public final class Landscape {
 
 	public static final int MAX_OCCLUDER_PLANES = 4;
 	public static int[] planeOccluderCount = new int[MAX_OCCLUDER_PLANES];
-	static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
+	public static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
 	public static int activeOccluderCount;
-	static Occluder[] activeOcludders = new Occluder[500];
+	public static Occluder[] activeOcludders = new Occluder[500];
 	public static Chain tileQueue = new Chain();
 
 	// @formatter:off
@@ -165,7 +165,7 @@ public final class Landscape {
 	public static int viewportRight;
 	public static int viewportBottom;
 
-	public Landscape(int width, int length, int height, int[][][] heightmap) {
+	public SceneGraph(int width, int length, int height, int[][][] heightmap) {
 		planeCount = height;
 		tileCountX = width;
 		tileCountZ = length;
@@ -1032,7 +1032,7 @@ public final class Landscape {
 							}
 						}
 
-						Landscape.visibilityMaps[pitch][yaw][x + Scene.VIEW_RADIUS][y + Scene.VIEW_RADIUS] = visible;
+						SceneGraph.visibilityMaps[pitch][yaw][x + Scene.VIEW_RADIUS][y + Scene.VIEW_RADIUS] = visible;
 					}
 				}
 			}
@@ -1077,21 +1077,22 @@ public final class Landscape {
 		}
 
 		cycle++;
-		Landscape.pitchSin = Model.sin[pitch];
-		Landscape.pitchCos = Model.cos[pitch];
-		Landscape.yawSin = Model.sin[yaw];
-		Landscape.yawCos = Model.cos[yaw];
-		Landscape.visibilityMap = visibilityMaps[(pitch - 128) / 32][yaw / 64];
-		Landscape.cameraX = cameraX;
-		Landscape.cameraY = cameraY;
-		Landscape.cameraZ = cameraZ;
-		Landscape.cameraTileX = cameraX / 128;
-		Landscape.cameraTileY = cameraZ / 128;
-		Landscape.topPlane = topPlane;
+		SceneGraph.pitchSin = Model.sin[pitch];
+		SceneGraph.pitchCos = Model.cos[pitch];
+		SceneGraph.yawSin = Model.sin[yaw];
+		SceneGraph.yawCos = Model.cos[yaw];
+		SceneGraph.visibilityMap = visibilityMaps[(pitch - 128) / 32][yaw / 64];
+		SceneGraph.cameraX = cameraX;
+		SceneGraph.cameraY = cameraY;
+		SceneGraph.cameraZ = cameraZ;
+		SceneGraph.cameraTileX = cameraX / 128;
+		SceneGraph.cameraTileY = cameraZ / 128;
+		SceneGraph.topPlane = topPlane;
 
 		minTileX = cameraTileX - Scene.VIEW_RADIUS;
-		minTileY = cameraTileY - Scene.VIEW_RADIUS;
 		maxTileX = cameraTileX + Scene.VIEW_RADIUS;
+
+		minTileY = cameraTileY - Scene.VIEW_RADIUS;
 		maxTileY = cameraTileY + Scene.VIEW_RADIUS;
 
 		if (minTileX < 0) {
@@ -2121,10 +2122,10 @@ public final class Landscape {
 							dx = -dx;
 						}
 
-						o.anInt310 = (o.minZ - cameraZ << 8) / dx;
-						o.anInt311 = (o.maxZ - cameraZ << 8) / dx;
-						o.anInt312 = (o.minY - cameraY << 8) / dx;
-						o.anInt313 = (o.maxY - cameraY << 8) / dx;
+						o.minNormalZ = (o.minZ - cameraZ << 8) / dx;
+						o.maxNormalZ = (o.maxZ - cameraZ << 8) / dx;
+						o.minNormalY = (o.minY - cameraY << 8) / dx;
+						o.maxNormalY = (o.maxY - cameraY << 8) / dx;
 						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
@@ -2164,10 +2165,10 @@ public final class Landscape {
 							z = -z;
 						}
 
-						o.anInt308 = (o.minX - cameraX << 8) / z;
-						o.anInt309 = (o.maxX - cameraX << 8) / z;
-						o.anInt312 = (o.minY - cameraY << 8) / z;
-						o.anInt313 = (o.maxY - cameraY << 8) / z;
+						o.minNormalX = (o.minX - cameraX << 8) / z;
+						o.maxNormalX = (o.maxX - cameraX << 8) / z;
+						o.minNormalY = (o.minY - cameraY << 8) / z;
+						o.maxNormalY = (o.maxY - cameraY << 8) / z;
 						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
@@ -2216,10 +2217,10 @@ public final class Landscape {
 
 						if (visible) {
 							o.testDirection = 5;
-							o.anInt308 = (o.minX - cameraX << 8) / y;
-							o.anInt309 = (o.maxX - cameraX << 8) / y;
-							o.anInt310 = (o.minZ - cameraZ << 8) / y;
-							o.anInt311 = (o.maxZ - cameraZ << 8) / y;
+							o.minNormalX = (o.minX - cameraX << 8) / y;
+							o.maxNormalX = (o.maxX - cameraX << 8) / y;
+							o.minNormalZ = (o.minZ - cameraZ << 8) / y;
+							o.maxNormalZ = (o.maxZ - cameraZ << 8) / y;
 							activeOcludders[activeOccluderCount++] = o;
 						}
 					}
@@ -2231,11 +2232,11 @@ public final class Landscape {
 	private boolean isTileOccluded(int plane, int tileX, int tileY) {
 		int cycle = levelTileCycle[plane][tileX][tileY];
 
-		if (cycle == -Landscape.cycle) {
+		if (cycle == -SceneGraph.cycle) {
 			return false;
 		}
 
-		if (cycle == Landscape.cycle) {
+		if (cycle == SceneGraph.cycle) {
 			return true;
 		}
 
@@ -2243,11 +2244,11 @@ public final class Landscape {
 		int sceneZ = tileY << 7;
 
 		if (isOccluded(sceneX + 1, heightmap[plane][tileX][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY], sceneZ + 1) && isOccluded(sceneX + 128 - 1, heightmap[plane][tileX + 1][tileY + 1], sceneZ + 128 - 1) && isOccluded(sceneX + 1, heightmap[plane][tileX][tileY + 1], sceneZ + 128 - 1)) {
-			levelTileCycle[plane][tileX][tileY] = Landscape.cycle;
+			levelTileCycle[plane][tileX][tileY] = SceneGraph.cycle;
 			return true;
 		}
 
-		levelTileCycle[plane][tileX][tileY] = -Landscape.cycle;
+		levelTileCycle[plane][tileX][tileY] = -SceneGraph.cycle;
 		return false;
 	}
 
@@ -2447,10 +2448,10 @@ public final class Landscape {
 				int dx = o.minX - x;
 
 				if (dx > 0) {
-					int minZ = o.minZ + (o.anInt310 * dx >> 8);
-					int maxZ = o.maxZ + (o.anInt311 * dx >> 8);
-					int minY = o.minY + (o.anInt312 * dx >> 8);
-					int maxY = o.maxY + (o.anInt313 * dx >> 8);
+					int minZ = o.minZ + (o.minNormalZ * dx >> 8);
+					int maxZ = o.maxZ + (o.maxNormalZ * dx >> 8);
+					int minY = o.minY + (o.minNormalY * dx >> 8);
+					int maxY = o.maxY + (o.maxNormalY * dx >> 8);
 
 					if (z >= minZ && z <= maxZ && y >= minY && y <= maxY) {
 						return true;
@@ -2460,10 +2461,10 @@ public final class Landscape {
 				int dx = x - o.minX;
 
 				if (dx > 0) {
-					int minZ = o.minZ + (o.anInt310 * dx >> 8);
-					int maxZ = o.maxZ + (o.anInt311 * dx >> 8);
-					int minY = o.minY + (o.anInt312 * dx >> 8);
-					int maxY = o.maxY + (o.anInt313 * dx >> 8);
+					int minZ = o.minZ + (o.minNormalZ * dx >> 8);
+					int maxZ = o.maxZ + (o.maxNormalZ * dx >> 8);
+					int minY = o.minY + (o.minNormalY * dx >> 8);
+					int maxY = o.maxY + (o.maxNormalY * dx >> 8);
 
 					if (z >= minZ && z <= maxZ && y >= minY && y <= maxY) {
 						return true;
@@ -2473,10 +2474,10 @@ public final class Landscape {
 				int dz = o.minZ - z;
 
 				if (dz > 0) {
-					int minX = o.minX + (o.anInt308 * dz >> 8);
-					int maxX = o.maxX + (o.anInt309 * dz >> 8);
-					int minY = o.minY + (o.anInt312 * dz >> 8);
-					int maxY = o.maxY + (o.anInt313 * dz >> 8);
+					int minX = o.minX + (o.minNormalX * dz >> 8);
+					int maxX = o.maxX + (o.maxNormalX * dz >> 8);
+					int minY = o.minY + (o.minNormalY * dz >> 8);
+					int maxY = o.maxY + (o.maxNormalY * dz >> 8);
 
 					if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 						return true;
@@ -2486,10 +2487,10 @@ public final class Landscape {
 				int dz = z - o.minZ;
 
 				if (dz > 0) {
-					int minX = o.minX + (o.anInt308 * dz >> 8);
-					int maxX = o.maxX + (o.anInt309 * dz >> 8);
-					int minY = o.minY + (o.anInt312 * dz >> 8);
-					int maxY = o.maxY + (o.anInt313 * dz >> 8);
+					int minX = o.minX + (o.minNormalX * dz >> 8);
+					int maxX = o.maxX + (o.maxNormalX * dz >> 8);
+					int minY = o.minY + (o.minNormalY * dz >> 8);
+					int maxY = o.maxY + (o.maxNormalY * dz >> 8);
 
 					if (x >= minX && x <= maxX && y >= minY && y <= maxY) {
 						return true;
@@ -2499,10 +2500,10 @@ public final class Landscape {
 				int dy = y - o.minY;
 
 				if (dy > 0) {
-					int minX = o.minX + (o.anInt308 * dy >> 8);
-					int maxX = o.maxX + (o.anInt309 * dy >> 8);
-					int minZ = o.minZ + (o.anInt310 * dy >> 8);
-					int maxZ = o.maxZ + (o.anInt311 * dy >> 8);
+					int minX = o.minX + (o.minNormalX * dy >> 8);
+					int maxX = o.maxX + (o.maxNormalX * dy >> 8);
+					int minZ = o.minZ + (o.minNormalZ * dy >> 8);
+					int maxZ = o.maxZ + (o.maxNormalZ * dy >> 8);
 
 					if (x >= minX && x <= maxX && z >= minZ && z <= maxZ) {
 						return true;
