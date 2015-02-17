@@ -23,45 +23,17 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.Signlink;
-import dane.runescape.mapeditor.event.SearchEvent;
-import static dane.runescape.mapeditor.event.SearchEvent.Type.MODE_CHANGED;
-import static dane.runescape.mapeditor.event.SearchEvent.Type.VALUE_SEARCHED;
-import static dane.runescape.mapeditor.event.SearchEvent.Type.VALUE_SELECTED;
-import dane.runescape.mapeditor.event.SearchEventListener;
-import dane.runescape.mapeditor.event.ShellListener;
-import dane.runescape.mapeditor.search.SearchManager;
-import dane.runescape.mapeditor.search.SearchMode;
-import dane.runescape.mapeditor.search.Searchable;
-import java.awt.BorderLayout;
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.net.URI;
-
-import javax.swing.AbstractAction;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-
-import dane.runescape.mapeditor.swing.LocationPanel;
-import dane.runescape.mapeditor.swing.SearchPanel;
-import java.awt.Color;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JLabel;
-import javax.swing.UnsupportedLookAndFeelException;
+import com.runescape.*;
+import static dane.runescape.mapeditor.event.SearchEvent.Type.*;
+import dane.runescape.mapeditor.event.*;
+import dane.runescape.mapeditor.search.*;
+import dane.runescape.mapeditor.swing.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import java.util.logging.*;
+import javax.swing.*;
 
 public final class MapEditor extends JFrame implements ShellListener, SearchEventListener {
 
@@ -86,7 +58,7 @@ public final class MapEditor extends JFrame implements ShellListener, SearchEven
 		m.assemble();
 	}
 
-	private OrbitCamera camera = new OrbitCamera();
+	private final OrbitCamera camera = new OrbitCamera();
 
 	private JMenuBar menubar;
 	private JMenu menuFile, menuEdit, menuModes, menuMapControls, menu3DControls, menuOptions;
@@ -297,7 +269,7 @@ public final class MapEditor extends JFrame implements ShellListener, SearchEven
 		mapPanel.addListener(game);
 		game.addGameListener(mapPanel);
 		mapPanel.setScrollBars(pane2d.getVerticalScrollBar(), pane2d.getHorizontalScrollBar());
-		
+
 		game.addShellListener(this); // uses poststartup to load searchables
 		searchPanel.addSearchListener(this);
 	}

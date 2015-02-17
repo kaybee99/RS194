@@ -5362,19 +5362,19 @@ public class Game extends GameShell {
 			int bitset = 0;
 			int lastIndex;
 
-			if (classtype == Location.CLASS_WALL) {
+			if (classtype == LocationInfo.CLASS_WALL) {
 				bitset = graph.getWallBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Location.CLASS_WALL_DECORATION) {
+			if (classtype == LocationInfo.CLASS_WALL_DECORATION) {
 				bitset = graph.getWallDecorationBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Location.CLASS_NORMAL) {
+			if (classtype == LocationInfo.CLASS_NORMAL) {
 				bitset = graph.getLocBitset(tileX, tileZ, plane);
 			}
 
-			if (classtype == Location.CLASS_GROUND_DECORATION) {
+			if (classtype == LocationInfo.CLASS_GROUND_DECORATION) {
 				bitset = graph.getGroundDecorationBitset(tileX, tileZ, plane);
 			}
 
@@ -5391,11 +5391,11 @@ public class Game extends GameShell {
 					}
 				}
 
-				if (classtype == Location.CLASS_WALL_DECORATION) {
+				if (classtype == LocationInfo.CLASS_WALL_DECORATION) {
 					graph.removeWallDecoration(tileX, tileZ, plane);
 				}
 
-				if (classtype == Location.CLASS_NORMAL) {
+				if (classtype == LocationInfo.CLASS_NORMAL) {
 					graph.removeLocs(tileX, tileZ, plane);
 					LocationInfo c = LocationInfo.get(lastIndex);
 
@@ -5404,7 +5404,7 @@ public class Game extends GameShell {
 					}
 				}
 
-				if (classtype == Location.CLASS_GROUND_DECORATION) {
+				if (classtype == LocationInfo.CLASS_GROUND_DECORATION) {
 					graph.removeGroundDecoration(tileX, tileZ, plane);
 					LocationInfo c = LocationInfo.get(lastIndex);
 
@@ -5435,7 +5435,7 @@ public class Game extends GameShell {
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
-			int locClass = Location.TYPE_TO_CLASS[locType];
+			int locClass = LocationInfo.TYPE_TO_CLASS[locType];
 			int locIndex;
 
 			if (opcode == 35) {
@@ -5508,17 +5508,17 @@ public class Game extends GameShell {
 			int z = netTileZ + (xy & 0x7);
 			int flags = b.read();
 			int type = flags >> 2;
-			int classtype = Location.TYPE_TO_CLASS[type];
+			int classtype = LocationInfo.TYPE_TO_CLASS[type];
 			int animIndex = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
 				int bitset = 0;
 
-				if (classtype == Location.CLASS_WALL_DECORATION) {
+				if (classtype == LocationInfo.CLASS_WALL_DECORATION) {
 					bitset = graph.getWallDecorationBitset(x, z, currentPlane);
 				}
 
-				if (classtype == Location.CLASS_NORMAL) {
+				if (classtype == LocationInfo.CLASS_NORMAL) {
 					bitset = graph.getLocBitset(x, z, currentPlane);
 				}
 
@@ -5626,7 +5626,7 @@ public class Game extends GameShell {
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
-			int locClass = Location.TYPE_TO_CLASS[locType];
+			int locClass = LocationInfo.TYPE_TO_CLASS[locType];
 			int locIndex = b.readUShort();
 			int locStartCycle = b.readUShort();
 			int locEndCycle = b.readUShort();

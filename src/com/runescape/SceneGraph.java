@@ -4,7 +4,7 @@ public final class SceneGraph {
 
 	public static boolean lowmemory = true;
 
-	public int planeCount;
+	public int maxPlane;
 	public int tileCountX;
 	public int tileCountZ;
 	public int[][][] heightmap;
@@ -30,7 +30,7 @@ public final class SceneGraph {
 	public static int pitchCos;
 	public static int yawSin;
 	public static int yawCos;
-	public static Location[] drawnLocs = new Location[100];
+	public static Location[] locationBuffer = new Location[100];
 
 	public static final int[] DECO_TYPE1_OFFSET_X = {53, -53, -53, 53};
 	public static final int[] DECO_TYPE1_OFFSET_Z = {-53, -53, 53, 53};
@@ -59,7 +59,7 @@ public final class SceneGraph {
 	// @formatter:on
 
 	public static final int[] anIntArray414 = {160, 192, 80, 96, 0, 144, 80, 48, 160};
-	public static final int[] anIntArray415 = {76, 8, 137, 4, 0, 1, 38, 2, 19};
+	public static final int[] WALL_DRAW_FLAGS = {76, 8, 137, 4, 0, 1, 38, 2, 19};
 	public static final int[] anIntArray416 = {0, 0, 2, 0, 0, 2, 1, 1, 0};
 	public static final int[] anIntArray417 = {2, 0, 0, 2, 0, 0, 0, 4, 4};
 	public static final int[] anIntArray418 = {0, 4, 4, 8, 0, 0, 8, 0, 0};
@@ -166,7 +166,7 @@ public final class SceneGraph {
 	public static int viewportBottom;
 
 	public SceneGraph(int width, int length, int height, int[][][] heightmap) {
-		planeCount = height;
+		maxPlane = height;
 		tileCountX = width;
 		tileCountZ = length;
 		planeTiles = new Tile[height][width][length];
@@ -176,7 +176,7 @@ public final class SceneGraph {
 	}
 
 	public static void unload() {
-		drawnLocs = null;
+		locationBuffer = null;
 		planeOccluderCount = null;
 		planeOccluders = null;
 		tileQueue = null;
@@ -185,7 +185,7 @@ public final class SceneGraph {
 	}
 
 	public void reset() {
-		for (int plane = 0; plane < planeCount; plane++) {
+		for (int plane = 0; plane < maxPlane; plane++) {
 			for (int x = 0; x < tileCountX; x++) {
 				for (int z = 0; z < tileCountZ; z++) {
 					planeTiles[plane][x][z] = null;
@@ -206,8 +206,8 @@ public final class SceneGraph {
 
 		locCount = 0;
 
-		for (int i = 0; i < drawnLocs.length; i++) {
-			drawnLocs[i] = null;
+		for (int i = 0; i < locationBuffer.length; i++) {
+			locationBuffer[i] = null;
 		}
 	}
 
@@ -225,7 +225,7 @@ public final class SceneGraph {
 		for (int y = 0; y < 3; y++) {
 			planeTiles[y][x][z] = planeTiles[y + 1][x][z];
 			if (planeTiles[y][x][z] != null) {
-				planeTiles[y][x][z].y--;
+				planeTiles[y][x][z].plane--;
 			}
 		}
 		if (planeTiles[0][x][z] == null) {
@@ -314,7 +314,7 @@ public final class SceneGraph {
 		int maxY = 0;
 		Tile t = planeTiles[tileY][tileX][tileZ];
 		if (t != null) {
-			for (int n = 0; n < t.locN; n++) {
+			for (int n = 0; n < t.locationCount; n++) {
 				int y = t.locs[n].model.objectOffsetY;
 				if (y > maxY) {
 					maxY = y;
@@ -443,7 +443,7 @@ public final class SceneGraph {
 
 				Tile t = planeTiles[tileY][x][z];
 
-				if (t != null && t.locN >= 5) {
+				if (t != null && t.locationCount >= 5) {
 					return false;
 				}
 			}
@@ -491,10 +491,10 @@ public final class SceneGraph {
 				}
 
 				Tile t = planeTiles[tileY][x][z];
-				t.locs[t.locN] = l;
-				t.locFlags[t.locN] = flags;
+				t.locs[t.locationCount] = l;
+				t.locFlags[t.locationCount] = flags;
 				t.flags |= flags;
-				t.locN++;
+				t.locationCount++;
 			}
 		}
 
@@ -519,18 +519,18 @@ public final class SceneGraph {
 				Tile t = planeTiles[l.tileY][x][z];
 
 				if (t != null) {
-					for (int n = 0; n < t.locN; n++) {
+					for (int n = 0; n < t.locationCount; n++) {
 						if (t.locs[n] == l) {
-							t.locN--;
+							t.locationCount--;
 
 							// shift all locs on this tile down an index
-							for (int m = n; m < t.locN; m++) {
+							for (int m = n; m < t.locationCount; m++) {
 								t.locs[m] = t.locs[m + 1];
 								t.locFlags[m] = t.locFlags[m + 1];
 							}
 
 							// then remove the reference to l
-							t.locs[t.locN] = null;
+							t.locs[t.locationCount] = null;
 							break;
 						}
 					}
@@ -539,7 +539,7 @@ public final class SceneGraph {
 					t.flags = 0;
 
 					// re-evaluate flags
-					for (int n = 0; n < t.locN; n++) {
+					for (int n = 0; n < t.locationCount; n++) {
 						t.flags |= t.locFlags[n];
 					}
 				}
@@ -551,7 +551,7 @@ public final class SceneGraph {
 		if (m != null) {
 			Tile t = planeTiles[y][x][z];
 			if (t != null) {
-				for (int n = 0; n < t.locN; n++) {
+				for (int n = 0; n < t.locationCount; n++) {
 					Location l = t.locs[n];
 					if ((l.bitset >> 29 & 0x3) == 2) {
 						l.model = m;
@@ -591,7 +591,7 @@ public final class SceneGraph {
 	public void removeLocs(int x, int z, int y) {
 		Tile t = planeTiles[y][x][z];
 		if (t != null) {
-			for (int n = 0; n < t.locN; n++) {
+			for (int n = 0; n < t.locationCount; n++) {
 				Location l = t.locs[n];
 				if (l.bitset >> 29 == 2 && l.minTileX == x && l.minTileZ == z) {
 					removeLoc(l);
@@ -616,13 +616,13 @@ public final class SceneGraph {
 	}
 
 	public int getBitset(int type, int x, int z, int y) {
-		if (type == Location.CLASS_WALL) {
+		if (type == LocationInfo.CLASS_WALL) {
 			return getWallBitset(x, z, y);
-		} else if (type == Location.CLASS_WALL_DECORATION) {
+		} else if (type == LocationInfo.CLASS_WALL_DECORATION) {
 			return getWallDecorationBitset(x, z, y);
-		} else if (type == Location.CLASS_NORMAL) {
+		} else if (type == LocationInfo.CLASS_NORMAL) {
 			return getLocBitset(x, z, y);
-		} else if (type == Location.CLASS_GROUND_DECORATION) {
+		} else if (type == LocationInfo.CLASS_GROUND_DECORATION) {
 			return getGroundDecorationBitset(x, z, y);
 		}
 		return 0;
@@ -649,7 +649,7 @@ public final class SceneGraph {
 		if (t == null) {
 			return 0;
 		}
-		for (int n = 0; n < t.locN; n++) {
+		for (int n = 0; n < t.locationCount; n++) {
 			Location l = t.locs[n];
 			if ((l.bitset >> 29 & 0x3) == 2 && l.minTileX == x && l.minTileZ == z) {
 				return l.bitset;
@@ -685,7 +685,7 @@ public final class SceneGraph {
 			return t.groundDecoration.info & 0xFF;
 		}
 
-		for (int n = 0; n < t.locN; n++) {
+		for (int n = 0; n < t.locationCount; n++) {
 			if (t.locs[n].bitset == bitset) {
 				return t.locs[n].info & 0xFF;
 			}
@@ -697,7 +697,7 @@ public final class SceneGraph {
 		int length = (int) Math.sqrt((double) (lightX * lightX + lightY * lightY + lightZ * lightZ));
 		int intensity = (baseIntensity * length) >> 8;
 
-		for (int plane = 0; plane < planeCount; plane++) {
+		for (int plane = 0; plane < maxPlane; plane++) {
 			for (int tileX = 0; tileX < tileCountX; tileX++) {
 				for (int tileY = 0; tileY < tileCountZ; tileY++) {
 					Tile t = planeTiles[plane][tileX][tileY];
@@ -717,7 +717,7 @@ public final class SceneGraph {
 							w.model1.calculateLighting(lightness, intensity, lightX, lightY, lightZ);
 						}
 
-						for (int n = 0; n < t.locN; n++) {
+						for (int n = 0; n < t.locationCount; n++) {
 							Location l = t.locs[n];
 
 							if (l != null && l.model != null && l.model.normals != null) {
@@ -784,39 +784,43 @@ public final class SceneGraph {
 		int baseAverageY = (heightmap[tileY][tileX][tileZ] + heightmap[tileY][tileX + 1][tileZ] + heightmap[tileY][tileX][tileZ + 1] + heightmap[tileY][tileX + 1][tileZ + 1]) / 4;
 
 		for (int y = tileY; y <= tileY + 1; y++) {
-			if (y == planeCount) {
+			if (y == maxPlane) {
 				continue;
 			}
 
 			for (int x = minTileX; x <= maxTileX; x++) {
+				if (x < 0 || x >= tileCountX) {
+					continue;
+				}
 
-				if (x >= 0 && x < tileCountX) {
-					for (int z = minTileZ; z <= maxTileZ; z++) {
+				for (int z = minTileZ; z <= maxTileZ; z++) {
+					if (z < 0 || z >= tileCountZ) {
+						continue;
+					}
 
-						if (z >= 0 && z < tileCountZ && (!hideTriangles || x >= maxTileX || z >= maxTileZ || z < tileZ && x != tileX)) {
-							Tile t = planeTiles[y][x][z];
+					if (!hideTriangles || x >= maxTileX || z >= maxTileZ || z < tileZ && x != tileX) {
+						Tile t = planeTiles[y][x][z];
 
-							if (t != null) {
-								int averageY = ((heightmap[y][x][z] + heightmap[y][x + 1][z] + heightmap[y][x][z + 1] + heightmap[y][x + 1][z + 1]) / 4) - baseAverageY;
+						if (t != null) {
+							int averageY = ((heightmap[y][x][z] + heightmap[y][x + 1][z] + heightmap[y][x][z + 1] + heightmap[y][x + 1][z + 1]) / 4) - baseAverageY;
 
-								WallLocation wall = t.wall;
+							WallLocation wall = t.wall;
 
-								if (wall != null && wall.model1 != null && wall.model1.normals != null) {
-									mergeNormals(m, wall.model1, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
-								}
+							if (wall != null && wall.model1 != null && wall.model1.normals != null) {
+								mergeNormals(m, wall.model1, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
+							}
 
-								if (wall != null && wall.model2 != null && wall.model2.normals != null) {
-									mergeNormals(m, wall.model2, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
-								}
+							if (wall != null && wall.model2 != null && wall.model2.normals != null) {
+								mergeNormals(m, wall.model2, ((x - tileX) * 128 + (1 - locTileSizeX) * 64), averageY, ((z - tileZ) * 128 + (1 - locTileSizeZ) * 64), hideTriangles);
+							}
 
-								for (int n = 0; n < t.locN; n++) {
-									Location l = t.locs[n];
+							for (int n = 0; n < t.locationCount; n++) {
+								Location l = t.locs[n];
 
-									if (l != null && l.model != null && l.model.normals != null) {
-										int tileSizeX = (l.maxTileX - l.minTileX + 1);
-										int tileSizeZ = (l.maxTileZ - l.minTileZ + 1);
-										mergeNormals(m, l.model, (((l.minTileX - tileX) * 128) + (tileSizeX - locTileSizeX) * 64), averageY, (((l.minTileZ - tileZ) * 128) + (tileSizeZ - locTileSizeZ) * 64), hideTriangles);
-									}
+								if (l != null && l.model != null && l.model.normals != null) {
+									int tileSizeX = (l.maxTileX - l.minTileX + 1);
+									int tileSizeZ = (l.maxTileZ - l.minTileZ + 1);
+									mergeNormals(m, l.model, (((l.minTileX - tileX) * 128) + (tileSizeX - locTileSizeX) * 64), averageY, (((l.minTileZ - tileZ) * 128) + (tileSizeZ - locTileSizeZ) * 64), hideTriangles);
 								}
 							}
 						}
@@ -837,39 +841,47 @@ public final class SceneGraph {
 			Normal normalA = a.normals[vertexA];
 			Normal unmodifiedNormalA = a.unmodifiedNormals[vertexA];
 
-			if (unmodifiedNormalA.magnitude != 0) {
-				int vertexYA = a.vertexY[vertexA] - offsetY;
+			if (unmodifiedNormalA.magnitude == 0) {
+				continue;
+			}
 
-				if (vertexYA <= b.minBoundY) {
-					int vertexXA = a.vertexX[vertexA] - offsetX;
+			int vertexYA = a.vertexY[vertexA] - offsetY;
 
-					if (vertexXA >= b.minBoundX && vertexXA <= b.maxBoundX) {
-						int vertexZA = a.vertexZ[vertexA] - offsetZ;
+			if (vertexYA > b.minBoundY) {
+				continue;
+			}
 
-						if (vertexZA >= b.minBoundZ && vertexZA <= b.maxBoundZ) {
-							for (int vertexB = 0; vertexB < b.vertexCount; vertexB++) {
+			int vertexXA = a.vertexX[vertexA] - offsetX;
 
-								Normal normalB = b.normals[vertexB];
-								Normal unmodifiedNormalB = b.unmodifiedNormals[vertexB];
+			if (vertexXA < b.minBoundX || vertexXA > b.maxBoundX) {
+				continue;
+			}
 
-								if (vertexXA == b.vertexX[vertexB] && vertexZA == b.vertexZ[vertexB] && vertexYA == b.vertexY[vertexB] && unmodifiedNormalB.magnitude != 0) {
-									normalA.x += unmodifiedNormalB.x;
-									normalA.y += unmodifiedNormalB.y;
-									normalA.z += unmodifiedNormalB.z;
-									normalA.magnitude += unmodifiedNormalB.magnitude;
+			int vertexZA = a.vertexZ[vertexA] - offsetZ;
 
-									normalB.x += unmodifiedNormalA.x;
-									normalB.y += unmodifiedNormalA.y;
-									normalB.z += unmodifiedNormalA.z;
-									normalB.magnitude += unmodifiedNormalA.magnitude;
+			if (vertexZA < b.minBoundZ || vertexZA > b.maxBoundZ) {
+				continue;
+			}
 
-									counter++;
-									this.vertexAMergeIndex[vertexA] = this.normalMergeIndex;
-									this.vertexBMergeIndex[vertexB] = this.normalMergeIndex;
-								}
-							}
-						}
-					}
+			for (int vertexB = 0; vertexB < b.vertexCount; vertexB++) {
+
+				Normal normalB = b.normals[vertexB];
+				Normal unmodifiedNormalB = b.unmodifiedNormals[vertexB];
+
+				if (vertexXA == b.vertexX[vertexB] && vertexZA == b.vertexZ[vertexB] && vertexYA == b.vertexY[vertexB] && unmodifiedNormalB.magnitude != 0) {
+					normalA.x += unmodifiedNormalB.x;
+					normalA.y += unmodifiedNormalB.y;
+					normalA.z += unmodifiedNormalB.z;
+					normalA.magnitude += unmodifiedNormalB.magnitude;
+
+					normalB.x += unmodifiedNormalA.x;
+					normalB.y += unmodifiedNormalA.y;
+					normalB.z += unmodifiedNormalA.z;
+					normalB.magnitude += unmodifiedNormalA.magnitude;
+
+					counter++;
+					this.vertexAMergeIndex[vertexA] = this.normalMergeIndex;
+					this.vertexBMergeIndex[vertexB] = this.normalMergeIndex;
 				}
 			}
 		}
@@ -1115,7 +1127,7 @@ public final class SceneGraph {
 
 		tileUpdateCount = 0;
 
-		for (int z = minPlane; z < planeCount; z++) {
+		for (int z = minPlane; z < maxPlane; z++) {
 			Tile[][] tiles = planeTiles[z];
 
 			for (int x = minTileX; x < maxTileX; x++) {
@@ -1123,14 +1135,14 @@ public final class SceneGraph {
 					Tile t = tiles[x][y];
 
 					if (t != null) {
-						if (t.drawY > topPlane || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][y - cameraTileY + Scene.VIEW_RADIUS] && heightmap[y][x][y] - cameraY < 2000) {
+						if (t.drawY > topPlane || !visibilityMap[x - cameraTileX + Scene.VIEW_RADIUS][y - cameraTileY + Scene.VIEW_RADIUS] && heightmap[z][x][y] - cameraY < 2000) {
 							t.draw = false;
-							t.update = false;
+							t.isVisible = false;
 							t.anInt985 = 0;
 						} else {
 							t.draw = true;
-							t.update = true;
-							t.drawLocs = t.locN > 0;
+							t.isVisible = true;
+							t.drawLocations = t.locationCount > 0;
 							tileUpdateCount++;
 						}
 					}
@@ -1140,42 +1152,42 @@ public final class SceneGraph {
 
 		lastTileUpdateCount = tileUpdateCount;
 
-		for (int z = minPlane; z < planeCount; z++) {
+		for (int z = minPlane; z < maxPlane; z++) {
 			Tile[][] tiles = planeTiles[z];
 
 			for (int x = -Scene.VIEW_RADIUS; x <= 0; x++) {
-				int x1 = cameraTileX + x;
-				int x2 = cameraTileX - x;
+				int x0 = cameraTileX + x;
+				int x1 = cameraTileX - x;
 
-				if (x1 >= minTileX || x2 < maxTileX) {
+				if (x0 >= minTileX || x1 < maxTileX) {
 					for (int y = -Scene.VIEW_RADIUS; y <= 0; y++) {
-						int z1 = cameraTileY + y;
-						int z2 = cameraTileY - y;
+						int y0 = cameraTileY + y;
+						int y1 = cameraTileY - y;
 
-						if (x1 >= minTileX) {
-							if (z1 >= minTileY) {
-								Tile t = tiles[x1][z1];
+						if (x0 >= minTileX) {
+							if (y0 >= minTileY) {
+								Tile t = tiles[x0][y0];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
 							}
-							if (z2 < maxTileY) {
-								Tile t = tiles[x1][z2];
+							if (y1 < maxTileY) {
+								Tile t = tiles[x0][y1];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
 							}
 						}
 
-						if (x2 < maxTileX) {
-							if (z1 >= minTileY) {
-								Tile t = tiles[x2][z1];
+						if (x1 < maxTileX) {
+							if (y0 >= minTileY) {
+								Tile t = tiles[x1][y0];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
 							}
-							if (z2 < maxTileY) {
-								Tile t = tiles[x2][z2];
+							if (y1 < maxTileY) {
+								Tile t = tiles[x1][y1];
 								if (t != null && t.draw) {
 									draw(t, true);
 								}
@@ -1191,8 +1203,8 @@ public final class SceneGraph {
 			}
 		}
 
-		for (int y = minPlane; y < planeCount; y++) {
-			Tile[][] tiles = planeTiles[y];
+		for (int plane = minPlane; plane < maxPlane; plane++) {
+			Tile[][] tiles = planeTiles[plane];
 
 			for (int x = -Scene.VIEW_RADIUS; x <= 0; x++) {
 				int x1 = cameraTileX + x;
@@ -1253,398 +1265,30 @@ public final class SceneGraph {
 				break;
 			}
 
-			if (tile.update) {
-				int tileX = tile.x;
-				int tileZ = tile.z;
-				int tileY = tile.y;
-				int tileRenderPlane = tile.renderPlane;
-				Tile[][] tiles = planeTiles[tileY];
+			if (!tile.isVisible) {
+				continue;
+			}
 
-				if (tile.draw) {
-					if (bool) {
-						if (tileY > 0) {
-							Tile t = (planeTiles[tileY - 1][tileX][tileZ]);
+			int tileX = tile.x;
+			int tileZ = tile.z;
+			int tilePlane = tile.plane;
+			int tileRenderPlane = tile.renderPlane;
+			Tile[][] tiles = planeTiles[tilePlane];
 
-							if (t != null && t.update) {
-								continue;
-							}
-						}
+			if (tile.draw) {
+				if (bool) {
+					if (tilePlane > 0) {
+						Tile t = planeTiles[tilePlane - 1][tileX][tileZ];
 
-						if (tileX <= cameraTileX && tileX > minTileX) {
-							Tile t = tiles[tileX - 1][tileZ];
-
-							if (t != null && t.update && (t.draw || ((tile.flags & 0x1) == 0))) {
-								continue;
-							}
-						}
-
-						if (tileX >= cameraTileX && tileX < maxTileX - 1) {
-							Tile t = tiles[tileX + 1][tileZ];
-
-							if (t != null && t.update && (t.draw || ((tile.flags & 0x4) == 0))) {
-								continue;
-							}
-						}
-
-						if (tileZ <= cameraTileY && tileZ > minTileY) {
-							Tile t = tiles[tileX][tileZ - 1];
-
-							if (t != null && t.update && (t.draw || ((tile.flags & 0x8) == 0))) {
-								continue;
-							}
-						}
-
-						if (tileZ >= cameraTileY && tileZ < maxTileY - 1) {
-							Tile t = tiles[tileX][tileZ + 1];
-
-							if (t != null && t.update && (t.draw || ((tile.flags & 0x2) == 0))) {
-								continue;
-							}
-						}
-					} else {
-						bool = true;
-					}
-
-					tile.draw = false;
-
-					if (tile.bridge != null) {
-						Tile bridge = tile.bridge;
-
-						if (bridge.underlay != null) {
-							drawTileUnderlay(bridge.underlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-						} else if (bridge.overlay != null) {
-							drawTileOverlay(bridge.overlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-						} else {
-							drawTileUnderlay(null, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-						}
-
-						WallLocation wall = bridge.wall;
-
-						if (wall != null) {
-							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-						}
-
-						for (int n = 0; n < bridge.locN; n++) {
-							Location loc = bridge.locs[n];
-
-							if (loc != null) {
-								Model m = loc.model;
-
-								if (m == null) {
-									m = loc.renderable.getDrawModel();
-								}
-
-								m.draw(loc.yaw, pitchSin, pitchCos, yawSin, yawCos, loc.sceneX - cameraX, loc.sceneY - cameraY, loc.sceneZ - cameraZ, loc.bitset);
-							}
+						if (t != null && t.isVisible) {
+							continue;
 						}
 					}
 
-					boolean tileVisible = false;
-
-					if (tile.underlay != null) {
-						if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
-							tileVisible = true;
-							drawTileUnderlay(tile.underlay, tileRenderPlane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-						}
-					} else if (tile.overlay != null) {
-						if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
-							tileVisible = true;
-							drawTileOverlay(tile.overlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-						}
-					} else {
-						drawTileUnderlay(null, tileRenderPlane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
-					}
-
-					int direction = 0;
-					int drawType = 0;
-					WallLocation wall = tile.wall;
-					WallDecorationLocation decoration = tile.wallDecoration;
-
-					if (wall != null || decoration != null) {
-						if (cameraTileX == tileX) {
-							direction++;
-						} else if (cameraTileX < tileX) {
-							direction += 0x2;
-						}
-
-						if (cameraTileY == tileZ) {
-							direction += 0x2 | 0x1;
-						} else if (cameraTileY > tileZ) {
-							direction += 0x4 | 0x2;
-						}
-
-						drawType = DIRECTION_DRAW_TYPE[direction];
-						tile.anInt988 = anIntArray415[direction];
-					}
-
-					if (wall != null) {
-						if ((wall.type1 & anIntArray414[direction]) != 0) {
-							if (wall.type1 == 16) {
-								tile.anInt985 = 3;
-								tile.anInt986 = anIntArray416[direction];
-								tile.anInt987 = 3 - tile.anInt986;
-							} else if (wall.type1 == 32) {
-								tile.anInt985 = 6;
-								tile.anInt986 = anIntArray417[direction];
-								tile.anInt987 = 6 - tile.anInt986;
-							} else if (wall.type1 == 64) {
-								tile.anInt985 = 12;
-								tile.anInt986 = anIntArray418[direction];
-								tile.anInt987 = 12 - tile.anInt986;
-							} else {
-								tile.anInt985 = 9;
-								tile.anInt986 = anIntArray419[direction];
-								tile.anInt987 = 9 - tile.anInt986;
-							}
-						} else {
-							tile.anInt985 = 0;
-						}
-
-						if ((wall.type1 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
-							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-						}
-
-						if ((wall.type2 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
-							wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-						}
-					}
-
-					if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
-						if ((decoration.type & drawType) != 0) {
-							decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
-						} else if ((decoration.type & 0x300) != 0) {
-							int sceneX = decoration.sceneX - cameraX;
-							int sceneY = decoration.sceneY - cameraY;
-							int sceneZ = decoration.sceneZ - cameraZ;
-							int rotation = decoration.rotation;
-
-							int x;
-
-							if (rotation == 1 || rotation == 2) {
-								x = -sceneX;
-							} else {
-								x = sceneX;
-							}
-
-							int z;
-
-							if (rotation == 2 || rotation == 3) {
-								z = -sceneZ;
-							} else {
-								z = sceneZ;
-							}
-
-							if ((decoration.type & 0x100) != 0 && z < x) {
-								int drawX = sceneX + DECO_TYPE1_OFFSET_X[rotation];
-								int drawZ = sceneZ + DECO_TYPE1_OFFSET_Z[rotation];
-								decoration.model.draw(rotation * 512 + 256, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
-							}
-
-							if ((decoration.type & 0x200) != 0 && z > x) {
-								int drawX = sceneX + DECO_TYPE2_OFFSET_X[rotation];
-								int drawZ = sceneZ + DECO_TYPE2_OFFSET_Z[rotation];
-								decoration.model.draw(rotation * 512 + 1280 & 0x7ff, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
-							}
-						}
-					}
-
-					if (tileVisible) {
-						GroundDecorationLoc d = tile.groundDecoration;
-
-						if (d != null) {
-							d.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, d.sceneX - cameraX, d.sceneY - cameraY, d.sceneZ - cameraZ, d.bitset);
-						}
-
-						ObjectLocation o = tile.obj;
-
-						if (o != null && o.offsetY == 0) {
-							o.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, o.sceneX - cameraX, o.sceneY - cameraY, o.sceneZ - cameraZ, o.bitset);
-						}
-					}
-
-					int flags = tile.flags;
-
-					if (flags != 0) {
-						if (tileX < cameraTileX && (flags & 0x4) != 0) {
-							Tile t = tiles[tileX + 1][tileZ];
-
-							if (t != null && t.update) {
-								tileQueue.push(t);
-							}
-						}
-
-						if (tileZ < cameraTileY && (flags & 0x2) != 0) {
-							Tile t = tiles[tileX][tileZ + 1];
-
-							if (t != null && t.update) {
-								tileQueue.push(t);
-							}
-						}
-
-						if (tileX > cameraTileX && (flags & 0x1) != 0) {
-							Tile t = tiles[tileX - 1][tileZ];
-
-							if (t != null && t.update) {
-								tileQueue.push(t);
-							}
-						}
-
-						if (tileZ > cameraTileY && (flags & 0x8) != 0) {
-							Tile t = tiles[tileX][tileZ - 1];
-
-							if (t != null && t.update) {
-								tileQueue.push(t);
-							}
-						}
-					}
-				}
-
-				if (tile.anInt985 != 0) {
-					boolean visible = true;
-
-					for (int n = 0; n < tile.locN; n++) {
-						if (tile.locs[n].cycle != cycle && ((tile.locFlags[n] & tile.anInt985) == tile.anInt986)) {
-							visible = false;
-							break;
-						}
-					}
-
-					if (visible) {
-						WallLocation wall = tile.wall;
-
-						if (!isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
-							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-						}
-
-						tile.anInt985 = 0;
-					}
-				}
-
-				if (tile.drawLocs) {
-					int locN = tile.locN;
-					tile.drawLocs = false;
-					int locCount = 0;
-					LOOP:
-					for (int n = 0; n < locN; n++) {
-						Location l = tile.locs[n];
-
-						if (l.cycle != cycle) {
-							for (int x = l.minTileX; x <= l.maxTileX; x++) {
-								for (int y = l.minTileZ; y <= l.maxTileZ; y++) {
-									Tile t = tiles[x][y];
-
-									if (t == null) {
-										continue;
-									}
-
-									if (t.draw) {
-										tile.drawLocs = true;
-										continue LOOP;
-									}
-
-									if (t.anInt985 != 0) {
-										int flags = 0;
-
-										if (x > l.minTileX) {
-											flags++;
-										}
-
-										if (x < l.maxTileX) {
-											flags += 4;
-										}
-
-										if (y > l.minTileZ) {
-											flags += 8;
-										}
-
-										if (y < l.maxTileZ) {
-											flags += 2;
-										}
-
-										if ((flags & t.anInt985) == tile.anInt987) {
-											tile.drawLocs = true;
-											continue LOOP;
-										}
-									}
-								}
-							}
-
-							drawnLocs[locCount++] = l;
-
-							int dx0 = cameraTileX - l.minTileX;
-							int dx1 = l.maxTileX - cameraTileX;
-
-							if (dx1 > dx0) {
-								dx0 = dx1;
-							}
-
-							int dy0 = cameraTileY - l.minTileZ;
-							int dy1 = l.maxTileZ - cameraTileY;
-
-							if (dy1 > dy0) {
-								l.drawPriority = dx0 + dy1;
-							} else {
-								l.drawPriority = dx0 + dy0;
-							}
-						}
-					}
-
-					while (locCount > 0) {
-						int maxPriority = -50;
-						int index = -1;
-
-						for (int n = 0; n < locCount; n++) {
-							Location l = drawnLocs[n];
-
-							if (l.drawPriority > maxPriority && l.cycle != cycle) {
-								maxPriority = l.drawPriority;
-								index = n;
-							}
-						}
-
-						if (index == -1) {
-							break;
-						}
-
-						Location l = drawnLocs[index];
-						l.cycle = cycle;
-						Model m = l.model;
-
-						if (m == null) {
-							m = l.renderable.getDrawModel();
-						}
-
-						if (!isAreaOccluded(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.maxBoundY)) {
-							m.draw(l.yaw, pitchSin, pitchCos, yawSin, yawCos, l.sceneX - cameraX, l.sceneY - cameraY, l.sceneZ - cameraZ, l.bitset);
-						}
-
-						for (int x = l.minTileX; x <= l.maxTileX; x++) {
-							for (int y = l.minTileZ; y <= l.maxTileZ; y++) {
-								Tile t = tiles[x][y];
-
-								if (t == null) {
-									continue;
-								}
-
-								if (t.anInt985 != 0) {
-									tileQueue.push(t);
-								} else if ((x != tileX || y != tileZ) && t.update) {
-									tileQueue.push(t);
-								}
-							}
-						}
-					}
-
-					if (tile.drawLocs) {
-						continue;
-					}
-				}
-
-				if (tile.update && tile.anInt985 == 0) {
 					if (tileX <= cameraTileX && tileX > minTileX) {
 						Tile t = tiles[tileX - 1][tileZ];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible && (t.draw || ((tile.flags & 0x1) == 0))) {
 							continue;
 						}
 					}
@@ -1652,7 +1296,7 @@ public final class SceneGraph {
 					if (tileX >= cameraTileX && tileX < maxTileX - 1) {
 						Tile t = tiles[tileX + 1][tileZ];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible && (t.draw || ((tile.flags & 0x4) == 0))) {
 							continue;
 						}
 					}
@@ -1660,7 +1304,7 @@ public final class SceneGraph {
 					if (tileZ <= cameraTileY && tileZ > minTileY) {
 						Tile t = tiles[tileX][tileZ - 1];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible && (t.draw || ((tile.flags & 0x8) == 0))) {
 							continue;
 						}
 					}
@@ -1668,112 +1312,484 @@ public final class SceneGraph {
 					if (tileZ >= cameraTileY && tileZ < maxTileY - 1) {
 						Tile t = tiles[tileX][tileZ + 1];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible && (t.draw || ((tile.flags & 0x2) == 0))) {
 							continue;
 						}
 					}
+				} else {
+					bool = true;
+				}
 
-					tile.update = false;
-					tileUpdateCount--;
+				tile.draw = false;
 
-					ObjectLocation object = tile.obj;
+				if (tile.bridge != null) {
+					Tile t = tile.bridge;
 
-					if (object != null && object.offsetY != 0) {
-						object.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, object.sceneX - cameraX, object.sceneY - cameraY - object.offsetY, object.sceneZ - cameraZ, object.bitset);
+					if (t.underlay != null) {
+						drawTileUnderlay(t.underlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
+					} else if (t.overlay != null) {
+						drawTileOverlay(t.overlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
+					} else {
+						drawTileUnderlay(null, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
 					}
 
-					if (tile.anInt988 != 0) {
-						WallDecorationLocation decoration = tile.wallDecoration;
+					WallLocation wall = t.wall;
 
-						if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
-							if ((decoration.type & tile.anInt988) != 0) {
-								decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
-							} else if ((decoration.type & 0x300) != 0) {
-								int sceneX = decoration.sceneX - cameraX;
-								int sceneY = decoration.sceneY - cameraY;
-								int sceneZ = decoration.sceneZ - cameraZ;
-								int yaw = decoration.rotation;
-
-								int x;
-
-								if (yaw == 1 || yaw == 2) {
-									x = -sceneX;
-								} else {
-									x = sceneX;
-								}
-
-								int z;
-
-								if (yaw == 2 || yaw == 3) {
-									z = -sceneZ;
-								} else {
-									z = sceneZ;
-								}
-
-								if ((decoration.type & 0x100) != 0 && z >= x) {
-									int drawX = sceneX + DECO_TYPE1_OFFSET_X[yaw];
-									int drawZ = sceneZ + DECO_TYPE1_OFFSET_Z[yaw];
-									decoration.model.draw(yaw * 512 + 256, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
-								}
-								if ((decoration.type & 0x200) != 0 && z <= x) {
-									int drawX = sceneX + DECO_TYPE2_OFFSET_X[yaw];
-									int drawZ = sceneZ + DECO_TYPE2_OFFSET_Z[yaw];
-									decoration.model.draw(yaw * 512 + 1280 & 0x7ff, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
-								}
-							}
-						}
-
-						WallLocation wall = tile.wall;
-
-						if (wall != null) {
-							if ((wall.type2 & tile.anInt988) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
-								wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-							}
-
-							if ((wall.type1 & tile.anInt988) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
-								wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
-							}
-						}
+					if (wall != null) {
+						wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
 					}
 
-					if (tileY < planeCount - 1) {
-						Tile t = (planeTiles[tileY + 1][tileX][tileZ]);
+					for (int n = 0; n < t.locationCount; n++) {
+						Location loc = t.locs[n];
 
-						if (t != null && t.update) {
-							tileQueue.push(t);
+						if (loc != null) {
+							Model m = loc.model;
+
+							if (m == null) {
+								m = loc.renderable.getDrawModel();
+							}
+
+							m.draw(loc.yaw, pitchSin, pitchCos, yawSin, yawCos, loc.sceneX - cameraX, loc.sceneY - cameraY, loc.sceneZ - cameraZ, loc.bitset);
 						}
 					}
+				}
 
-					if (tileX < cameraTileX) {
+				boolean tileVisible = false;
+
+				if (tile.underlay != null) {
+					if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
+						tileVisible = true;
+						drawTileUnderlay(tile.underlay, tileRenderPlane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
+					}
+				} else if (tile.overlay != null) {
+					if (!isTileOccluded(tileRenderPlane, tileX, tileZ)) {
+						tileVisible = true;
+						drawTileOverlay(tile.overlay, 0, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
+					}
+				} else {
+					drawTileUnderlay(null, tileRenderPlane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
+				}
+
+				int direction = 0;
+				int drawType = 0;
+				WallLocation wall = tile.wall;
+				WallDecorationLocation decoration = tile.wallDecoration;
+
+				if (wall != null || decoration != null) {
+					if (cameraTileX == tileX) {
+						direction += 0x1;
+					} else if (cameraTileX < tileX) {
+						direction += 0x2;
+					}
+
+					if (cameraTileY == tileZ) {
+						direction += 0x3;
+					} else if (cameraTileY > tileZ) {
+						direction += 0x6;
+					}
+
+					drawType = DIRECTION_DRAW_TYPE[direction];
+					tile.drawFlags = WALL_DRAW_FLAGS[direction];
+					System.out.println(direction);
+				}
+
+				if (wall != null) {
+					if ((wall.type1 & anIntArray414[direction]) != 0) {
+						if (wall.type1 == 16) {
+							tile.anInt985 = 0b0011;
+							tile.anInt986 = anIntArray416[direction];
+							tile.anInt987 = 0b0011 - tile.anInt986;
+						} else if (wall.type1 == 32) {
+							tile.anInt985 = 0b0110;
+							tile.anInt986 = anIntArray417[direction];
+							tile.anInt987 = 0b0110 - tile.anInt986;
+						} else if (wall.type1 == 64) {
+							tile.anInt985 = 0b1100;
+							tile.anInt986 = anIntArray418[direction];
+							tile.anInt987 = 0b1100 - tile.anInt986;
+						} else {
+							tile.anInt985 = 0b1001;
+							tile.anInt986 = anIntArray419[direction];
+							tile.anInt987 = 0b1001 - tile.anInt986;
+						}
+					} else {
+						tile.anInt985 = 0b0000;
+					}
+
+					if ((wall.type1 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
+						wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
+					}
+
+					if ((wall.type2 & drawType) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
+						wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
+					}
+				}
+
+				if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
+					if ((decoration.type & drawType) != 0) {
+						decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
+					} else if ((decoration.type & 0x300) != 0) {
+						int sceneX = decoration.sceneX - cameraX;
+						int sceneY = decoration.sceneY - cameraY;
+						int sceneZ = decoration.sceneZ - cameraZ;
+						int rotation = decoration.rotation;
+
+						int x;
+
+						if (rotation == 1 || rotation == 2) {
+							x = -sceneX;
+						} else {
+							x = sceneX;
+						}
+
+						int z;
+
+						if (rotation == 2 || rotation == 3) {
+							z = -sceneZ;
+						} else {
+							z = sceneZ;
+						}
+
+						if ((decoration.type & 0x100) != 0 && z < x) {
+							int drawX = sceneX + DECO_TYPE1_OFFSET_X[rotation];
+							int drawZ = sceneZ + DECO_TYPE1_OFFSET_Z[rotation];
+							decoration.model.draw(rotation * 512 + 256, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
+						}
+
+						if ((decoration.type & 0x200) != 0 && z > x) {
+							int drawX = sceneX + DECO_TYPE2_OFFSET_X[rotation];
+							int drawZ = sceneZ + DECO_TYPE2_OFFSET_Z[rotation];
+							decoration.model.draw(rotation * 512 + 1280 & 0x7ff, pitchSin, pitchCos, yawSin, yawCos, drawX, sceneY, drawZ, decoration.bitset);
+						}
+					}
+				}
+
+				if (tileVisible) {
+					GroundDecorationLoc d = tile.groundDecoration;
+
+					if (d != null) {
+						d.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, d.sceneX - cameraX, d.sceneY - cameraY, d.sceneZ - cameraZ, d.bitset);
+					}
+
+					ObjectLocation o = tile.obj;
+
+					if (o != null && o.offsetY == 0) {
+						o.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, o.sceneX - cameraX, o.sceneY - cameraY, o.sceneZ - cameraZ, o.bitset);
+					}
+				}
+
+				int flags = tile.flags;
+
+				if (flags != 0) {
+					if (tileX < cameraTileX && (flags & 0x4) != 0) {
 						Tile t = tiles[tileX + 1][tileZ];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible) {
 							tileQueue.push(t);
 						}
 					}
 
-					if (tileZ < cameraTileY) {
+					if (tileZ < cameraTileY && (flags & 0x2) != 0) {
 						Tile t = tiles[tileX][tileZ + 1];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible) {
 							tileQueue.push(t);
 						}
 					}
 
-					if (tileX > cameraTileX) {
+					if (tileX > cameraTileX && (flags & 0x1) != 0) {
 						Tile t = tiles[tileX - 1][tileZ];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible) {
 							tileQueue.push(t);
 						}
 					}
 
-					if (tileZ > cameraTileY) {
+					if (tileZ > cameraTileY && (flags & 0x8) != 0) {
 						Tile t = tiles[tileX][tileZ - 1];
 
-						if (t != null && t.update) {
+						if (t != null && t.isVisible) {
 							tileQueue.push(t);
 						}
+					}
+				}
+			}
+
+			if (tile.anInt985 != 0) {
+				boolean visible = true;
+
+				for (int n = 0; n < tile.locationCount; n++) {
+					if (tile.locs[n].cycle != cycle && ((tile.locFlags[n] & tile.anInt985) == tile.anInt986)) {
+						visible = false;
+						break;
+					}
+				}
+
+				if (visible) {
+					WallLocation wall = tile.wall;
+
+					if (!isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
+						wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
+					}
+
+					tile.anInt985 = 0;
+				}
+			}
+
+			if (tile.drawLocations) {
+				int count = tile.locationCount;
+				tile.drawLocations = false;
+				int locationBufferSize = 0;
+
+				LOOP:
+				for (int n = 0; n < count; n++) {
+					Location l = tile.locs[n];
+
+					if (l.cycle != cycle) {
+						for (int x = l.minTileX; x <= l.maxTileX; x++) {
+							for (int z = l.minTileZ; z <= l.maxTileZ; z++) {
+								Tile t = tiles[x][z];
+
+								if (t == null) {
+									continue;
+								}
+
+								if (t.draw) {
+									tile.drawLocations = true;
+									continue LOOP;
+								}
+
+								if (t.anInt985 != 0) {
+									int flags = 0;
+
+									if (x > l.minTileX) {
+										flags++;
+									}
+
+									if (x < l.maxTileX) {
+										flags += 4;
+									}
+
+									if (z > l.minTileZ) {
+										flags += 8;
+									}
+
+									if (z < l.maxTileZ) {
+										flags += 2;
+									}
+
+									if ((flags & t.anInt985) == tile.anInt987) {
+										tile.drawLocations = true;
+										continue LOOP;
+									}
+								}
+							}
+						}
+
+						locationBuffer[locationBufferSize++] = l;
+
+						int dx0 = cameraTileX - l.minTileX;
+						int dx1 = l.maxTileX - cameraTileX;
+
+						if (dx1 > dx0) {
+							dx0 = dx1;
+						}
+
+						int dz0 = cameraTileY - l.minTileZ;
+						int dz1 = l.maxTileZ - cameraTileY;
+
+						if (dz1 > dz0) {
+							l.drawPriority = dx0 + dz1;
+						} else {
+							l.drawPriority = dx0 + dz0;
+						}
+					}
+				}
+
+				while (locationBufferSize > 0) {
+					int maxPriority = -50;
+					int index = -1;
+
+					for (int n = 0; n < locationBufferSize; n++) {
+						Location l = locationBuffer[n];
+
+						if (l.drawPriority > maxPriority && l.cycle != cycle) {
+							maxPriority = l.drawPriority;
+							index = n;
+						}
+					}
+
+					if (index == -1) {
+						break;
+					}
+
+					Location l = locationBuffer[index];
+					l.cycle = cycle;
+					Model m = l.model;
+
+					if (m == null) {
+						m = l.renderable.getDrawModel();
+					}
+
+					if (!isAreaOccluded(tileRenderPlane, l.minTileX, l.maxTileX, l.minTileZ, l.maxTileZ, m.maxBoundY)) {
+						m.draw(l.yaw, pitchSin, pitchCos, yawSin, yawCos, l.sceneX - cameraX, l.sceneY - cameraY, l.sceneZ - cameraZ, l.bitset);
+					}
+
+					for (int x = l.minTileX; x <= l.maxTileX; x++) {
+						for (int y = l.minTileZ; y <= l.maxTileZ; y++) {
+							Tile t = tiles[x][y];
+
+							if (t == null) {
+								continue;
+							}
+
+							if (t.anInt985 != 0) {
+								tileQueue.push(t);
+							} else if ((x != tileX || y != tileZ) && t.isVisible) {
+								tileQueue.push(t);
+							}
+						}
+					}
+				}
+
+				if (tile.drawLocations) {
+					continue;
+				}
+			}
+
+			if (tile.isVisible && tile.anInt985 == 0) {
+				if (tileX <= cameraTileX && tileX > minTileX) {
+					Tile t = tiles[tileX - 1][tileZ];
+
+					if (t != null && t.isVisible) {
+						continue;
+					}
+				}
+
+				if (tileX >= cameraTileX && tileX < maxTileX - 1) {
+					Tile t = tiles[tileX + 1][tileZ];
+
+					if (t != null && t.isVisible) {
+						continue;
+					}
+				}
+
+				if (tileZ <= cameraTileY && tileZ > minTileY) {
+					Tile t = tiles[tileX][tileZ - 1];
+
+					if (t != null && t.isVisible) {
+						continue;
+					}
+				}
+
+				if (tileZ >= cameraTileY && tileZ < maxTileY - 1) {
+					Tile t = tiles[tileX][tileZ + 1];
+
+					if (t != null && t.isVisible) {
+						continue;
+					}
+				}
+
+				tile.isVisible = false;
+				tileUpdateCount--;
+
+				ObjectLocation object = tile.obj;
+
+				if (object != null && object.offsetY != 0) {
+					object.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, object.sceneX - cameraX, object.sceneY - cameraY - object.offsetY, object.sceneZ - cameraZ, object.bitset);
+				}
+
+				if (tile.drawFlags != 0) {
+					WallDecorationLocation decoration = tile.wallDecoration;
+
+					if (decoration != null && !isOccluded(tileRenderPlane, tileX, tileZ, decoration.model.maxBoundY)) {
+						if ((decoration.type & tile.drawFlags) != 0) {
+							decoration.model.draw(decoration.rotation, pitchSin, pitchCos, yawSin, yawCos, decoration.sceneX - cameraX, decoration.sceneY - cameraY, decoration.sceneZ - cameraZ, decoration.bitset);
+						} else if ((decoration.type & 0x300) != 0) {
+							int drawX = decoration.sceneX - cameraX;
+							int drawY = decoration.sceneY - cameraY;
+							int drawZ = decoration.sceneZ - cameraZ;
+							int rotation = decoration.rotation;
+
+							int absoluteX; // postiive draw x
+							int absoluteZ; // positive draw y
+
+							if (rotation == 1 || rotation == 2) {
+								absoluteX = -drawX;
+							} else {
+								absoluteX = drawX;
+							}
+
+							if (rotation == 2 || rotation == 3) {
+								absoluteZ = -drawZ;
+							} else {
+								absoluteZ = drawZ;
+							}
+
+							if ((decoration.type & 0x100) != 0 && absoluteZ >= absoluteX) {
+								drawX += DECO_TYPE1_OFFSET_X[rotation];
+								drawZ += DECO_TYPE1_OFFSET_Z[rotation];
+								decoration.model.draw(rotation * 512 + 256, pitchSin, pitchCos, yawSin, yawCos, drawX, drawY, drawZ, decoration.bitset);
+							}
+
+							if ((decoration.type & 0x200) != 0 && absoluteZ <= absoluteX) {
+								drawX += DECO_TYPE2_OFFSET_X[rotation];
+								drawZ += DECO_TYPE2_OFFSET_Z[rotation];
+								decoration.model.draw(rotation * 512 + 1280 & 0x7ff, pitchSin, pitchCos, yawSin, yawCos, drawX, drawY, drawZ, decoration.bitset);
+							}
+						}
+					}
+
+					WallLocation wall = tile.wall;
+
+					if (wall != null) {
+						if ((wall.type2 & tile.drawFlags) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type2)) {
+							wall.model2.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
+						}
+
+						if ((wall.type1 & tile.drawFlags) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
+							wall.model1.draw(0, pitchSin, pitchCos, yawSin, yawCos, wall.sceneX - cameraX, wall.sceneY - cameraY, wall.sceneZ - cameraZ, wall.bitset);
+						}
+					}
+				}
+
+				if (tilePlane < maxPlane - 1) {
+					Tile t = (planeTiles[tilePlane + 1][tileX][tileZ]);
+
+					if (t != null && t.isVisible) {
+						tileQueue.push(t);
+					}
+				}
+
+				if (tileX < cameraTileX) {
+					Tile t = tiles[tileX + 1][tileZ];
+
+					if (t != null && t.isVisible) {
+						tileQueue.push(t);
+					}
+				}
+
+				if (tileZ < cameraTileY) {
+					Tile t = tiles[tileX][tileZ + 1];
+
+					if (t != null && t.isVisible) {
+						tileQueue.push(t);
+					}
+				}
+
+				if (tileX > cameraTileX) {
+					Tile t = tiles[tileX - 1][tileZ];
+
+					if (t != null && t.isVisible) {
+						tileQueue.push(t);
+					}
+				}
+
+				if (tileZ > cameraTileY) {
+					Tile t = tiles[tileX][tileZ - 1];
+
+					if (t != null && t.isVisible) {
+						tileQueue.push(t);
 					}
 				}
 			}

@@ -5,7 +5,7 @@ import java.awt.image.*;
 
 public final class Scene {
 
-	public static final int VIEW_DIAMETER = 104;
+	public static final int VIEW_DIAMETER = 50;
 	public static final int VIEW_RADIUS = VIEW_DIAMETER / 2;
 	public static final int FAR_Z = 128 * VIEW_RADIUS;
 	public static final int NEAR_Z = 50;
