@@ -69,6 +69,14 @@ public final class Chain {
 		return l;
 	}
 
+	public int size() {
+		int i = 0;
+		for (Link l = head.previous; l != head; l = l.previous) {
+			i++;
+		}
+		return i;
+	}
+
 	public void clear() {
 		for (;;) {
 			Link l = head.previous;
