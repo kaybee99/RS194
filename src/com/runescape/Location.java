@@ -2,7 +2,7 @@ package com.runescape;
 
 public final class Location {
 
-	int tileY;
+	int tilePlane;
 	int sceneY;
 	int sceneX;
 	int sceneZ;

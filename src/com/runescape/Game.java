@@ -2418,7 +2418,7 @@ public class Game extends GameShell {
 	public void updateLandscapeClick() {
 		if (Scene.clickedTileX != -1) {
 			int tileX = Scene.clickedTileX;
-			int tileZ = Scene.clickedTileY;
+			int tileZ = Scene.clickedTileZ;
 			boolean canMove = moveTo(localPlayer.pathX[0], localPlayer.pathY[0], tileX, tileZ, 0, 0, 0, 0, 0, true);
 			Scene.clickedTileX = -1;
 
@@ -3410,7 +3410,7 @@ public class Game extends GameShell {
 					bitset = graph.getWallDecorationBitset(l.tileX, l.tileY, l.plane);
 				}
 				if (l.classtype == 2) {
-					bitset = graph.getLocBitset(l.tileX, l.tileY, l.plane);
+					bitset = graph.getLocationBitset(l.tileX, l.tileY, l.plane);
 				}
 
 				if (bitset == 0 || (bitset >> 14 & 0x7fff) != l.locIndex) {
@@ -3566,11 +3566,11 @@ public class Game extends GameShell {
 
 	public void drawCross() {
 		if (crossType == 1) {
-			crosses[crossCycle / 100].draw(crossX - 8 - 8, crossY - 8 - 11);
+			crosses[crossCycle / 100].draw(crossX - 8, crossY - 8);
 		}
 
 		if (crossType == 2) {
-			crosses[crossCycle / 100 + 4].draw(crossX - 8 - 8, crossY - 8 - 11);
+			crosses[crossCycle / 100 + 4].draw(crossX - 8, crossY - 8);
 		}
 	}
 
@@ -3974,7 +3974,7 @@ public class Game extends GameShell {
 			}
 		}
 
-		bitset = graph.getLocBitset(x, y, minimapPlane);
+		bitset = graph.getLocationBitset(x, y, minimapPlane);
 
 		if (bitset != 0) {
 			int info = graph.getInfo(x, y, minimapPlane, bitset);
@@ -5371,7 +5371,7 @@ public class Game extends GameShell {
 			}
 
 			if (classtype == LocationInfo.CLASS_NORMAL) {
-				bitset = graph.getLocBitset(tileX, tileZ, plane);
+				bitset = graph.getLocationBitset(tileX, tileZ, plane);
 			}
 
 			if (classtype == LocationInfo.CLASS_GROUND_DECORATION) {
@@ -5396,7 +5396,7 @@ public class Game extends GameShell {
 				}
 
 				if (classtype == LocationInfo.CLASS_NORMAL) {
-					graph.removeLocs(tileX, tileZ, plane);
+					graph.removeLocations(tileX, tileZ, plane);
 					LocationInfo c = LocationInfo.get(lastIndex);
 
 					if (c.hasCollision) {
@@ -5471,7 +5471,7 @@ public class Game extends GameShell {
 					}
 
 					if (locClass == 2) {
-						bitset = graph.getLocBitset(tileX, tileY, currentPlane);
+						bitset = graph.getLocationBitset(tileX, tileY, currentPlane);
 					}
 
 					if (locClass == 3) {
@@ -5519,7 +5519,7 @@ public class Game extends GameShell {
 				}
 
 				if (classtype == LocationInfo.CLASS_NORMAL) {
-					bitset = graph.getLocBitset(x, z, currentPlane);
+					bitset = graph.getLocationBitset(x, z, currentPlane);
 				}
 
 				if (bitset != 0) {
@@ -5709,7 +5709,7 @@ public class Game extends GameShell {
 
 			if (topObject != null) {
 				int bitset = x + (y << 7) + 0x60000000;
-				graph.addObj(topObject.getModel(), currentPlane, x, y, getLandY(x * 128 + 64, y * 128 + 64, currentPlane), bitset);
+				graph.addObject(topObject.getModel(), currentPlane, x, y, getLandY(x * 128 + 64, y * 128 + 64, currentPlane), bitset);
 			}
 		}
 	}

@@ -1,28 +1,15 @@
 package com.runescape;
 
-import dane.runescape.mapeditor.event.ShellListener;
-import java.awt.AWTEvent;
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
-import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseWheelEvent;
-import java.awt.event.MouseWheelListener;
-import javax.swing.JApplet;
-import javax.swing.JFrame;
-import javax.swing.event.EventListenerList;
+import dane.runescape.mapeditor.event.*;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.event.*;
 
 public abstract class GameShell extends JApplet implements Runnable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener {
-	
+
 	private static final long serialVersionUID = 4519439019496437757L;
-	
+
 	public static final int KEY_LEFT = 1;
 	public static final int KEY_RIGHT = 2;
 	public static final int KEY_UP = 3;
@@ -33,7 +20,7 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	public static final int KEY_TAB = 9;
 	public static final int KEY_ENTER = 10;
 	public static final int KEY_ALT = 11;
-	
+
 	public static final int KEY_F1 = 1008;
 	public static final int KEY_F2 = KEY_F1 + 1;
 	public static final int KEY_F3 = KEY_F2 + 1;
@@ -176,35 +163,35 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		this.graphics = getGraphics();
 		this.startThread(this, 1);
 	}
-	
+
 	@Override
 	public void run() {
 		System.out.println("Registering event listeners");
 		this.setBackground(Color.BLACK);
 		this.setFocusable(true);
-		
+
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
 		this.addKeyListener(this);
 		this.addFocusListener(this);
-		
+
 		this.firePreStartup();
 		this.drawProgress("Loading...", 0);
 		this.startup();
 		this.firePostStartup();
-		
+
 		int currentFrame = 0;
 		int ratio = 256;
 		int delay = 1;
 		int cycle = 0;
-		
+
 		for (int n = 0; n < 10; n++) {
 			this.optim[n] = System.currentTimeMillis();
 		}
-		
+
 		long currentTime;
-		
+
 		while (this.state >= 0) {
 			if (this.state > 0) {
 				this.state--;
@@ -213,33 +200,33 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 					return;
 				}
 			}
-			
+
 			int lastRatio = ratio;
 			int lastDelta = delay;
-			
+
 			ratio = 300;
 			delay = 1;
 			currentTime = System.currentTimeMillis();
-			
+
 			if (this.optim[currentFrame] == 0L) {
 				ratio = lastRatio;
 				delay = lastDelta;
 			} else if (currentTime > this.optim[currentFrame]) {
 				ratio = (int) ((long) (this.deltime * 2560) / (currentTime - this.optim[currentFrame]));
 			}
-			
+
 			if (ratio < 25) {
 				ratio = 25;
 			}
-			
+
 			if (ratio > 256) {
 				ratio = 256;
 				delay = (int) ((long) this.deltime - (currentTime - this.optim[currentFrame]) / 10L);
 			}
-			
+
 			this.optim[currentFrame] = currentTime;
 			currentFrame = (currentFrame + 1) % 10;
-			
+
 			if (delay > 1) {
 				for (int n = 0; n < 10; n++) {
 					if (this.optim[n] != 0L) {
@@ -247,17 +234,17 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 					}
 				}
 			}
-			
+
 			if (delay < this.minDelay) {
 				delay = this.minDelay;
 			}
-			
+
 			try {
 				Thread.sleep((long) delay);
 			} catch (InterruptedException e) {
-				
+
 			}
-			
+
 			for (/**/; cycle < 256; cycle += ratio) {
 				this.update();
 				this.fireUpdate(); // send listeners notification
@@ -266,19 +253,19 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 				this.mouseButton = 0;
 				this.lastKeyBufferPos = this.keyBufferPos;
 			}
-			
+
 			cycle &= 0xFF;
-			
+
 			if (this.deltime > 0) {
 				this.fps = (ratio * 1000) / (this.deltime * 256);
 			}
-			
+
 			long nano = System.nanoTime();
 			this.draw();
 			this.fireDraw(); // send listeners notification
 			this.frameTime = (System.nanoTime() - nano) / 1_000_000.0;
 		}
-		
+
 		if (this.state == -1) {
 			this.forceShutdown();
 		}
@@ -363,14 +350,14 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	public void forceShutdown() {
 		this.state = -2;
 		System.out.println("Closing program");
-		
+
 		this.fireShutdown();
 		this.shutdown();
-		
+
 		try {
 			Thread.sleep(1000L);
 		} catch (Exception e) {
-			
+
 		}
 		try {
 			System.exit(0);
@@ -387,48 +374,48 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	public void setLoopRate(int fps) {
 		deltime = 1000 / fps;
 	}
-	
+
 	@Override
 	public void start() {
 		if (state >= 0) {
 			state = 0;
 		}
 	}
-	
+
 	@Override
 	public void stop() {
 		if (state >= 0) {
 			state = 4000 / deltime;
 		}
 	}
-	
+
 	@Override
 	public void destroy() {
 		state = -1;
-		
+
 		try {
 			Thread.sleep(5000L);
 		} catch (Exception exception) {
 		}
-		
+
 		if (state == -1) {
 			System.out.println("5 seconds expired, forcing kill");
 			forceShutdown();
 		}
 	}
-	
+
 	@Override
 	public void update(Graphics g) {
 		refresh = true;
 		refresh();
 	}
-	
+
 	@Override
 	public void paint(Graphics g) {
 		refresh = true;
 		refresh();
 	}
-	
+
 	@Override
 	public void setSize(int w, int h) {
 		super.setSize(w, h);
@@ -436,31 +423,36 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		width = w;
 		height = h;
 	}
-	
-	public void feedEvent(AWTEvent e) {
+
+	/**
+	 * Gives this component an awt event to process.
+	 *
+	 * @param e the event.
+	 */
+	public void consumeEvent(AWTEvent e) {
 		this.processEvent(e);
 	}
-	
+
 	@Override
 	public void mouseWheelMoved(MouseWheelEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		
+
 		idleCycles = 0;
 		mouseX = x;
 		mouseY = y;
 		mouseWheel = e.getWheelRotation();
 	}
-	
+
 	@Override
 	public void mousePressed(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		
+
 		idleCycles = 0;
 		clickX = x;
 		clickY = y;
-		
+
 		if (e.isMetaDown()) {
 			mouseButton = 2;
 			dragButton = 2;
@@ -469,59 +461,59 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 			dragButton = 1;
 		}
 	}
-	
+
 	@Override
 	public void mouseReleased(MouseEvent e) {
 		idleCycles = 0;
 		dragButton = 0;
 	}
-	
+
 	@Override
 	public void mouseClicked(MouseEvent mouseevent) {
-		
+
 	}
-	
+
 	@Override
 	public void mouseEntered(MouseEvent mouseevent) {
-		
+
 	}
-	
+
 	@Override
 	public void mouseExited(MouseEvent mouseevent) {
-		
+
 	}
-	
+
 	@Override
 	public void mouseDragged(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		
+
 		idleCycles = 0;
 		mouseX = x;
 		mouseY = y;
 	}
-	
+
 	@Override
 	public void mouseMoved(MouseEvent e) {
 		int x = e.getX();
 		int y = e.getY();
-		
+
 		idleCycles = 0;
 		mouseX = x;
 		mouseY = y;
 	}
-	
+
 	@Override
 	public void keyPressed(KeyEvent e) {
 		idleCycles = 0;
-		
+
 		int i = e.getKeyCode();
 		int c = e.getKeyChar();
-		
+
 		if (c < 30) {
 			c = 0;
 		}
-		
+
 		if (i == KeyEvent.VK_LEFT) {
 			c = KEY_LEFT;
 		} else if (i == KeyEvent.VK_RIGHT) {
@@ -555,28 +547,28 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		} else if (i == KeyEvent.VK_PAGE_DOWN) {
 			c = 1003;
 		}
-		
+
 		if (c > 0 && c < 128) {
 			keyDown[c] = true;
 		}
-		
+
 		if (c > 6) {
 			keyBuffer[keyBufferPos] = c;
 			keyBufferPos = keyBufferPos + 1 & 0x7f;
 		}
 	}
-	
+
 	@Override
 	public void keyReleased(KeyEvent e) {
 		idleCycles = 0;
-		
+
 		int i = e.getKeyCode();
 		char c = e.getKeyChar();
-		
+
 		if (c < 30) {
 			c = 0;
 		}
-		
+
 		if (i == KeyEvent.VK_LEFT) {
 			c = KEY_LEFT;
 		} else if (i == KeyEvent.VK_RIGHT) {
@@ -600,26 +592,26 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		} else if (i == KeyEvent.VK_ALT) {
 			c = KEY_ALT;
 		}
-		
+
 		if (c > 0 && c < 128) {
 			keyDown[c] = false;
 		}
 	}
-	
+
 	@Override
 	public void keyTyped(KeyEvent e) {
-		
+
 	}
-	
+
 	@Override
 	public void focusGained(FocusEvent e) {
 		refresh = true;
 		refresh();
 	}
-	
+
 	@Override
 	public void focusLost(FocusEvent e) {
-		
+
 	}
 
 	/**
@@ -635,15 +627,15 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		}
 		return i;
 	}
-	
+
 	public abstract void startup();
-	
+
 	public abstract void update();
-	
+
 	public abstract void shutdown();
-	
+
 	public abstract void draw();
-	
+
 	public abstract void refresh();
 
 	/**
@@ -668,36 +660,36 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		if (this.graphics == null) {
 			return;
 		}
-		
+
 		if (this.refresh) {
 			this.graphics.setColor(Color.BLACK);
 			this.graphics.fillRect(0, 0, this.width, this.height);
 			this.refresh = false;
 		}
-		
+
 		Font f = new Font("Helvetica", Font.BOLD, 13);
 		FontMetrics fm = getFontMetrics(f);
-		
+
 		int cx = this.width / 2; //center x
 		int cy = this.height / 2;// center y
 
 		int w = 304;
 		int h = 34;
-		
+
 		int x = cx - (w / 2);
 		int y = cy - (h / 2);
-		
+
 		this.graphics.setColor(Color.BLACK);
 		this.graphics.fillRect(x, y, w, h);
-		
+
 		this.graphics.setColor(new Color(140, 17, 17));
 		this.graphics.drawRect(x, y, w - 1, h - 1);
 		this.graphics.fillRect(x + 2, y + 2, ((w - 4) * percent) / 100, h - 4);
-		
+
 		this.graphics.setFont(f);
 		this.graphics.setColor(Color.WHITE);
 		this.graphics.drawString(caption, cx - (fm.stringWidth(caption) / 2), y + 22);
-		
+
 		this.fireDraw(); // let listeners know we've drawn something
 	}
 }

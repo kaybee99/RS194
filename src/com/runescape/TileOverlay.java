@@ -12,7 +12,7 @@ public final class TileOverlay {
 	public int[] triangleVertexA;
 	public int[] triangleVertexB;
 	public int[] triangleVertexC;
-	public int[] triangleTexture;
+	public int[] triangleTextureIndex;
 	public boolean isFlat = true;
 	public int shape;
 	public int rotation;
@@ -227,7 +227,7 @@ public final class TileOverlay {
 		triangleColorC = new int[triangleCount];
 
 		if (textureIndex != -1) {
-			triangleTexture = new int[triangleCount];
+			triangleTextureIndex = new int[triangleCount];
 		}
 
 		int i = 0;
@@ -260,16 +260,16 @@ public final class TileOverlay {
 				triangleColorB[n] = colors1[b];
 				triangleColorC[n] = colors1[c];
 
-				if (triangleTexture != null) {
-					triangleTexture[n] = -1;
+				if (triangleTextureIndex != null) {
+					triangleTextureIndex[n] = -1;
 				}
 			} else {
 				triangleColorA[n] = colors2[a];
 				triangleColorB[n] = colors2[b];
 				triangleColorC[n] = colors2[c];
 
-				if (triangleTexture != null) {
-					triangleTexture[n] = textureIndex;
+				if (triangleTextureIndex != null) {
+					triangleTextureIndex[n] = textureIndex;
 				}
 			}
 		}

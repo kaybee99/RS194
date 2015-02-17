@@ -39,7 +39,7 @@ public final class Scene {
 	public static int mouseY;
 
 	public static int clickedTileX = -1;
-	public static int clickedTileY = -1;
+	public static int clickedTileZ = -1;
 
 	public int tileSizeX;
 	public int tileSizeZ;
@@ -275,7 +275,7 @@ public final class Scene {
 					sizeY = l.sizeY;
 				}
 
-				if (graph.addLoc(m, null, tileX, tileY, sizeX, sizeY, averageY, plane, yaw, bitset, info) && l.hasShadow) {
+				if (graph.addLocation(m, null, tileX, tileY, sizeX, sizeY, averageY, plane, yaw, bitset, info) && l.hasShadow) {
 					for (int x = 0; x <= sizeX; x++) {
 						for (int y = 0; y <= sizeY; y++) {
 							int darkness = m.boundLengthXZ / 4;
@@ -301,7 +301,7 @@ public final class Scene {
 			}
 		} else if (type >= 12) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (type >= 12 && type <= 17 && type != 13 && plane > 0) {
 				occludeflags[plane][tileX][tileY] |= 0x200 | 0x100 | 0x80 | 0x10 | 0x8 | 0x4;
@@ -423,7 +423,7 @@ public final class Scene {
 			}
 		} else if (type == 9) {
 			Model m = l.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (l.hasCollision) {
 				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
@@ -710,7 +710,7 @@ public final class Scene {
 						drawPlane = 0;
 					}
 
-					graph.setDrawPlane(plane, x, z, drawPlane);
+					graph.setTileDrawPlane(plane, x, z, drawPlane);
 				}
 			}
 		}
@@ -1072,7 +1072,7 @@ public final class Scene {
 					sizeX = c.sizeY;
 				}
 
-				graph.addLoc(m, null, tileX, tileY, sizeY, sizeX, averageY, plane, yaw, bitset, info);
+				graph.addLocation(m, null, tileX, tileY, sizeY, sizeX, averageY, plane, yaw, bitset, info);
 			}
 
 			if (c.hasCollision) {
@@ -1084,7 +1084,7 @@ public final class Scene {
 			}
 		} else if (type >= 12) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
@@ -1126,7 +1126,7 @@ public final class Scene {
 			}
 		} else if (type == 9) {
 			Model m = c.getModel(type, rotation, southwestY, southeastY, northeastY, northwestY, -1);
-			graph.addLoc(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
+			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
 				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);

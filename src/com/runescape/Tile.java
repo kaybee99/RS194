@@ -11,19 +11,19 @@ public final class Tile extends Link {
 	public WallLocation wall;
 	public WallDecorationLocation wallDecoration;
 	public GroundDecorationLoc groundDecoration;
-	public ObjectLocation obj;
+	public ObjectLocation object;
 	public int locationCount;
 	public Location[] locs = new Location[5];
 	public int[] locFlags = new int[5];
 	public int flags;
-	public int drawY;
+	public int drawPlane;
 	public boolean draw;
 	public boolean isVisible;
 	public boolean drawLocations;
-	public int anInt985;
-	public int anInt986;
-	public int anInt987;
-	public int drawFlags;
+	public int wallCullDirection;
+	public int wallUncullDirection;
+	public int relativeWallCullDirection;
+	public int tileWallDrawFlags;
 	public Tile bridge;
 
 	public Tile(int plane, int x, int y) {
