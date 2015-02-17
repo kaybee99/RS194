@@ -23,11 +23,10 @@
  */
 package dane.runescape.mapeditor;
 
-import dane.runescape.mapeditor.event.ShellListener;
-import java.awt.AWTEvent;
-import java.awt.Graphics;
-import java.awt.image.BufferedImage;
-import javax.swing.JComponent;
+import dane.runescape.mapeditor.event.*;
+import java.awt.*;
+import java.awt.image.*;
+import javax.swing.*;
 
 /**
  * This component is used to override the Graphics object of the game, and to
@@ -72,9 +71,9 @@ public class GamePanel extends JComponent implements ShellListener {
 	@Override
 	protected void processEvent(AWTEvent e) {
 		super.processEvent(e);
-		
+
 		// stick that in there ;)
-		this.game.feedEvent(e);
+		this.game.consumeEvent(e);
 	}
 
 	public GameSub getGame() {

@@ -64,6 +64,8 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 	private int imageOffsetX;
 	private int imageOffsetY;
 
+	private SceneGraph graph;
+
 	public void assemble() {
 		this.setBackground(Color.black);
 		this.setSize(1200, 1200);
@@ -121,11 +123,13 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 
 	/* Scene Load Listener */
 	@Override
-	public void onSceneCreation(int plane, Scene s, SceneGraph sg) {
-		byte[][] overlayTypes = s.planeOverlayTypes[plane];
-		byte[][] overlayRotations = s.planeOverlayRotations[plane];
-		byte[][] underlayFlos = s.planeUnderlayFloorIndices[plane];
-		byte[][] overlayFlos = s.planeOverlayFloorIndices[plane];
+	public void onSceneLoaded(int plane, Scene scene, SceneGraph graph) {
+		this.graph = graph;
+
+		byte[][] overlayTypes = scene.planeOverlayTypes[plane];
+		byte[][] overlayRotations = scene.planeOverlayRotations[plane];
+		byte[][] underlayFlos = scene.planeUnderlayFloorIndices[plane];
+		byte[][] overlayFlos = scene.planeOverlayFloorIndices[plane];
 
 		Arrays.fill(pixels, 0x282018);
 		Graphics g = this.image.getGraphics();
@@ -189,6 +193,11 @@ public class MapPanel extends JPanel implements GameListener, MouseListener, Mou
 
 		g.dispose();
 		this.repaint();
+	}
+
+	@Override
+	public void onSceneTileClicked(Tile t) {
+		graph.removeLocations(t.x, t.plane, t.z);
 	}
 
 	@Override

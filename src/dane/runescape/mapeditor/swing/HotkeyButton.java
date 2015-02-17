@@ -23,19 +23,11 @@
  */
 package dane.runescape.mapeditor.swing;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-
-import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
-
-import dane.runescape.mapeditor.util.Hotkey;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import javax.swing.*;
+import javax.swing.border.*;
 
 /**
  * A simple button that is activated when you press a button. It has an image
@@ -67,7 +59,9 @@ public class HotkeyButton extends JButton {
 		}
 	}
 
-	public HotkeyButton(BufferedImage image, int keyCode) {
+	private int key;
+
+	public HotkeyButton(BufferedImage image, int key) {
 		AbstractAction a = new AbstractAction() {
 			private static final long serialVersionUID = 3068656327981819336L;
 
@@ -77,11 +71,12 @@ public class HotkeyButton extends JButton {
 			}
 		};
 
-		Hotkey.add(this, keyCode, a);
+		this.key = key;
+
 		setAction(a);
 
 		setIcon(new ImageIcon(image));
-		setText(KeyEvent.getKeyText(keyCode));
+		setText(KeyEvent.getKeyText(key));
 
 		setSize(49, 42);
 		setPreferredSize(getSize());
@@ -92,5 +87,9 @@ public class HotkeyButton extends JButton {
 		setForeground(Color.WHITE);
 		setBackground(Color.BLACK);
 		setBorder(BORDER_NORMAL);
+	}
+
+	public int getKey() {
+		return this.key;
 	}
 }

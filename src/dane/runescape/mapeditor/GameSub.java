@@ -202,6 +202,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 		updateAnimatedTextures(startCycle);
 
 		fontSmall.draw(mouseX + ", " + mouseY + ", " + clickX + ", " + clickY, 16, 32, 0xFFFFFF);
+		fontSmall.draw(crossX + ", " + crossY, 16, 48, 0xFFFFFF);
 		viewport.draw(graphics, 0, 0);
 	}
 
@@ -323,7 +324,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 	public void updateLandscapeClick() {
 		if (Scene.clickedTileX != -1) {
 			int tileX = Scene.clickedTileX;
-			int tileZ = Scene.clickedTileY;
+			int tileZ = Scene.clickedTileZ;
 
 			// do something?
 			crossX = clickX;
@@ -344,8 +345,10 @@ public class GameSub extends Game implements MapPanelEventListener {
 
 	protected void fireSceneCreated(int plane, Scene s, SceneGraph land) {
 		for (GameListener l : this.listeners.getListeners(GameListener.class)) {
-			l.onSceneCreation(plane, s, land);
+			l.onSceneLoaded(plane, s, land);
 		}
+
+		land.addObject(new Model(0), 0, 21, 26, 400, 123);
 	}
 
 	/**

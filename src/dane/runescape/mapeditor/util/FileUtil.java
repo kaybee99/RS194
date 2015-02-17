@@ -23,15 +23,11 @@
  */
 package dane.runescape.mapeditor.util;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.imageio.ImageIO;
+import java.awt.image.*;
+import java.io.*;
+import java.net.*;
+import java.util.logging.*;
+import javax.imageio.*;
 
 /**
  * File shortcuts.
@@ -42,15 +38,23 @@ public class FileUtil {
 
 	private static final Logger logger = Logger.getLogger(FileUtil.class.getName());
 
-	public static final URL getURL(String s) {
-		URL url = ClassLoader.getSystemResource(s);
+	/**
+	 * Searches for system resources first, and defaults to creating a new url.
+	 *
+	 * @param path the path.
+	 * @return the url or <b>null</b> if no file with the specified path exists.
+	 */
+	public static final URL getURL(String path) {
+		URL url = ClassLoader.getSystemResource(path);
 
+		// if we found it as our resource then use that first
 		if (url != null) {
 			return url;
 		}
 
-		File file = new File(s);
+		File file = new File(path);
 
+		// it's a real file
 		if (file.exists()) {
 			try {
 				return file.toURI().toURL();
@@ -58,11 +62,21 @@ public class FileUtil {
 				logger.log(Level.WARNING, "Bad URL", e);
 			}
 		}
+
+		// no file found :(
 		return null;
 	}
 
-	public static final BufferedImage readImage(String s) throws IOException {
-		return ImageIO.read(getURL(s));
+	/**
+	 * Reads an image from the system resources or local directory.
+	 *
+	 * @param path the path.
+	 * @return the image or <b>null</b> if no image with the specified path
+	 * exists.
+	 * @throws IOException if an error occurs while reading.
+	 */
+	public static final BufferedImage readImage(String path) throws IOException {
+		return ImageIO.read(getURL(path));
 	}
 
 }

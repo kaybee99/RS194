@@ -23,15 +23,13 @@
  */
 package dane.runescape.mapeditor.swing;
 
-import java.awt.Color;
-import java.awt.GridLayout;
-import java.awt.event.KeyEvent;
-
-import javax.swing.JPanel;
-
-import dane.runescape.mapeditor.util.FileUtil;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
+import dane.runescape.mapeditor.util.*;
+import java.awt.*;
+import java.awt.event.*;
+import java.awt.image.*;
+import java.io.*;
+import java.util.logging.*;
+import javax.swing.*;
 
 /**
  * Contains all the hotkey buttons for all the different location types.
@@ -41,8 +39,17 @@ import java.io.IOException;
 // TODO: rename?
 public class LocationPanel extends JPanel {
 
+	private static final Logger logger = Logger.getLogger(LocationPanel.class.getName());
+
 	private static final long serialVersionUID = -2913689793325251798L;
 
+	/**
+	 * Shortcut method to getting an image.
+	 *
+	 * @param name the image name.
+	 * @return the image.
+	 * @throws IOException
+	 */
 	private static BufferedImage getHotkeyImage(String name) throws IOException {
 		return FileUtil.readImage("loctype/" + name + ".png");
 	}
@@ -84,8 +91,15 @@ public class LocationPanel extends JPanel {
 			add(new HotkeyButton(getHotkeyImage("roofedgecorner"), KeyEvent.VK_X));
 			add(new HotkeyButton(getHotkeyImage("roofedgeinnercorner1"), KeyEvent.VK_C));
 			add(new HotkeyButton(getHotkeyImage("roofedgeinnercorner2"), KeyEvent.VK_V));
+
+			for (Component c : getComponents()) {
+				if (c instanceof HotkeyButton) {
+					HotkeyButton h = (HotkeyButton) c;
+					Hotkey.add(h, h.getKey(), h.getAction());
+				}
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			logger.log(Level.WARNING, "Error loading location panel", e);
 		}
 	}
 

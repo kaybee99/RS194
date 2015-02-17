@@ -23,9 +23,8 @@
  */
 package dane.runescape.mapeditor.event;
 
-import com.runescape.SceneGraph;
-import com.runescape.Scene;
-import java.util.EventListener;
+import com.runescape.*;
+import java.util.*;
 
 /**
  *
@@ -34,11 +33,18 @@ import java.util.EventListener;
 public interface GameListener extends EventListener {
 
 	/**
-	 * Called when the scene finishes loading.
+	 * Called when the scene has been loaded.
 	 *
 	 * @param plane the plane the scene loaded on.
-	 * @param s the scene.
-	 * @param l the landscape.
+	 * @param scene the scene.
+	 * @param graph the scene graph.
 	 */
-	void onSceneCreation(int plane, Scene s, SceneGraph l);
+	void onSceneLoaded(int plane, Scene scene, SceneGraph graph);
+
+	/**
+	 * Called when a tile in the scene has been clicked.
+	 *
+	 * @param t the tile.
+	 */
+	void onSceneTileClicked(Tile t);
 }
