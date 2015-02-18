@@ -3,12 +3,15 @@ package com.runescape;
 import dane.runescape.mapeditor.event.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.logging.*;
 import javax.swing.*;
 import javax.swing.event.*;
 
 public abstract class GameShell extends JApplet implements Runnable, MouseListener, MouseMotionListener, MouseWheelListener, KeyListener, FocusListener {
 
 	private static final long serialVersionUID = 4519439019496437757L;
+
+	private static final Logger logger = Logger.getLogger(GameShell.class.getName());
 
 	public static final int KEY_LEFT = 1;
 	public static final int KEY_RIGHT = 2;
@@ -172,10 +175,10 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 
 	@Override
 	public void run() {
-		System.out.println("Registering event listeners");
 		this.setBackground(Color.BLACK);
 		this.setFocusable(true);
 
+		logger.log(Level.INFO, "Registering event listeners");
 		this.addMouseListener(this);
 		this.addMouseMotionListener(this);
 		this.addMouseWheelListener(this);
@@ -355,7 +358,7 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	 */
 	public void forceShutdown() {
 		this.state = -2;
-		System.out.println("Closing program");
+		logger.log(Level.INFO, "Closing program");
 
 		this.fireShutdown();
 		this.shutdown();
@@ -405,7 +408,9 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 		}
 
 		if (state == -1) {
-			System.out.println("5 seconds expired, forcing kill");
+			// means that we didn't shut down fast enough. we should always
+			// shut down before 5 seconds pass.
+			logger.log(Level.WARNING, "5 seconds expired, forcing kill.");
 			forceShutdown();
 		}
 	}
