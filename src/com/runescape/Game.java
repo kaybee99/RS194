@@ -3566,11 +3566,11 @@ public class Game extends GameShell {
 
 	public void drawCross() {
 		if (crossType == 1) {
-			crosses[crossCycle / 100].draw(crossX - 8, crossY - 8);
+			crosses[crossCycle / 100].draw(crossX - 8 - 9, crossY - 8 - 11);
 		}
 
 		if (crossType == 2) {
-			crosses[crossCycle / 100 + 4].draw(crossX - 8, crossY - 8);
+			crosses[crossCycle / 100 + 4].draw(crossX - 8 - 9, crossY - 8 - 11);
 		}
 	}
 
@@ -3862,6 +3862,7 @@ public class Game extends GameShell {
 		viewport.prepare();
 
 		minimapFunctionCount = 0;
+
 		for (int x = 0; x < 104; x++) {
 			for (int y = 0; y < 104; y++) {
 				int index = graph.getGroundDecorationBitset(x, y, currentPlane);
@@ -3882,6 +3883,13 @@ public class Game extends GameShell {
 					}
 				}
 			}
+		}
+
+		for (int i = 0; i < 128; i++) {
+			minimapFunctions[minimapFunctionCount] = mapfunctions[(int) (Math.random() * mapfunctions.length)];
+			minimapFunctionX[minimapFunctionCount] = (int) (Math.random() * 104);
+			minimapFunctionY[minimapFunctionCount] = (int) (Math.random() * 104);
+			minimapFunctionCount++;
 		}
 	}
 
@@ -4664,7 +4672,7 @@ public class Game extends GameShell {
 				packetType = in.data[0] & 0xff;
 
 				if (isaac != null) {
-					packetType = packetType - isaac.nextInt() & 0xff;
+					packetType = packetType; //XXX: - isaac.nextInt() & 0xff;
 				}
 
 				packetSize = Packet.SIZE[packetType];
@@ -8222,11 +8230,11 @@ public class Game extends GameShell {
 		}
 
 		for (int tileX = 0; tileX < 104; tileX++) {
-			for (int tileZ = 0; tileZ < 104; tileZ++) {
-				Chain c = planeObjectStacks[currentPlane][tileX][tileZ];
+			for (int tileY = 0; tileY < 104; tileY++) {
+				Chain c = planeObjectStacks[currentPlane][tileX][tileY];
 				if (c != null) {
 					x = (((tileX * 4) + 2) - playerX);
-					y = (((tileZ * 4) + 2) - playerY);
+					y = (((tileY * 4) + 2) - playerY);
 					drawOntoMinimap(mapdot1, x, y);
 				}
 			}
@@ -8249,6 +8257,7 @@ public class Game extends GameShell {
 				drawOntoMinimap(mapdot3, x, y);
 			}
 		}
+
 		Graphics2D.fillRect(93, 82, 3, 3, 0xFFFFFF);
 		viewport.prepare();
 	}
@@ -8260,21 +8269,23 @@ public class Game extends GameShell {
 
 		int length = x * x + y * y;
 
-		if (length <= 6400) {
-			int sin = Model.sin[cameraOrbitYaw];
-			int cos = Model.cos[cameraOrbitYaw];
+		if (length > 6400) {
+			return;
+		}
 
-			int drawX = y * sin + x * cos >> 16;
-			int drawY = y * cos - x * sin >> 16;
+		int sin = Model.sin[cameraOrbitYaw];
+		int cos = Model.cos[cameraOrbitYaw];
 
-			drawX -= b.width / 2;
-			drawY -= b.height / 2;
+		int drawX = y * sin + x * cos >> 16;
+		int drawY = y * cos - x * sin >> 16;
 
-			if (length > 2500) {
-				b.draw(mapback, drawX + 94, 83 - drawY);
-			} else {
-				b.draw(drawX + 94, 83 - drawY);
-			}
+		drawX -= b.width / 2;
+		drawY += (b.height / 2);
+
+		if (length > 2500) {
+			b.draw(mapback, drawX + 94, 83 - drawY);
+		} else {
+			b.draw(drawX + 94, 83 - drawY);
 		}
 	}
 

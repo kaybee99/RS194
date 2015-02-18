@@ -163,7 +163,7 @@ public class GameSub extends Game implements MapPanelEventListener {
 		drawPlayers();
 		drawNPCs();
 		drawProjectiles();
-		drawSpotanims();
+		drawSpotAnimations();
 		drawAnimatedLocations();
 
 		int topPlane = updateCamera(camera.getCurrentX() >> 7, camera.getCurrentY() >> 7);

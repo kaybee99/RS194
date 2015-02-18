@@ -189,13 +189,21 @@ public final class Signlink implements Runnable {
 
 	public static final File getFile(String s) {
 		URL url = getURL(s);
+
 		if (url != null) {
 			return new File(url.getFile());
 		}
+
 		return null;
 	}
 
 	public static final URL getURL(String s) {
+		URL url = ClassLoader.getSystemResource(s);
+
+		if (url != null) {
+			return url;
+		}
+
 		File f = new File(cacheDirectory, s);
 
 		if (f.exists()) {
@@ -206,7 +214,7 @@ public final class Signlink implements Runnable {
 			}
 		}
 
-		return ClassLoader.getSystemResource(s);
+		return null;
 	}
 
 	public static final byte[] getCompressed(byte[] src) throws IOException {
@@ -229,7 +237,8 @@ public final class Signlink implements Runnable {
 
 	public static final boolean filesExist(String... s) {
 		for (String path : s) {
-			if (!getFile(path).exists()) {
+			File f = getFile(path);
+			if (f == null || !f.exists()) {
 				return false;
 			}
 		}

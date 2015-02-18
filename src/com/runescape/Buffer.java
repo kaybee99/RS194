@@ -1,7 +1,7 @@
 package com.runescape;
 
-import java.math.BigInteger;
-import net.burtleburtle.bob.rand.IsaacRandom;
+import java.math.*;
+import net.burtleburtle.bob.rand.*;
 
 public final class Buffer extends QueueLink {
 
@@ -86,7 +86,7 @@ public final class Buffer extends QueueLink {
 
 	public void writeOpcode(int opcode) {
 		if (isaac != null) {
-			data[position++] = (byte) (opcode + isaac.nextInt());
+			data[position++] = (byte) (opcode);// XXX: + isaac.nextInt());
 		} else {
 			write(opcode);
 		}
