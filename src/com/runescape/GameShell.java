@@ -165,6 +165,12 @@ public abstract class GameShell extends JApplet implements Runnable, MouseListen
 	}
 
 	@Override
+	public void addNotify() {
+		super.addNotify();
+		this.requestFocus();
+	}
+
+	@Override
 	public void run() {
 		System.out.println("Registering event listeners");
 		this.setBackground(Color.BLACK);
