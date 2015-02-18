@@ -187,6 +187,11 @@ public class GameSub extends Game implements MapPanelEventListener {
 
 			setDrawPos(o.minX, o.minY, o.minZ);
 			Graphics2D.fillRect(viewportDrawX - 1, viewportDrawY - 1, 3, 3, 0xFF0000);
+			fontSmall.draw(o.type + ", " + o.testDirection, viewportDrawX, viewportDrawY, 0xFF0000);
+
+			setDrawPos(o.maxX, o.maxY, o.maxZ);
+			Graphics2D.fillRect(viewportDrawX - 1, viewportDrawY - 1, 3, 3, 0xFF00);
+			fontSmall.draw(o.type + ", " + o.testDirection, viewportDrawX, viewportDrawY, 0xFF0000);
 		}
 
 		drawViewport2d();

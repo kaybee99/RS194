@@ -23,7 +23,7 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.*;
+import com.runescape.Signlink;
 import static dane.runescape.mapeditor.event.SearchEvent.Type.*;
 import dane.runescape.mapeditor.event.*;
 import dane.runescape.mapeditor.search.*;

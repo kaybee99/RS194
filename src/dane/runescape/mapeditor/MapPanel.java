@@ -23,7 +23,11 @@
  */
 package dane.runescape.mapeditor;
 
-import com.runescape.*;
+import com.runescape.FloorType;
+import com.runescape.Graphics3D;
+import com.runescape.Tile;
+import com.runescape.Scene;
+import com.runescape.SceneGraph;
 import dane.runescape.mapeditor.event.*;
 import dane.runescape.mapeditor.media.*;
 import java.awt.*;

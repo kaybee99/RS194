@@ -1,8 +1,5 @@
 package com.runescape;
 
-import java.awt.*;
-import java.awt.image.*;
-
 public final class Scene {
 
 	public static final int VIEW_DIAMETER = 50;
@@ -15,21 +12,20 @@ public final class Scene {
 	private static final int[] WALL_DECO_ROT_SIZE_X_DIR = {1, 0, -1, 0};
 	private static final int[] WALL_DECO_ROT_SIZE_Y_DIR = {0, -1, 0, 1};
 
-	public static int hoverRadius;
-	public static int hoverRadiusSquared;
-
-	public static int hoverColor = 0x708090;
-	public static int hoverPlane = 0;
-	public static int hoverTileX = -1;
-	public static int hoverTileZ = -1;
-	public static boolean highlightHover = false;
-	public static boolean forceTileHover = false;
-
+	/**
+	 * Forces all locations to be right clickable whether their names are null or they have no actions.
+	 */
 	public static boolean forceInteraction = false;
+
 	public static boolean lowmemory = true;
 	public static int builtPlane;
 
-	public static boolean occlusionEnabled = true;
+	/**
+	 * I accidentally broke the occluders somehow. Luckily that was the only thing that is really broken. Having this
+	 * disabled does not affect the visual part of the game, but it does affect performance. Occluders are invisible
+	 * walls or boxes which determine whether things behind it should be rendered or not.
+	 */
+	public static boolean occlusionEnabled = false;
 	public static boolean checkClick;
 
 	public static int clickX;
@@ -238,6 +234,10 @@ public final class Scene {
 		}
 
 		int bitset = tileX + (tileY << 7) + (locIndex << 14) + (0x2 << 29);
+
+		if (l.animationIndex >= Animation.count) {
+			l.animationIndex = -1;
+		}
 
 		if (!forceInteraction && !l.interactable) {
 			bitset += Integer.MIN_VALUE;
@@ -725,195 +725,183 @@ public final class Scene {
 			}
 		}
 
-		if (Scene.occlusionEnabled) {
-			int flagA = 0xb1;	// 0x1
-			int flagB = 0xb10;	// 0x2
-			int flagC = 0xb100;	// 0x4
+		if (!Scene.occlusionEnabled) {
+			return;
+		}
 
-			BufferedImage image = new BufferedImage(tileSizeX, tileSizeZ, BufferedImage.TYPE_INT_RGB);
-			Graphics g = image.getGraphics();
-			g.setColor(Color.WHITE);
+		int flagA = 1;
+		int flagB = 2;
+		int flagC = 4;
 
-			for (int plane = 0; plane < 4; plane++) {
-				if (plane > 0) {
-					flagA <<= 3; // same flags, different plane.
-					flagB <<= 3;
-					flagC <<= 3;
-				}
+		for (int topPlane = 0; topPlane < 4; topPlane++) {
+			if (topPlane > 0) {
+				flagA <<= 3;
+				flagB <<= 3;
+				flagC <<= 3;
+			}
+			for (int plane = 0; plane <= topPlane; plane++) {
+				for (int tileZ = 0; tileZ <= tileSizeZ; tileZ++) {
+					for (int tileX = 0; tileX <= tileSizeX; tileX++) {
+						if ((occludeflags[plane][tileX][tileZ] & flagA) != 0) {
+							int minTileZ = tileZ;
+							int maxTileZ = tileZ;
+							int minPlane = plane;
+							int maxPlane = plane;
 
-				for (int p = 0; p <= plane; p++) {
-					for (int tileZ = 0; tileZ <= tileSizeZ; tileZ++) {
-						for (int tileX = 0; tileX <= tileSizeX; tileX++) {
-
-							if ((occludeflags[p][tileX][tileZ] & flagA) != 0) {
-								int minTileZ = tileZ;
-								int maxTileZ = tileZ;
-
-								int minPlane = p;
-								int maxPlane = p;
-
-								FIND_MIN_TILE_Z:
-								for (; minTileZ > 0; minTileZ--) {
-									if ((occludeflags[p][tileX][minTileZ - 1] & flagA) == 0) {
-										break;
-									}
+							for (/**/; minTileZ > 0; minTileZ--) {
+								if (((occludeflags[plane][tileX][minTileZ - 1]) & flagA) == 0) {
+									break;
 								}
+							}
 
-								FIND_MAX_TILE_Z:
-								for (; maxTileZ < tileSizeZ; maxTileZ++) {
-									if ((occludeflags[p][tileX][maxTileZ + 1] & flagA) == 0) {
-										break;
-									}
+							for (/**/; maxTileZ < tileSizeZ; maxTileZ++) {
+								if (((occludeflags[plane][tileX][maxTileZ + 1])
+									& flagA)
+									== 0) {
+									break;
 								}
+							}
 
-								FIND_MIN_PLANE:
-								for (; minPlane > 0; minPlane--) {
-									for (int y = minTileZ; y <= maxTileZ; y++) {
-										if ((occludeflags[minPlane - 1][tileX][y] & flagA) == 0) {
-											break FIND_MIN_PLANE;
-										}
-									}
-								}
-
-								FIND_MAX_PLANE:
-								for (; maxPlane < plane; maxPlane++) {
-									for (int x = minTileZ; x <= maxTileZ; x++) {
-										if ((occludeflags[maxPlane + 1][tileX][x] & flagA) == 0) {
-											break FIND_MAX_PLANE;
-										}
-									}
-								}
-
-								int area = ((maxPlane - minPlane) + 1) * ((maxTileZ - minTileZ) + 1);
-
-								if (area >= 8) {
-									int minY = heightmap[maxPlane][tileX][minTileZ] - 240;
-									int maxY = heightmap[minPlane][tileX][minTileZ];
-
-									// Creates a box of an occluder
-									SceneGraph.addOccluder(0b1,
-										tileX * 128, minY, minTileZ * 128,
-										tileX * 128, maxY, (maxTileZ * 128) + 128,
-										plane);
-
-									// Removes occlusion flag A from the flags
-									for (int fromPlane = minPlane; fromPlane <= maxPlane; fromPlane++) {
-										for (int fromZ = minTileZ; fromZ <= maxTileZ; fromZ++) {
-											occludeflags[fromPlane][tileX][fromZ] &= flagA ^ 0xFFFFFFFF;
-										}
+							FIND_MIN_PLANE:
+							for (/**/; minPlane > 0; minPlane--) {
+								for (int z = minTileZ; z <= maxTileZ; z++) {
+									if (((occludeflags[minPlane - 1][tileX][z]) & flagA) == 0) {
+										break FIND_MIN_PLANE;
 									}
 								}
 							}
 
-							if ((occludeflags[p][tileX][tileZ] & flagB) != 0) {
-								int minTileX = tileX;
-								int maxTileX = tileX;
-								int minPlane = p;
-								int maxPlane = p;
-
-								FIND_MIN_TILE_X:
-								for (; minTileX > 0; minTileX--) {
-									if (((occludeflags[p][minTileX - 1][tileZ]) & flagB) == 0) {
-										break;
-									}
-								}
-
-								FIND_MAX_TILE_X:
-								for (; maxTileX < tileSizeX; maxTileX++) {
-									if (((occludeflags[p][maxTileX + 1][tileZ]) & flagB) == 0) {
-										break;
-									}
-								}
-
-								FIND_MIN_PLANE:
-								for (; minPlane > 0; minPlane--) {
-									for (int x = minTileX; x <= maxTileX; x++) {
-										if (((occludeflags[minPlane - 1][x][tileZ]) & flagB) == 0) {
-											break FIND_MIN_PLANE;
-										}
-									}
-								}
-
-								FIND_MAX_PLANE:
-								for (; maxPlane < plane; maxPlane++) {
-									for (int x = minTileX; x <= maxTileX; x++) {
-										if (((occludeflags[maxPlane + 1][x][tileZ]) & flagB) == 0) {
-											break FIND_MAX_PLANE;
-										}
-									}
-								}
-
-								int area = ((maxPlane - minPlane) + 1) * ((maxTileX - minTileX) + 1);
-
-								if (area >= 8) {
-									int minY = heightmap[maxPlane][minTileX][tileZ] - 240;
-									int maxY = heightmap[minPlane][minTileX][tileZ];
-
-									SceneGraph.addOccluder(0b10,
-										minTileX * 128, minY, tileZ * 128,
-										(maxTileX * 128) + 128, maxY, tileZ * 128,
-										plane);
-
-									for (int p1 = minPlane; p1 <= maxPlane; p1++) {
-										for (int x = minTileX; x <= maxTileX; x++) {
-											occludeflags[p1][x][tileZ] &= flagB ^ 0xffffffff;
-										}
+							FIND_MAX_PLANE:
+							for (/**/; maxPlane < topPlane; maxPlane++) {
+								for (int i_135_ = minTileZ; i_135_ <= maxTileZ; i_135_++) {
+									if (((occludeflags[maxPlane + 1][tileX][i_135_]) & flagA) == 0) {
+										break FIND_MAX_PLANE;
 									}
 								}
 							}
 
-							// if high memory and this tile has rule2 flags
-							if (!lowmemory && (occludeflags[p][tileX][tileZ] & flagC) != 0) {
-								int minTileX = tileX;
-								int maxTileX = tileX;
-								int minTileZ = tileZ;
-								int maxTileZ = tileZ;
+							int area = ((maxPlane + 1 - minPlane) * (maxTileZ - minTileZ + 1));
 
-								FIND_MIN_TILE_Z:
-								for (; minTileZ > 0; minTileZ--) {
-									if (((occludeflags[p][tileX][minTileZ - 1]) & flagC) == 0) {
-										break;
+							if (area >= 8) {
+								int offsetY = 240;
+								int minY = ((heightmap[maxPlane][tileX][minTileZ]) - offsetY);
+								int maxY = (heightmap[minPlane][tileX][minTileZ]);
+
+								SceneGraph.addOccluder(1,
+									tileX * 128, minY, minTileZ * 128,
+									tileX * 128, maxY, maxTileZ * 128 + 128,
+									topPlane);
+
+								// remove flag a
+								for (int p = minPlane; p <= maxPlane; p++) {
+									for (int z = minTileZ; z <= maxTileZ; z++) {
+										occludeflags[p][tileX][z] &= flagA ^ 0xffffffff;
 									}
 								}
+							}
+						}
 
-								FIND_MAX_TILE_Z:
-								for (; maxTileZ < tileSizeZ; maxTileZ++) {
-									if (((occludeflags[p][tileX][maxTileZ + 1]) & flagC) == 0) {
-										break;
+						if ((occludeflags[plane][tileX][tileZ] & flagB) != 0) {
+							int minTileX = tileX;
+							int maxTileX = tileX;
+							int minPlane = plane;
+							int maxPlane = plane;
+
+							for (/**/; minTileX > 0; minTileX--) {
+								if (((occludeflags[plane][minTileX - 1][tileZ]) & flagB) == 0) {
+									break;
+								}
+							}
+
+							for (/**/; maxTileX < tileSizeX; maxTileX++) {
+								if (((occludeflags[plane][maxTileX + 1][tileZ]) & flagB) == 0) {
+									break;
+								}
+							}
+
+							FIND_MIN_PLANE:
+							for (/**/; minPlane > 0; minPlane--) {
+								for (int i_146_ = minTileX; i_146_ <= maxTileX; i_146_++) {
+									if (((occludeflags[minPlane - 1][i_146_][tileZ]) & flagB) == 0) {
+										break FIND_MIN_PLANE;
 									}
 								}
-
-								FIND_MIN_X:
-								for (; minTileX > 0; minTileX--) {
-									for (int y = minTileZ; y <= maxTileZ; y++) {
-										if (((occludeflags[p][minTileX - 1][y]) & flagC) == 0) {
-											break FIND_MIN_X;
-										}
+							}
+							FIND_MAX_PLANE:
+							for (/**/; maxPlane < topPlane; maxPlane++) {
+								for (int i_147_ = minTileX; i_147_ <= maxTileX; i_147_++) {
+									if (((occludeflags[maxPlane + 1][i_147_][tileZ]) & flagB) == 0) {
+										break FIND_MAX_PLANE;
 									}
 								}
+							}
 
-								FIND_MAX_TILE_X:
-								for (; maxTileX < tileSizeX; maxTileX++) {
-									for (int y = minTileZ; y <= maxTileZ; y++) {
-										if (((occludeflags[p][maxTileX + 1][y]) & flagC) == 0) {
-											break FIND_MAX_TILE_X;
-										}
-									}
-								}
+							int area = ((maxPlane + 1 - minPlane) * (maxTileX - minTileX + 1));
+							if (area >= 8) {
+								int offsetY = 240;
+								int minY = ((heightmap[maxPlane][minTileX][tileZ]) - offsetY);
+								int maxY = (heightmap[minPlane][minTileX][tileZ]);
 
-								int area = ((maxTileX - minTileX) + 1) * ((maxTileZ - minTileZ) + 1);
+								SceneGraph.addOccluder(2,
+									minTileX * 128, minY, tileZ * 128,
+									maxTileX * 128 + 128, maxY, tileZ * 128,
+									topPlane);
 
-								if (area >= 4) {
-									int z = heightmap[p][minTileX][minTileZ];
-									SceneGraph.addOccluder(0b100,
-										minTileX * 128, z, minTileZ * 128,
-										(maxTileX * 128) + 128, z, (maxTileZ * 128) + 128,
-										plane);
-
+								for (int p = minPlane; p <= maxPlane; p++) {
 									for (int x = minTileX; x <= maxTileX; x++) {
-										for (int y = minTileZ; y <= maxTileZ; y++) {
-											occludeflags[p][x][y] &= flagC ^ 0xffffffff;
-										}
+										occludeflags[p][x][tileZ] &= flagB ^ 0xffffffff;
+									}
+								}
+							}
+						}
+
+						if (!lowmemory && (occludeflags[plane][tileX][tileZ] & flagC) != 0) {
+							int minTileX = tileX;
+							int maxTileX = tileX;
+							int minTileZ = tileZ;
+							int maxTileZ = tileZ;
+
+							for (/**/; minTileZ > 0; minTileZ--) {
+								if (((occludeflags[plane][tileX][minTileZ - 1]) & flagC) == 0) {
+									break;
+								}
+							}
+
+							for (/**/; maxTileZ < tileSizeZ; maxTileZ++) {
+								if (((occludeflags[plane][tileX][maxTileZ + 1]) & flagC) == 0) {
+									break;
+								}
+							}
+
+							FIND_MIN_X:
+							for (/**/; minTileX > 0; minTileX--) {
+								for (int i_158_ = minTileZ; i_158_ <= maxTileZ; i_158_++) {
+									if (((occludeflags[plane][minTileX - 1][i_158_]) & flagC) == 0) {
+										break FIND_MIN_X;
+									}
+								}
+							}
+
+							FIND_MAX_X:
+							for (/**/; maxTileX < tileSizeX; maxTileX++) {
+								for (int i_159_ = minTileZ; i_159_ <= maxTileZ; i_159_++) {
+									if (((occludeflags[plane][maxTileX + 1][i_159_]) & flagC) == 0) {
+										break FIND_MAX_X;
+									}
+								}
+							}
+
+							if ((maxTileX - minTileX + 1) * (maxTileZ - minTileZ + 1) >= 4) {
+								int minY = (heightmap[plane][minTileX][minTileZ]);
+
+								SceneGraph.addOccluder(4,
+									minTileX * 128, minY, minTileZ * 128,
+									maxTileX * 128 + 128, minY, maxTileZ * 128 + 128,
+									topPlane);
+
+								for (int x = minTileX; x <= maxTileX; x++) {
+									for (int z = minTileZ; z <= maxTileZ; z++) {
+										occludeflags[plane][x][z] &= flagC ^ 0xffffffff;
 									}
 								}
 							}

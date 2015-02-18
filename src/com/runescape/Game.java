@@ -2,6 +2,7 @@ package com.runescape;
 
 import com.runescape.Graphics2D;
 import com.runescape.StringBuffer;
+import com.runescape.r317.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
@@ -688,6 +689,7 @@ public class Game extends GameShell {
 	public void loadModels(Archive models) {
 		drawProgress("Unpacking models", 85);
 		Model.load(models);
+		ModelExtension.unpack();
 		AnimationTransform.load(models);
 		AnimationFrame.load(models);
 	}
@@ -3883,13 +3885,6 @@ public class Game extends GameShell {
 					}
 				}
 			}
-		}
-
-		for (int i = 0; i < 128; i++) {
-			minimapFunctions[minimapFunctionCount] = mapfunctions[(int) (Math.random() * mapfunctions.length)];
-			minimapFunctionX[minimapFunctionCount] = (int) (Math.random() * 104);
-			minimapFunctionY[minimapFunctionCount] = (int) (Math.random() * 104);
-			minimapFunctionCount++;
 		}
 	}
 

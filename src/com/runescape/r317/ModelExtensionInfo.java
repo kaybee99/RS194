@@ -21,32 +21,16 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package dane.runescape.mapeditor.event;
+package com.runescape.r317;
 
-import com.runescape.Tile;
-import com.runescape.Scene;
-import com.runescape.SceneGraph;
-import java.util.*;
+import com.runescape.*;
 
 /**
+ * An extension of the model header, which allows storage for our model's raw data.
  *
  * @author Dane
  */
-public interface GameListener extends EventListener {
+public class ModelExtensionInfo extends ModelInfo {
 
-	/**
-	 * Called when the scene has been loaded.
-	 *
-	 * @param plane the plane the scene loaded on.
-	 * @param scene the scene.
-	 * @param graph the scene graph.
-	 */
-	void onSceneLoaded(int plane, Scene scene, SceneGraph graph);
-
-	/**
-	 * Called when a tile in the scene has been clicked.
-	 *
-	 * @param t the tile.
-	 */
-	void onSceneTileClicked(Tile t);
+	public byte[] data;
 }

@@ -62,39 +62,15 @@ public final class SceneGraph {
 	//
 	// @formatter:off
 	public static final int[] TILE_WALL_DRAW_FLAGS_0 = {
-		0x10 | 0x2 | 0x1,
-		0x20 | 0x10 | 0x4 | 0x2 | 0x1,
-		0x20 | 0x4 | 0x2,
-		0x80 | 0x10 | 0x8 | 0x2 | 0x1,
-		0x80 | 0x40 | 0x20 | 0x10 | 0x8 | 0x4 | 0x2 | 0x1,
-		0x40 | 0x20 | 0x8 | 0x4 | 0x2,
-		0x80 | 0x8 | 0x1,
-		0x80 | 0x40 | 0x8 | 0x4 | 0x1,
-		0x40 | 0x8 | 0x4
+		19, 55, 38, 155, 255, 110, 137, 205, 76
 	};
 
 	public static final int[] WALL_DRAW_FLAGS = {
-		0x80 | 0x20,
-		0x80 | 0x40,
-		0x40 | 0x10,
-		0x40 | 0x20,
-		0x0,
-		0x80 | 0x10,
-		0x40 | 0x10,
-		0x20 | 0x10,
-		0x80 | 0x20
+		160, 192, 80, 96, 0, 144, 80, 48, 160
 	};
 
 	public static final int[] TILE_WALL_DRAW_FLAGS_1 = {
-		0x40 | 0x8 | 0x4,
-		0x8,
-		0x80 | 0x8 | 0x1,
-		0x4,
-		0x0,
-		0x1,
-		0x20 | 0x4 | 0x2,
-		0x2,
-		0x10 | 0x2 | 0x1
+		76, 8, 137, 4, 0, 1, 38, 2, 19
 	};
 
 	public static final int[] WALL_UNCULL_FLAGS_0 = {0, 0, 2, 0, 0, 2, 1, 1, 0};
@@ -107,60 +83,10 @@ public final class SceneGraph {
 	}
 
 	public static final int[] TEXTURE_HSL = {
-		// hue = 0-63
-		// saturation = 0-7
-		// lightness = 0-127
-		// (hue << 10) | (saturation << 7) | lightness
-		(0 << 10) | (0 << 7) | 41,
-		(38 << 10) | (2 << 7) | 80,
-		(0 << 10) | (0 << 7) | 41,
-		(4 << 10) | (4 << 7) | 35,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(42 << 10) | (0 << 7) | 78,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(8 << 10) | (3 << 7) | 26,
-		(0 << 10) | (0 << 7) | 41,
-		(28 << 10) | (2 << 7) | 64,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(4 << 10) | (7 << 7) | 64,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(3 << 10) | (0 << 7) | 59,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41,
-		(0 << 10) | (0 << 7) | 41
+		41, 39248, 41, 4643, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
+		43086, 41, 41, 41, 41, 41, 41, 41, 8602, 41, 28992, 41, 41, 41, 41,
+		41, 5056, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41, 41,
+		3131, 41, 41, 41
 	};
 	// @formatter:on
 
@@ -1549,28 +1475,28 @@ public final class SceneGraph {
 
 						if (wall.type1 == 16) {
 							// the direction the wall can cull
-							tile.wallCullDirection = 0b0011; // x > minX && z < maxZ
+							tile.wallCullDirection = 3; // x > minX && z < maxZ
 
 							// the directions the wall can't cull relative to the camera
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_0[direction];
 
 							// the direction the wall is culling
-							tile.relativeWallCullDirection = 0b0011 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 3 - tile.wallUncullDirection;
 						} else if (wall.type1 == 32) {
-							tile.wallCullDirection = 0b0110; // x < maxX && z < maxZ
+							tile.wallCullDirection = 6; // x < maxX && z < maxZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_1[direction];
-							tile.relativeWallCullDirection = 0b0110 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 6 - tile.wallUncullDirection;
 						} else if (wall.type1 == 64) {
-							tile.wallCullDirection = 0b1100; // x < maxX && z > minZ
+							tile.wallCullDirection = 12; // x < maxX && z > minZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_2[direction];
-							tile.relativeWallCullDirection = 0b1100 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 12 - tile.wallUncullDirection;
 						} else {
-							tile.wallCullDirection = 0b1001; // x > minX && z > minZ
+							tile.wallCullDirection = 9; // x > minX && z > minZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_3[direction];
-							tile.relativeWallCullDirection = 0b1001 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 9 - tile.wallUncullDirection;
 						}
 					} else {
-						tile.wallCullDirection = 0b0000;
+						tile.wallCullDirection = 0;
 					}
 
 					if ((wall.type1 & tileWallDrawFlags) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
@@ -1711,7 +1637,7 @@ public final class SceneGraph {
 								// one of the tiles this location belongs to are
 								// null, therefor do not draw it.
 								if (t == null) {
-									continue LOOP;
+									continue;
 								}
 
 								if (t.draw) {
@@ -1723,19 +1649,19 @@ public final class SceneGraph {
 									int flags = 0;
 
 									if (x > l.minTileX) {
-										flags += 0b0001;
+										flags += 1;
 									}
 
 									if (x < l.maxTileX) {
-										flags += 0b0100;
+										flags += 4;
 									}
 
 									if (z > l.minTileZ) {
-										flags += 0b1000;
+										flags += 8;
 									}
 
 									if (z < l.maxTileZ) {
-										flags += 0b0010;
+										flags += 2;
 									}
 
 									// 0001 = x > minX
@@ -2034,9 +1960,6 @@ public final class SceneGraph {
 
 		Graphics3D.alpha = 0;
 
-		boolean within = withinTriangle(Scene.mouseX, Scene.mouseY, y2, y3, y1, x2, x3, x1) | withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y3, x0, x1, x3);
-		boolean hovered = false;
-
 		if (((x2 - x3) * (y1 - y3) - (y2 - y3) * (x1 - x3)) > 0) {
 			Graphics3D.testX = false;
 
@@ -2044,16 +1967,10 @@ public final class SceneGraph {
 				Graphics3D.testX = true;
 			}
 
-			if (within) {
-				if (Scene.checkClick) {
+			if (Scene.checkClick) {
+				if (withinTriangle(Scene.mouseX, Scene.mouseY, y2, y3, y1, x2, x3, x1)) {
 					Scene.clickedTileX = tileX;
 					Scene.clickedTileZ = tileZ;
-				}
-
-				if (Scene.hoverPlane == plane) {
-					Scene.hoverTileX = tileX;
-					Scene.hoverTileZ = tileZ;
-					hovered = true;
 				}
 			}
 
@@ -2082,16 +1999,10 @@ public final class SceneGraph {
 				Graphics3D.testX = true;
 			}
 
-			if (within) {
-				if (Scene.checkClick) {
+			if (Scene.checkClick) {
+				if (withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y3, x0, x1, x3)) {
 					Scene.clickedTileX = tileX;
 					Scene.clickedTileZ = tileZ;
-				}
-
-				if (Scene.hoverPlane == plane) {
-					Scene.hoverTileX = tileX;
-					Scene.hoverTileZ = tileZ;
-					hovered = true;
 				}
 			}
 
@@ -2106,22 +2017,6 @@ public final class SceneGraph {
 					int hsl = TEXTURE_HSL[u.textureIndex];
 					Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x3, y3, adjustHSLLightness(hsl, u.southwestColor), adjustHSLLightness(hsl, u.southeastColor), adjustHSLLightness(hsl, u.northwestColor));
 				}
-			}
-		}
-
-		if (Scene.highlightHover) {
-			int dx = Scene.hoverTileX - tileX;
-			int dz = Scene.hoverTileZ - tileZ;
-			int distance2 = (dx * dx) + (dz * dz);
-
-			Graphics3D.testX = true;
-
-			if (hovered || distance2 < Scene.hoverRadiusSquared) {
-				int alpha = Graphics3D.alpha;
-				Graphics3D.alpha = 150;
-				Graphics3D.fillTriangle(x2, y2, x3, y3, x1, y1, Scene.hoverColor);
-				Graphics3D.fillTriangle(x0, y0, x1, y1, x3, y3, Scene.hoverColor);
-				Graphics3D.alpha = alpha;
 			}
 		}
 	}
@@ -2172,8 +2067,6 @@ public final class SceneGraph {
 			int y1 = TileOverlay.tmpScreenY[b];
 			int y2 = TileOverlay.tmpScreenY[c];
 
-			boolean within = withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y2, x0, x1, x2);
-
 			if (((x0 - x1) * (y2 - y1) - (y0 - y1) * (x2 - x1)) > 0) {
 				Graphics3D.testX = false;
 
@@ -2181,15 +2074,10 @@ public final class SceneGraph {
 					Graphics3D.testX = true;
 				}
 
-				if (within) {
-					if (Scene.checkClick) {
+				if (Scene.checkClick) {
+					if (withinTriangle(Scene.mouseX, Scene.mouseY, y0, y1, y2, x0, x1, x2)) {
 						Scene.clickedTileX = tileX;
 						Scene.clickedTileZ = tileZ;
-					}
-
-					if (Scene.hoverPlane == plane) {
-						Scene.hoverTileX = tileX;
-						Scene.hoverTileZ = tileZ;
 					}
 				}
 
@@ -2208,10 +2096,6 @@ public final class SceneGraph {
 					Graphics3D.fillShadedTriangle(x0, y0, x1, y1, x2, y2, adjustHSLLightness(hsl, o.triangleColorA[t]), adjustHSLLightness(hsl, o.triangleColorB[t]), adjustHSLLightness(hsl, o.triangleColorC[t]));
 				}
 			}
-		}
-
-		if (Scene.forceTileHover) {
-			drawTileUnderlay(null, plane, tileX, tileZ, pitchSin, pitchCos, yawSin, yawCos);
 		}
 	}
 
@@ -2251,87 +2135,83 @@ public final class SceneGraph {
 	}
 
 	private void updateOccluders() {
-		int occluderCount = planeOccluderCount[topPlane];
+		int count = planeOccluderCount[topPlane];
 		Occluder[] occluders = planeOccluders[topPlane];
 
 		activeOccluderCount = 0;
 
-		if (!Scene.occlusionEnabled) {
-			return;
-		}
-
-		for (int n = 0; n < occluderCount; n++) {
+		for (int n = 0; n < count; n++) {
 			Occluder o = occluders[n];
 
 			if (o.type == 1) {
-				int tileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
+				int minTileX = o.minTileX - cameraTileX + 25;
 
-				if (tileX >= 0 && tileX <= Scene.VIEW_DIAMETER) {
-					int minTileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+				if (minTileX >= 0 && minTileX <= 50) {
+					int minTileZ = o.minTileZ - cameraTileZ + 25;
 
 					if (minTileZ < 0) {
 						minTileZ = 0;
 					}
 
-					int maxTileZ = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int maxTileZ = o.maxTileZ - cameraTileZ + 25;
 
-					if (maxTileZ > Scene.VIEW_DIAMETER) {
-						maxTileZ = Scene.VIEW_DIAMETER;
+					if (maxTileZ > 50) {
+						maxTileZ = 50;
 					}
 
 					boolean visible = false;
 
 					while (minTileZ <= maxTileZ) {
-						if (visibilityMap[tileX][minTileZ++]) {
+						if (visibilityMap[minTileX][minTileZ++]) {
 							visible = true;
 							break;
 						}
 					}
 
 					if (visible) {
-						int dx = cameraX - o.minX;
+						int x = cameraX - o.minX;
 
-						if (dx > 32) {
+						if (x > 32) {
 							o.testDirection = 1;
 						} else {
-							if (dx >= -32) {
+							if (x >= -32) {
 								continue;
 							}
-
 							o.testDirection = 2;
-							dx = -dx;
+							x = -x;
 						}
 
-						o.minNormalZ = (o.minZ - cameraZ << 8) / dx;
-						o.maxNormalZ = (o.maxZ - cameraZ << 8) / dx;
-						o.minNormalY = (o.minY - cameraY << 8) / dx;
-						o.maxNormalY = (o.maxY - cameraY << 8) / dx;
+						o.minNormalZ = (o.minZ - cameraZ << 8) / x;
+						o.maxNormalZ = (o.maxZ - cameraZ << 8) / x;
+						o.minNormalY = (o.minY - cameraY << 8) / x;
+						o.maxNormalY = (o.maxY - cameraY << 8) / x;
 						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
 			} else if (o.type == 2) {
-				int tileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+				int minTileZ = o.minTileZ - cameraTileZ + 25;
 
-				if (tileZ >= 0 && tileZ <= Scene.VIEW_DIAMETER) {
-					int minTileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
+				if (minTileZ >= 0 && minTileZ <= 50) {
+					int minTileX = o.minTileX - cameraTileX + 25;
 
 					if (minTileX < 0) {
 						minTileX = 0;
 					}
 
-					int maxTileX = o.maxTileX - cameraTileX + Scene.VIEW_RADIUS;
+					int maxTileX = o.maxTileX - cameraTileX + 25;
 
-					if (maxTileX > Scene.VIEW_DIAMETER) {
-						maxTileX = Scene.VIEW_DIAMETER;
+					if (maxTileX > 50) {
+						maxTileX = 50;
 					}
 
 					boolean visible = false;
 					while (minTileX <= maxTileX) {
-						if (visibilityMap[minTileX++][tileZ]) {
+						if (visibilityMap[minTileX++][minTileZ]) {
 							visible = true;
 							break;
 						}
 					}
+
 					if (visible) {
 						int z = cameraZ - o.minZ;
 
@@ -2353,54 +2233,52 @@ public final class SceneGraph {
 					}
 				}
 			} else if (o.type == 4) {
-				int y = o.minY - cameraY;
+				int minY = o.minY - cameraY;
 
-				if (y > 128) {
-					int minTileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+				if (minY > 128) {
+					int minTileZ = o.minTileZ - cameraTileZ + 25;
 
 					if (minTileZ < 0) {
 						minTileZ = 0;
 					}
 
-					int maxTileZ = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
+					int maxTileZ = o.maxTileZ - cameraTileZ + 25;
 
-					if (maxTileZ > Scene.VIEW_DIAMETER) {
-						maxTileZ = Scene.VIEW_DIAMETER;
+					if (maxTileZ > 50) {
+						maxTileZ = 50;
 					}
 
 					if (minTileZ <= maxTileZ) {
-						int minTileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
+						int minTileX = o.minTileX - cameraTileX + 25;
 
 						if (minTileX < 0) {
 							minTileX = 0;
 						}
 
-						int maxTileX = o.maxTileX - cameraTileX + Scene.VIEW_RADIUS;
+						int maxTileX = o.maxTileX - cameraTileX + 25;
 
-						if (maxTileX > Scene.VIEW_DIAMETER) {
-							maxTileX = Scene.VIEW_DIAMETER;
+						if (maxTileX > 50) {
+							maxTileX = 50;
 						}
 
 						boolean visible = false;
 
 						LOOP:
-						{
-							for (int tileX = minTileX; tileX <= maxTileX; tileX++) {
-								for (int tileZ = minTileZ; tileZ <= maxTileZ; tileZ++) {
-									if (visibilityMap[tileX][tileZ]) {
-										visible = true;
-										break LOOP;
-									}
+						for (int x = minTileX; x <= maxTileX; x++) {
+							for (int z = minTileZ; z <= maxTileZ; z++) {
+								if (visibilityMap[x][z]) {
+									visible = true;
+									break LOOP;
 								}
 							}
 						}
 
 						if (visible) {
 							o.testDirection = 5;
-							o.minNormalX = (o.minX - cameraX << 8) / y;
-							o.maxNormalX = (o.maxX - cameraX << 8) / y;
-							o.minNormalZ = (o.minZ - cameraZ << 8) / y;
-							o.maxNormalZ = (o.maxZ - cameraZ << 8) / y;
+							o.minNormalX = (o.minX - cameraX << 8) / minY;
+							o.maxNormalX = (o.maxX - cameraX << 8) / minY;
+							o.minNormalZ = (o.minZ - cameraZ << 8) / minY;
+							o.maxNormalZ = (o.maxZ - cameraZ << 8) / minY;
 							activeOcludders[activeOccluderCount++] = o;
 						}
 					}

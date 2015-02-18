@@ -1,7 +1,6 @@
 package com.runescape;
 
-import com.runescape.LinkedList;
-import java.util.*;
+import com.runescape.r317.*;
 
 public class LocationInfo {
 
@@ -79,8 +78,15 @@ public class LocationInfo {
 	public static LinkedList uniqueModelCache = new LinkedList(30);
 
 	public static final void load(Archive a) {
-		data = new Buffer(a.get("loc.dat"));
-		Buffer b = new Buffer(a.get("loc.idx"));
+		Buffer b;
+
+		if (Signlink.filesExist("loc.dat", "loc.idx")) {
+			data = new Buffer(Signlink.loadFile("loc.dat"));
+			b = new Buffer(Signlink.loadFile("loc.idx"));
+		} else {
+			data = new Buffer(a.get("loc.dat"));
+			b = new Buffer(a.get("loc.idx"));
+		}
 
 		count = b.readUShort();
 		pointers = new int[count];
@@ -231,7 +237,13 @@ public class LocationInfo {
 				if (actions == null) {
 					actions = new String[5];
 				}
-				actions[opcode - 30] = b.readString();
+
+				String s = b.readString();
+
+				// 289 loc backwards compatibility
+				if (!s.equals("hidden")) {
+					actions[opcode - 30] = s;
+				}
 			} else if (opcode == 40) {
 				int n = b.read();
 				oldColors = new int[n];
@@ -256,6 +268,8 @@ public class LocationInfo {
 				mapscene = b.readUShort();
 			} else if (opcode == 69) {
 				interactionSideFlags = b.read();
+			} else if (opcode == 73) {
+				// ignore
 			} else if (opcode == 75) {
 				b.read(); // ignore
 			} else if (opcode == 77) { // ignore varbit info
@@ -281,103 +295,6 @@ public class LocationInfo {
 				interactable = true;
 			}
 		}
-	}
-
-	public final Model getPreviewModel(int type, int rotation, int southwestY, int southeastY, int northeastY, int northwestY) {
-		Model m = null;
-
-		if (modelTypes == null) {
-			if (type != 10) {
-				return null;
-			}
-
-			if (modelIndices == null) {
-				return null;
-			}
-
-			int modelCount = modelIndices.length;
-
-			for (int n = 0; n < modelCount; n++) {
-				int modelIndex = modelIndices[n];
-
-				m = new Model(modelIndex & 0xFFFF);
-
-				if (modelCount > 1) {
-					tmpModelStore[n] = m;
-				}
-			}
-
-			if (modelCount > 1) {
-				m = new Model(tmpModelStore, modelCount);
-			}
-		} else {
-			int typeIndex = -1;
-
-			for (int n = 0; n < modelTypes.length; n++) {
-				if (modelTypes[n] == type) {
-					typeIndex = n;
-					break;
-				}
-			}
-
-			if (typeIndex == -1) {
-				return null;
-			}
-
-			if (typeIndex >= modelIndices.length) {
-				return null;
-			}
-
-			int modelIndex = modelIndices[typeIndex];
-
-			if (modelIndex == -1) {
-				return null;
-			}
-
-			m = new Model(modelIndex & 0xFFFF);
-		}
-
-		boolean rescale = scaleX != 128 || scaleY != 128 || scaleZ != 128;
-
-		m = new Model(m, rotation == 0 && !adjustToTerrain && !rescale, oldColors == null, !disposeAlpha, !flatShaded);
-
-		while (rotation-- > 0) {
-			m.rotateCounterClockwise();
-		}
-
-		if (oldColors != null) {
-			for (int n = 0; n < oldColors.length; n++) {
-				m.recolor(oldColors[n], newColors[n]);
-			}
-		}
-
-		if (rescale) {
-			m.scale(scaleX, scaleY, scaleZ);
-		}
-
-		if (adjustToTerrain) {
-			int averageY = (southwestY + southeastY + northeastY + northwestY) / 4;
-
-			for (int v = 0; v < m.vertexCount; v++) {
-				int x = m.vertexX[v];
-				int z = m.vertexZ[v];
-				int averageY1 = southwestY + (((southeastY - southwestY) * (x + 64)) / 128);
-				int averageY2 = northwestY + (((northeastY - northwestY) * (x + 64)) / 128);
-				int y = averageY1 + (((averageY2 - averageY1) * (z + 64)) / 128);
-
-				m.vertexY[v] += y - averageY;
-			}
-		}
-
-		m.triangleAlpha = new int[m.triangleCount];
-		Arrays.fill(m.triangleAlpha, 127);
-
-		m.applyLighting(brightness + 64, (specular * 5) + 768, -50, -10, -50, !flatShaded);
-
-		if (hasCollision) {
-			m.objectOffsetY = m.maxBoundY;
-		}
-		return m;
 	}
 
 	public final Model getModel(int type, int rotation, int southwestY, int southeastY, int northeastY, int northwestY, int seqFrame) {
@@ -414,7 +331,19 @@ public class LocationInfo {
 				m = (Model) unmodifiedModelCache.get(modelIndex);
 
 				if (m == null) {
-					m = new Model(modelIndex & 0xFFFF);
+					// if we've loaded our alternative models, use those instead.
+					if (ModelExtension.loaded) {
+						m = ModelExtension.get(modelIndex & 0xFFFF);
+					}
+
+					// reasons m would be null at this point:
+					//
+					// ModelExtension.loaded = false
+					// failed to load model extension
+					//
+					if (m == null) {
+						m = new Model(modelIndex & 0xFFFF);
+					}
 
 					if (invert) {
 						m.invert();
@@ -468,13 +397,25 @@ public class LocationInfo {
 			boolean invert = rotateCounterClockwise ^ rotation > 3;
 
 			if (invert) {
-				modelIndex += 0x10000;
+				modelIndex += 0x10000; // appends a flag to our modelIndex variable.
 			}
 
 			m = (Model) unmodifiedModelCache.get((long) modelIndex);
 
 			if (m == null) {
-				m = new Model(modelIndex & 0xFFFF);
+				// if we've loaded our alternative models, use those instead.
+				if (ModelExtension.loaded) {
+					m = ModelExtension.get(modelIndex & 0xFFFF);
+				}
+
+				// reasons m would be null at this point:
+				//
+				// ModelExtension.loaded = false
+				// failed to load model extension
+				//
+				if (m == null) {
+					m = new Model(modelIndex & 0xFFFF);
+				}
 
 				if (invert) {
 					m.invert();
