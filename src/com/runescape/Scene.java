@@ -268,11 +268,11 @@ public final class Scene {
 				int sizeY;
 
 				if (rotation == 1 || rotation == 3) {
-					sizeX = l.sizeY;
+					sizeX = l.sizeZ;
 					sizeY = l.sizeX;
 				} else {
 					sizeX = l.sizeX;
-					sizeY = l.sizeY;
+					sizeY = l.sizeZ;
 				}
 
 				if (graph.addLocation(m, null, tileX, tileY, sizeX, sizeY, averageY, plane, yaw, bitset, info) && l.hasShadow) {
@@ -293,7 +293,7 @@ public final class Scene {
 			}
 
 			if (l.hasCollision) {
-				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
+				collision.setLoc(tileX, tileY, l.sizeX, l.sizeZ, rotation, l.isSolid);
 			}
 
 			if (l.animIndex != -1) {
@@ -308,7 +308,7 @@ public final class Scene {
 			}
 
 			if (l.hasCollision) {
-				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
+				collision.setLoc(tileX, tileY, l.sizeX, l.sizeZ, rotation, l.isSolid);
 			}
 
 			if (l.animIndex != -1) {
@@ -426,7 +426,7 @@ public final class Scene {
 			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (l.hasCollision) {
-				collision.setLoc(tileX, tileY, l.sizeX, l.sizeY, rotation, l.isSolid);
+				collision.setLoc(tileX, tileY, l.sizeX, l.sizeZ, rotation, l.isSolid);
 			}
 		} else if (type == 4) {
 			Model m = l.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);
@@ -1065,18 +1065,18 @@ public final class Scene {
 				int sizeX;
 
 				if (rotation == 1 || rotation == 3) {
-					sizeY = c.sizeY;
+					sizeY = c.sizeZ;
 					sizeX = c.sizeX;
 				} else {
 					sizeY = c.sizeX;
-					sizeX = c.sizeY;
+					sizeX = c.sizeZ;
 				}
 
 				graph.addLocation(m, null, tileX, tileY, sizeY, sizeX, averageY, plane, yaw, bitset, info);
 			}
 
 			if (c.hasCollision) {
-				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
+				collision.setLoc(tileX, tileY, c.sizeX, c.sizeZ, rotation, c.isSolid);
 			}
 
 			if (c.animIndex != -1) {
@@ -1087,7 +1087,7 @@ public final class Scene {
 			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
-				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
+				collision.setLoc(tileX, tileY, c.sizeX, c.sizeZ, rotation, c.isSolid);
 			}
 
 			if (c.animIndex != -1) {
@@ -1129,7 +1129,7 @@ public final class Scene {
 			graph.addLocation(m, null, tileX, tileY, 1, 1, averageY, plane, 0, bitset, info);
 
 			if (c.hasCollision) {
-				collision.setLoc(tileX, tileY, c.sizeX, c.sizeY, rotation, c.isSolid);
+				collision.setLoc(tileX, tileY, c.sizeX, c.sizeZ, rotation, c.isSolid);
 			}
 		} else if (type == 4) {
 			Model m = c.getModel(4, 0, southwestY, southeastY, northeastY, northwestY, -1);

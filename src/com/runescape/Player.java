@@ -18,9 +18,9 @@ final class Player extends Entity {
 	int locSceneZ;
 	Model locModel;
 	int locMinTileX;
-	int locMinTileY;
+	int locMinTileZ;
 	int locMaxTileX;
-	int locMaxTileY;
+	int locMaxTileZ;
 	boolean lowmemory = false;
 	static LinkedList uniqueModelCache = new LinkedList(200);
 

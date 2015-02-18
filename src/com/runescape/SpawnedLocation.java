@@ -2,7 +2,7 @@ package com.runescape;
 
 public final class SpawnedLocation extends Link {
 
-	public int tileY;
+	public int plane;
 	public int classtype;
 	public int tileX;
 	public int tileZ;

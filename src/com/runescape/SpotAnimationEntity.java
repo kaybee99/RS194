@@ -6,19 +6,19 @@ final class SpotAnimationEntity extends Renderable {
 	public int firstCycle;
 	public int plane;
 	public int x;
-	public int y;
 	public int z;
+	public int y;
 	private int seqFrame;
 	private int frameCycle;
 	public boolean finished = false;
 
-	public SpotAnimationEntity(int i, int i_0_, int duration, int spotanim, int plane, int i_4_, int i_5_, int firstCycle) {
-		this.spotanim = SpotAnimation.instance[spotanim];
+	public SpotAnimationEntity(int x, int y, int z, int plane, int spotanimIndex, int startCycle, int duration) {
+		this.spotanim = SpotAnimation.instance[spotanimIndex];
 		this.plane = plane;
-		this.x = i_4_;
-		this.y = i_5_;
-		this.z = i;
-		this.firstCycle = firstCycle + duration;
+		this.x = x;
+		this.z = z;
+		this.y = y;
+		this.firstCycle = startCycle + duration;
 		this.finished = false;
 	}
 

@@ -5,7 +5,7 @@ public final class TemporaryLocation extends Link {
 	public int plane;
 	public int classtype;
 	public int tileX;
-	public int tileY;
+	public int tileZ;
 	public int locIndex;
 	public int rotation;
 	public int type;
@@ -15,7 +15,7 @@ public final class TemporaryLocation extends Link {
 		this.plane = plane;
 		this.classtype = classtype;
 		this.tileX = tileX;
-		this.tileY = tileY;
+		this.tileZ = tileY;
 		this.locIndex = locIndex;
 		this.rotation = rotation;
 		this.type = type;

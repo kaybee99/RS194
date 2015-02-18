@@ -149,7 +149,7 @@ public class Game extends GameShell {
 	public int cameraYawModifier;
 
 	/* Entities */
-	public int entityUpdatePlane = -1;
+	public int lastScenePlane = -1;
 
 	public int npcCount;
 	public int playerCount;
@@ -170,7 +170,7 @@ public class Game extends GameShell {
 	public int[] deadEntityIndices = new int[1000];
 
 	/* Linked Entites */
-	public Chain[][][] planeObjStacks = new Chain[4][104][104];
+	public Chain[][][] planeObjectStacks = new Chain[4][104][104];
 	public Chain projectiles = new Chain();
 	public Chain animatedLocations = new Chain();
 	public Chain spawntLocs = new Chain();
@@ -334,7 +334,7 @@ public class Game extends GameShell {
 	public String chatTransferInput = "";
 	public int chatHoveredInterfaceIndex;
 	public String chatInput = "";
-	public int chatInterfaceIndex = -1;
+	public int chatWidgetIndex = -1;
 	public String[] chatMessage = new String[100];
 	public String[] chatMessagePrefix = new String[100];
 	public int[] chatMessageType = new int[100];
@@ -1828,7 +1828,7 @@ public class Game extends GameShell {
 					selectedObj = false;
 					selectedSpell = false;
 					sceneState = 0;
-					entityUpdatePlane = -1;
+					lastScenePlane = -1;
 					playerCount = 0;
 					npcCount = 0;
 
@@ -1848,15 +1848,15 @@ public class Game extends GameShell {
 
 					for (int plane = 0; plane < 4; plane++) {
 						for (int tileX = 0; tileX < 104; tileX++) {
-							for (int tileY = 0; tileY < 104; tileY++) {
-								planeObjStacks[plane][tileX][tileY] = null;
+							for (int tileZ = 0; tileZ < 104; tileZ++) {
+								planeObjectStacks[plane][tileX][tileZ] = null;
 							}
 						}
 					}
 
 					spawntLocs = new Chain();
 					friendCount = 0;
-					chatInterfaceIndex = -1;
+					chatWidgetIndex = -1;
 					viewportWidgetIndex = -1;
 					sidebarWidgetIndex = -1;
 					chatContinuingDialogue = false;
@@ -2045,7 +2045,7 @@ public class Game extends GameShell {
 		deadEntityIndices = null;
 		npcs = null;
 		npcIndices = null;
-		planeObjStacks = null;
+		planeObjectStacks = null;
 		spawntLocs = null;
 		temporaryLocs = null;
 		projectiles = null;
@@ -2291,7 +2291,7 @@ public class Game extends GameShell {
 		if (sceneState == 2) {
 			for (TemporaryLocation l = (TemporaryLocation) temporaryLocs.peekLast(); l != null; l = (TemporaryLocation) temporaryLocs.getPrevious()) {
 				if (cycle >= l.lastCycle) {
-					addLoc(l.locIndex, l.plane, l.tileX, l.tileY, l.type, l.classtype, l.rotation);
+					addLoc(l.locIndex, l.plane, l.tileX, l.tileZ, l.type, l.classtype, l.rotation);
 					l.unlink();
 				}
 			}
@@ -2629,7 +2629,7 @@ public class Game extends GameShell {
 					chatShowTransferInput = false;
 					chatRedraw = true;
 				}
-			} else if (chatInterfaceIndex == -1) {
+			} else if (chatWidgetIndex == -1) {
 				if (key >= ' ' && key <= 'z' && chatInput.length() < 80) {
 					chatInput += (char) key;
 					chatRedraw = true;
@@ -2948,13 +2948,13 @@ public class Game extends GameShell {
 		}
 
 		int tileX = cameraOrbitX >> 7;
-		int tileY = cameraOrbitZ >> 7;
+		int tileZ = cameraOrbitZ >> 7;
 		int landY = getLandY(cameraOrbitX, cameraOrbitZ, currentPlane);
 		int maxY = 0;
 
-		if (tileX > 3 && tileY > 3 && tileX < 100 && tileY < 100) {
+		if (tileX > 3 && tileZ > 3 && tileX < 100 && tileZ < 100) {
 			for (int tx = tileX - 4; tx <= tileX + 4; tx++) {
-				for (int ty = tileY - 4; ty <= tileY + 4; ty++) {
+				for (int ty = tileZ - 4; ty <= tileZ + 4; ty++) {
 					int p = currentPlane;
 
 					// is bridge
@@ -3037,7 +3037,7 @@ public class Game extends GameShell {
 			sidebarRedraw = false;
 		}
 
-		if (chatInterfaceIndex == -1) {
+		if (chatWidgetIndex == -1) {
 			chatbox.scrollAmount = chatHeight - chatScrollAmount - 77;
 
 			if (mouseX > 453 && mouseX < 565 && mouseY > 350) {
@@ -3060,8 +3060,8 @@ public class Game extends GameShell {
 			}
 		}
 
-		if (chatInterfaceIndex != -1) {
-			if (updateWidgetAnimations(chatInterfaceIndex, sceneDelta)) {
+		if (chatWidgetIndex != -1) {
+			if (updateWidgetAnimations(chatWidgetIndex, sceneDelta)) {
 				chatRedraw = true;
 			}
 		}
@@ -3191,7 +3191,7 @@ public class Game extends GameShell {
 		chatsettings.draw(graphics, 0, 471);
 	}
 
-	public int updateCamera(int tileX, int tileY) {
+	public int updateCamera(int tileX, int tileZ) {
 		int landY = getLandY(cameraOrbitX, cameraOrbitZ, currentPlane);
 		cameraPitch = cameraOrbitPitch;
 
@@ -3201,11 +3201,11 @@ public class Game extends GameShell {
 
 		updateCameraOrbit(cameraOrbitX, landY - 50, cameraOrbitZ, cameraOrbitYaw, cameraPitch, cameraPitch * 3 + 600);
 
-		if ((renderflags[currentPlane][tileX][tileY] & 0x4) != 0) {
+		if ((renderflags[currentPlane][tileX][tileZ] & 0x4) != 0) {
 			return currentPlane;
 		}
 
-		return getTopPlane(tileX, tileY);
+		return getTopPlane(tileX, tileZ);
 	}
 
 	public void drawViewport() {
@@ -3214,7 +3214,7 @@ public class Game extends GameShell {
 		drawPlayers();
 		drawNPCs();
 		drawProjectiles();
-		drawSpotanims();
+		drawSpotAnimations();
 		drawAnimatedLocations();
 
 		int topPlane = updateCamera(localPlayer.sceneX >> 7, localPlayer.sceneZ >> 7);
@@ -3280,22 +3280,22 @@ public class Game extends GameShell {
 
 			if (p.isVisible()) {
 				int tileX = p.sceneX >> 7;
-				int tileY = p.sceneZ >> 7;
+				int tileZ = p.sceneZ >> 7;
 
-				if (tileX >= 0 && tileX < 104 && tileY >= 0 && tileY < 104) {
+				if (tileX >= 0 && tileX < 104 && tileZ >= 0 && tileZ < 104) {
 					// if we have a loc model, render our player by the loc
 					// bounds
 					if (p.locModel != null && cycle >= p.locFirstCycle && cycle < p.locLastCycle) {
 						p.lowmemory = false;
 						p.sceneY = getLandY(p.sceneX, p.sceneZ, currentPlane);
-						graph.add(p, null, p.sceneX, p.sceneY, p.sceneZ, p.locMinTileX, p.locMinTileY, p.locMaxTileX, p.locMaxTileY, currentPlane, p.yaw, index);
+						graph.add(p, null, p.sceneX, p.sceneY, p.sceneZ, p.locMinTileX, p.locMinTileZ, p.locMaxTileX, p.locMaxTileZ, currentPlane, p.yaw, index);
 					} // render normally
 					else {
 						if ((p.sceneX & 0x7f) == 64 && ((p.sceneZ & 0x7f) == 64)) {
-							if (tileCycle[tileX][tileY] == drawCycle) {
+							if (tileCycle[tileX][tileZ] == drawCycle) {
 								continue;
 							}
-							tileCycle[tileX][tileY] = drawCycle;
+							tileCycle[tileX][tileZ] = drawCycle;
 						}
 						p.sceneY = getLandY(p.sceneX, p.sceneZ, currentPlane);
 						graph.add(p, null, p.sceneX, p.sceneY, p.sceneZ, currentPlane, p.yaw, 60, index, p.renderPadding);
@@ -3360,17 +3360,17 @@ public class Game extends GameShell {
 		}
 	}
 
-	public void drawSpotanims() {
-		for (SpotAnimationEntity sa = (SpotAnimationEntity) spotanims.peekLast(); sa != null; sa = (SpotAnimationEntity) spotanims.getPrevious()) {
-			if (sa.plane != currentPlane || sa.finished) {
-				sa.unlink();
-			} else if (cycle >= sa.firstCycle) {
-				sa.update(sceneDelta);
+	public void drawSpotAnimations() {
+		for (SpotAnimationEntity e = (SpotAnimationEntity) spotanims.peekLast(); e != null; e = (SpotAnimationEntity) spotanims.getPrevious()) {
+			if (e.plane != currentPlane || e.finished) {
+				e.unlink();
+			} else if (cycle >= e.firstCycle) {
+				e.update(sceneDelta);
 
-				if (sa.finished) {
-					sa.unlink();
+				if (e.finished) {
+					e.unlink();
 				} else {
-					graph.add(sa, null, sa.x, sa.z, sa.y, sa.plane, 0, 60, -1, 0);
+					graph.add(e, null, e.x, e.y, e.z, e.plane, 0, 60, -1, 0);
 				}
 			}
 		}
@@ -3407,10 +3407,10 @@ public class Game extends GameShell {
 				int bitset = 0;
 
 				if (l.classtype == 1) {
-					bitset = graph.getWallDecorationBitset(l.tileX, l.tileY, l.plane);
+					bitset = graph.getWallDecorationBitset(l.tileX, l.tileZ, l.plane);
 				}
 				if (l.classtype == 2) {
-					bitset = graph.getLocationBitset(l.tileX, l.tileY, l.plane);
+					bitset = graph.getLocationBitset(l.tileX, l.tileZ, l.plane);
 				}
 
 				if (bitset == 0 || (bitset >> 14 & 0x7fff) != l.locIndex) {
@@ -3424,12 +3424,12 @@ public class Game extends GameShell {
 					}
 
 					if (l.classtype == 2) {
-						int rotation = graph.getInfo(l.tileX, l.tileY, l.plane, bitset) >> 6;
+						int rotation = graph.getInfo(l.tileX, l.tileZ, l.plane, bitset) >> 6;
 						Model m = c.getModel(10, rotation, 0, 0, 0, 0, animFrame);
-						graph.setLocModel(m, l.tileX, l.tileY, l.plane);
+						graph.setLocModel(m, l.tileX, l.tileZ, l.plane);
 					} else if (l.classtype == 1) {
 						Model m = c.getModel(4, 0, 0, 0, 0, 0, animFrame);
-						graph.setWallDecorationModel(m, l.tileX, l.tileY, l.plane);
+						graph.setWallDecorationModel(m, l.tileX, l.tileZ, l.plane);
 					}
 				}
 			}
@@ -3683,25 +3683,25 @@ public class Game extends GameShell {
 
 	public final int getLandY(int sceneX, int sceneZ, int plane) {
 		int tileX = sceneX >> 7;
-		int tileY = sceneZ >> 7;
+		int tileZ = sceneZ >> 7;
 
-		if (tileX < 0 || tileX > 103 || tileY < 0 || tileY > 103) {
+		if (tileX < 0 || tileX > 103 || tileZ < 0 || tileZ > 103) {
 			return -1;
 		}
 
 		// this tile is a bridge
-		if (plane < 3 && (renderflags[1][tileX][tileY] & 0x2) == 2) {
+		if (plane < 3 && (renderflags[1][tileX][tileZ] & 0x2) == 2) {
 			plane++;
 		}
 
 		int tileLocalX = sceneX & 0x7F;
-		int tileLocalY = sceneZ & 0x7F;
+		int tileLocalZ = sceneZ & 0x7F;
 
-		int southY = ((planeHeightmaps[plane][tileX][tileY] * (128 - tileLocalX) + planeHeightmaps[plane][tileX + 1][tileY] * tileLocalX) >> 7);
-		int northY = (planeHeightmaps[plane][tileX][tileY + 1] * (128 - tileLocalX) + (planeHeightmaps[plane][tileX + 1][tileY + 1] * tileLocalX)) >> 7;
+		int southY = ((planeHeightmaps[plane][tileX][tileZ] * (128 - tileLocalX) + planeHeightmaps[plane][tileX + 1][tileZ] * tileLocalX) >> 7);
+		int northY = (planeHeightmaps[plane][tileX][tileZ + 1] * (128 - tileLocalX) + (planeHeightmaps[plane][tileX + 1][tileZ + 1] * tileLocalX)) >> 7;
 
 		// (l * min) / max;
-		return southY * (128 - tileLocalY) + northY * tileLocalY >> 7;
+		return southY * (128 - tileLocalZ) + northY * tileLocalZ >> 7;
 	}
 
 	public final void updateCameraOrbit(int x, int y, int z, int cameraYaw, int cameraPitch, int distance) {
@@ -3734,7 +3734,7 @@ public class Game extends GameShell {
 	}
 
 	public void clearScene() {
-		entityUpdatePlane = -1;
+		lastScenePlane = -1;
 		temporaryLocs.clear();
 		animatedLocations.clear();
 		spotanims.clear();
@@ -3801,7 +3801,7 @@ public class Game extends GameShell {
 			updateObjectStacks();
 
 			for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
-				addLoc(l.locIndex, l.tileY, l.tileX, l.tileZ, l.type, l.classtype, l.rotation);
+				addLoc(l.locIndex, l.plane, l.tileX, l.tileZ, l.type, l.classtype, l.rotation);
 			}
 		} catch (Exception e) {
 			logger.log(Level.SEVERE, "Error creating scene", e);
@@ -3908,8 +3908,8 @@ public class Game extends GameShell {
 
 				if (b != null) {
 					int x0 = ((c.sizeX * 4) - b.width) / 2;
-					int y0 = ((c.sizeY * 4) - b.height) / 2;
-					b.draw(48 + (x * 4) + x0, 48 + (104 - y - c.sizeY) * 4 + y0);
+					int y0 = ((c.sizeZ * 4) - b.height) / 2;
+					b.draw(48 + (x * 4) + x0, 48 + (104 - y - c.sizeZ) * 4 + y0);
 				}
 			} else {
 				if (type == 0 || type == 2) {
@@ -4013,8 +4013,8 @@ public class Game extends GameShell {
 
 					if (mapscene != null) {
 						int dx = ((c.sizeX * 4 - mapscene.width) / 2);
-						int dy = ((c.sizeY * 4 - mapscene.height) / 2);
-						mapscene.draw(x * 4 + 48 + dx, 48 + (((104 - y) - c.sizeY) * 4) + dy);
+						int dy = ((c.sizeZ * 4 - mapscene.height) / 2);
+						mapscene.draw(x * 4 + 48 + dx, 48 + (((104 - y) - c.sizeZ) * 4) + dy);
 					}
 				}
 			}
@@ -4426,9 +4426,9 @@ public class Game extends GameShell {
 
 				if (rotation == 0 || rotation == 2) {
 					sizeX = c.sizeX;
-					sizeY = c.sizeY;
+					sizeY = c.sizeZ;
 				} else {
-					sizeX = c.sizeY;
+					sizeX = c.sizeZ;
 					sizeY = c.sizeX;
 				}
 
@@ -4455,23 +4455,23 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final boolean moveTo(int srcX, int srcY, int dstX, int dstY, int width, int length, int type, int faceflags, int interactionSide, boolean arbitrary) {
+	public final boolean moveTo(int srcX, int srcZ, int dstX, int dstZ, int width, int length, int type, int faceflags, int interactionSide, boolean arbitrary) {
 		for (int tileX = 0; tileX < 104; tileX++) {
-			for (int tileY = 0; tileY < 104; tileY++) {
-				pathWaypoint[tileX][tileY] = 0;
-				pathDistance[tileX][tileY] = 99999999;
+			for (int tileZ = 0; tileZ < 104; tileZ++) {
+				pathWaypoint[tileX][tileZ] = 0;
+				pathDistance[tileX][tileZ] = 99999999;
 			}
 		}
 
 		int x = srcX;
-		int y = srcY;
-		pathWaypoint[srcX][srcY] = 99;
-		pathDistance[srcX][srcY] = 0;
+		int z = srcZ;
+		pathWaypoint[srcX][srcZ] = 99;
+		pathDistance[srcX][srcZ] = 0;
 
 		int count = 0;
 		int current = 0;
 		pathQueueX[count] = srcX;
-		pathQueueY[count++] = srcY;
+		pathQueueY[count++] = srcZ;
 
 		boolean reached = false;
 		int pathStepCount = pathQueueX.length;
@@ -4479,94 +4479,94 @@ public class Game extends GameShell {
 
 		while (current != count) {
 			x = pathQueueX[current];
-			y = pathQueueY[current];
+			z = pathQueueY[current];
 			current = (current + 1) % pathStepCount;
 
-			if (x == dstX && y == dstY) {
+			if (x == dstX && z == dstZ) {
 				reached = true;
 				break;
 			}
 
 			if (type != 0) {
-				if ((type < 5 || type == 10) && collisions[currentPlane].method101(x, y, dstY, dstX, type - 1, interactionSide)) {
+				if ((type < 5 || type == 10) && collisions[currentPlane].method101(x, z, dstZ, dstX, type - 1, interactionSide)) {
 					reached = true;
 					break;
 				}
-				if (type < 10 && collisions[currentPlane].method102(x, y, dstX, dstY, type - 1, interactionSide)) {
+				if (type < 10 && collisions[currentPlane].method102(x, z, dstX, dstZ, type - 1, interactionSide)) {
 					reached = true;
 					break;
 				}
 			}
 
-			if (width != 0 && length != 0 && collisions[currentPlane].method103(x, y, width, length, dstX, dstY, faceflags)) {
+			if (width != 0 && length != 0 && collisions[currentPlane].method103(x, z, width, length, dstX, dstZ, faceflags)) {
 				reached = true;
 				break;
 			}
 
-			int distance = pathDistance[x][y] + 1;
+			int distance = pathDistance[x][z] + 1;
 
-			if (x > 0 && pathWaypoint[x - 1][y] == 0 && (flags[x - 1][y] & 0x280108) == 0) {
+			if (x > 0 && pathWaypoint[x - 1][z] == 0 && (flags[x - 1][z] & 0x280108) == 0) {
 				pathQueueX[count] = x - 1;
-				pathQueueY[count] = y;
+				pathQueueY[count] = z;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x - 1][y] = 2;
-				pathDistance[x - 1][y] = distance;
+				pathWaypoint[x - 1][z] = 2;
+				pathDistance[x - 1][z] = distance;
 			}
 
-			if (x < 104 - 1 && pathWaypoint[x + 1][y] == 0 && (flags[x + 1][y] & 0x280180) == 0) {
+			if (x < 104 - 1 && pathWaypoint[x + 1][z] == 0 && (flags[x + 1][z] & 0x280180) == 0) {
 				pathQueueX[count] = x + 1;
-				pathQueueY[count] = y;
+				pathQueueY[count] = z;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x + 1][y] = 8;
-				pathDistance[x + 1][y] = distance;
+				pathWaypoint[x + 1][z] = 8;
+				pathDistance[x + 1][z] = distance;
 			}
 
-			if (y > 0 && pathWaypoint[x][y - 1] == 0 && (flags[x][y - 1] & 0x280102) == 0) {
+			if (z > 0 && pathWaypoint[x][z - 1] == 0 && (flags[x][z - 1] & 0x280102) == 0) {
 				pathQueueX[count] = x;
-				pathQueueY[count] = y - 1;
+				pathQueueY[count] = z - 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x][y - 1] = 1;
-				pathDistance[x][y - 1] = distance;
+				pathWaypoint[x][z - 1] = 1;
+				pathDistance[x][z - 1] = distance;
 			}
 
-			if (y < 104 - 1 && pathWaypoint[x][y + 1] == 0 && (flags[x][y + 1] & 0x280120) == 0) {
+			if (z < 104 - 1 && pathWaypoint[x][z + 1] == 0 && (flags[x][z + 1] & 0x280120) == 0) {
 				pathQueueX[count] = x;
-				pathQueueY[count] = y + 1;
+				pathQueueY[count] = z + 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x][y + 1] = 4;
-				pathDistance[x][y + 1] = distance;
+				pathWaypoint[x][z + 1] = 4;
+				pathDistance[x][z + 1] = distance;
 			}
 
-			if (x > 0 && y > 0 && pathWaypoint[x - 1][y - 1] == 0 && (flags[x - 1][y - 1] & 0x28010e) == 0 && (flags[x - 1][y] & 0x280108) == 0 && (flags[x][y - 1] & 0x280102) == 0) {
+			if (x > 0 && z > 0 && pathWaypoint[x - 1][z - 1] == 0 && (flags[x - 1][z - 1] & 0x28010e) == 0 && (flags[x - 1][z] & 0x280108) == 0 && (flags[x][z - 1] & 0x280102) == 0) {
 				pathQueueX[count] = x - 1;
-				pathQueueY[count] = y - 1;
+				pathQueueY[count] = z - 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x - 1][y - 1] = 3;
-				pathDistance[x - 1][y - 1] = distance;
+				pathWaypoint[x - 1][z - 1] = 3;
+				pathDistance[x - 1][z - 1] = distance;
 			}
 
-			if (x < 104 - 1 && y > 0 && pathWaypoint[x + 1][y - 1] == 0 && (flags[x + 1][y - 1] & 0x280183) == 0 && (flags[x + 1][y] & 0x280180) == 0 && (flags[x][y - 1] & 0x280102) == 0) {
+			if (x < 104 - 1 && z > 0 && pathWaypoint[x + 1][z - 1] == 0 && (flags[x + 1][z - 1] & 0x280183) == 0 && (flags[x + 1][z] & 0x280180) == 0 && (flags[x][z - 1] & 0x280102) == 0) {
 				pathQueueX[count] = x + 1;
-				pathQueueY[count] = y - 1;
+				pathQueueY[count] = z - 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x + 1][y - 1] = 9;
-				pathDistance[x + 1][y - 1] = distance;
+				pathWaypoint[x + 1][z - 1] = 9;
+				pathDistance[x + 1][z - 1] = distance;
 			}
 
-			if (x > 0 && y < 104 - 1 && pathWaypoint[x - 1][y + 1] == 0 && (flags[x - 1][y + 1] & 0x280138) == 0 && (flags[x - 1][y] & 0x280108) == 0 && (flags[x][y + 1] & 0x280120) == 0) {
+			if (x > 0 && z < 104 - 1 && pathWaypoint[x - 1][z + 1] == 0 && (flags[x - 1][z + 1] & 0x280138) == 0 && (flags[x - 1][z] & 0x280108) == 0 && (flags[x][z + 1] & 0x280120) == 0) {
 				pathQueueX[count] = x - 1;
-				pathQueueY[count] = y + 1;
+				pathQueueY[count] = z + 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x - 1][y + 1] = 6;
-				pathDistance[x - 1][y + 1] = distance;
+				pathWaypoint[x - 1][z + 1] = 6;
+				pathDistance[x - 1][z + 1] = distance;
 			}
 
-			if (x < 104 - 1 && y < 104 - 1 && pathWaypoint[x + 1][y + 1] == 0 && (flags[x + 1][y + 1] & 0x2801e0) == 0 && (flags[x + 1][y] & 0x280180) == 0 && (flags[x][y + 1] & 0x280120) == 0) {
+			if (x < 104 - 1 && z < 104 - 1 && pathWaypoint[x + 1][z + 1] == 0 && (flags[x + 1][z + 1] & 0x2801e0) == 0 && (flags[x + 1][z] & 0x280180) == 0 && (flags[x][z + 1] & 0x280120) == 0) {
 				pathQueueX[count] = x + 1;
-				pathQueueY[count] = y + 1;
+				pathQueueY[count] = z + 1;
 				count = (count + 1) % pathStepCount;
-				pathWaypoint[x + 1][y + 1] = 12;
-				pathDistance[x + 1][y + 1] = distance;
+				pathWaypoint[x + 1][z + 1] = 12;
+				pathDistance[x + 1][z + 1] = distance;
 			}
 		}
 
@@ -4575,11 +4575,11 @@ public class Game extends GameShell {
 				int maxDistance = 100;
 				for (int n = 1; n < 2; n++) {
 					for (int dx = dstX - n; dx <= dstX + n; dx++) {
-						for (int dy = dstY - n; dy <= dstY + n; dy++) {
+						for (int dy = dstZ - n; dy <= dstZ + n; dy++) {
 							if (dx >= 0 && dy >= 0 && dx < 104 && dy < 104 && (pathDistance[dx][dy] < maxDistance)) {
 								maxDistance = pathDistance[dx][dy];
 								x = dx;
-								y = dy;
+								z = dy;
 								reached = true;
 							}
 						}
@@ -4596,15 +4596,15 @@ public class Game extends GameShell {
 
 		current = 0;
 		pathQueueX[current] = x;
-		pathQueueY[current++] = y;
+		pathQueueY[current++] = z;
 		int lastWaypoint;
-		int waypoint = lastWaypoint = pathWaypoint[x][y];
+		int waypoint = lastWaypoint = pathWaypoint[x][z];
 
-		while (x != srcX || y != srcY) {
+		while (x != srcX || z != srcZ) {
 			if (waypoint != lastWaypoint) {
 				lastWaypoint = waypoint;
 				pathQueueX[current] = x;
-				pathQueueY[current++] = y;
+				pathQueueY[current++] = z;
 			}
 
 			if ((waypoint & 0x2) != 0) {
@@ -4614,12 +4614,12 @@ public class Game extends GameShell {
 			}
 
 			if ((waypoint & 0x1) != 0) {
-				y++;
+				z++;
 			} else if ((waypoint & 0x4) != 0) {
-				y--;
+				z--;
 			}
 
-			waypoint = pathWaypoint[x][y];
+			waypoint = pathWaypoint[x][z];
 		}
 
 		if (current > 0) {
@@ -4667,7 +4667,7 @@ public class Game extends GameShell {
 					packetType = packetType - isaac.nextInt() & 0xff;
 				}
 
-				packetSize = PacketConstant.SIZE[packetType];
+				packetSize = Packet.SIZE[packetType];
 				available--;
 			}
 
@@ -4703,7 +4703,7 @@ public class Game extends GameShell {
 			netIdleCycles = 0;
 			lastPacketType = packetType;
 
-			if (packetType == 232) {
+			if (packetType == Packet.LOAD_MAPS) {
 				viewport.prepare();
 				fontNormal.drawCentered("Loading - please wait.", 257, 151, 0);
 				fontNormal.drawCentered("Loading - please wait.", 256, 150, 0xFFFFFF);
@@ -4714,8 +4714,6 @@ public class Game extends GameShell {
 
 				mapCenterChunkX = in.readUShort();
 				mapCenterChunkY = in.readUShort();
-
-				System.out.println(mapCenterChunkX + ", " + mapCenterChunkY);
 
 				mapBaseX = (mapCenterChunkX - 6) * 8;
 				mapBaseY = (mapCenterChunkY - 6) * 8;
@@ -4841,14 +4839,14 @@ public class Game extends GameShell {
 				}
 
 				for (int tileX = startTileX; tileX != endTileX; tileX += dirX) {
-					for (int tileY = startTileY; tileY != endTileY; tileY += dirY) {
-						int lastTileX = tileX + deltaX;
-						int lastTileY = tileY + deltaY;
-						for (int p = 0; p < 4; p++) {
-							if (lastTileX >= 0 && lastTileY >= 0 && lastTileX < 104 && lastTileY < 104) {
-								planeObjStacks[p][tileX][tileY] = (planeObjStacks[p][lastTileX][lastTileY]);
+					for (int tileZ = startTileY; tileZ != endTileY; tileZ += dirY) {
+						int lastX = tileX + deltaX;
+						int lastZ = tileZ + deltaY;
+						for (int plane = 0; plane < 4; plane++) {
+							if (lastX >= 0 && lastZ >= 0 && lastX < 104 && lastZ < 104) {
+								planeObjectStacks[plane][tileX][tileZ] = (planeObjectStacks[plane][lastX][lastZ]);
 							} else {
-								planeObjStacks[p][tileX][tileY] = null;
+								planeObjectStacks[plane][tileX][tileZ] = null;
 							}
 						}
 					}
@@ -4862,16 +4860,16 @@ public class Game extends GameShell {
 						l.unlink();
 					}
 				}
-			} else if (packetType == 217) {
+			} else if (packetType == Packet.SET_MULTIZONE) {
 				gameInMultizone = in.read();
-			} else if (packetType == 248) {
+			} else if (packetType == Packet.SET_DISABLED_WIDGET_COLOR) {
 				int index = in.readUShort();
 				int rgb = in.readUShort();
 				int red = rgb >> 10 & 0x1f;
 				int green = rgb >> 5 & 0x1f;
 				int blue = rgb & 0x1f;
 				Widget.instances[index].colorDisabled = (red << 19) + (green << 11) + (blue << 3);
-			} else if (packetType == 98) {
+			} else if (packetType == Packet.UPDATE_SKILL) {
 				sidebarRedraw = true;
 				int skill = in.read();
 				int experience = in.readInt();
@@ -4884,7 +4882,7 @@ public class Game extends GameShell {
 						skillLevel[skill] = n + 2;
 					}
 				}
-			} else if (packetType == 5) {
+			} else if (packetType == Packet.RESET_ENTITY_ANIMATIONS) {
 				for (Player player : players) {
 					if (player != null) {
 						player.primaryAnimIndex = -1;
@@ -4895,7 +4893,7 @@ public class Game extends GameShell {
 						npc.primaryAnimIndex = -1;
 					}
 				}
-			} else if (packetType == 47) {
+			} else if (packetType == Packet.LOAD_SCENE) {
 				updatePlayers(in, packetSize);
 
 				if (sceneState == 1) {
@@ -4913,16 +4911,16 @@ public class Game extends GameShell {
 					createScene();
 				}
 
-				if (currentPlane != entityUpdatePlane && sceneState == 2) {
-					entityUpdatePlane = currentPlane;
+				if (currentPlane != lastScenePlane && sceneState == 2) {
+					lastScenePlane = currentPlane;
 					createMinimap(currentPlane);
 				}
-			} else if (packetType == 234) {
-				int i_424_ = in.readUShort();
-				int i_425_ = in.read();
-				tabWidgetIndex[i_425_] = i_424_;
+			} else if (packetType == Packet.SET_TAB_WIDGET) {
+				int widgetIndex = in.readUShort();
+				int tabIndex = in.read();
+				tabWidgetIndex[tabIndex] = widgetIndex;
 				sidebarRedraw = true;
-			} else if (packetType == 156) {
+			} else if (packetType == Packet.ADD_MESSAGE) {
 				String s = in.readString();
 
 				if (s.endsWith(":tradereq:")) {
@@ -4941,28 +4939,30 @@ public class Game extends GameShell {
 				} else {
 					addMessage(0, "", s);
 				}
-			} else if (packetType == 220) {
+			} else if (packetType == Packet.SET_CHAT_SETTINGS) {
 				chatPublicSetting = in.read();
 				chatPrivateSetting = in.read();
 				chatTradeDuelSetting = in.read();
 				chatRedrawSettings = true;
 				chatRedraw = true;
-			} else if (packetType == 149) {
+			} else if (packetType == Packet.SET_DISABLED_WIDGET_ANIMATION) {
 				Widget.instances[in.readUShort()].animIndexDisabled = in.readUShort();
-			} else if (packetType == 95) {
+			} else if (packetType == Packet.SET_TEMPORARY_POSITION) {
 				netTileX = in.read();
 				netTileZ = in.read();
-			} else if (packetType == 235) {
+			} else if (packetType == Packet.SET_SHORT_VARIABLE) {
 				sidebarRedraw = true;
-				int i = in.readUShort();
-				int v = in.readByte();
-				if (variables[i] != v) {
-					variables[i] = v;
-					updateVarp(i);
+
+				int key = in.readUShort();
+				int value = in.readByte();
+
+				if (variables[key] != value) {
+					variables[key] = value;
+					updateVarp(key);
 				}
-			} else if (packetType == 123) {
+			} else if (packetType == Packet.SET_WIDGET_MODEL_TO_PLAYER_HEAD) {
 				Widget.instances[in.readUShort()].modelDisabled = localPlayer.getHeadModel();
-			} else if (packetType == 44) {
+			} else if (packetType == Packet.SAVE_LOCATION_MAPS) {
 				int x = in.read();
 				int y = in.read();
 				int index = -1;
@@ -4977,9 +4977,9 @@ public class Game extends GameShell {
 					Signlink.saveFile("l" + x + "_" + y, mapLocData[index]);
 					sceneState = 1;
 				}
-			} else if (packetType == 171) {
-				int i = in.readUShort();
-				resetWidgetAnimations(i);
+			} else if (packetType == Packet.SET_VIEWPORT_WIDGET) {
+				int widgetIndex = in.readUShort();
+				resetWidgetAnimations(widgetIndex);
 
 				if (sidebarWidgetIndex != -1) {
 					sidebarWidgetIndex = -1;
@@ -4987,8 +4987,8 @@ public class Game extends GameShell {
 					sidebarRedrawIcons = true;
 				}
 
-				if (chatInterfaceIndex != -1) {
-					chatInterfaceIndex = -1;
+				if (chatWidgetIndex != -1) {
+					chatWidgetIndex = -1;
 					chatRedraw = true;
 				}
 
@@ -4997,9 +4997,9 @@ public class Game extends GameShell {
 					chatRedraw = true;
 				}
 
-				viewportWidgetIndex = i;
+				viewportWidgetIndex = widgetIndex;
 				chatContinuingDialogue = false;
-			} else if (packetType == 197) {
+			} else if (packetType == Packet.READ_LANDSCAPE_MAPS) {
 				int x = in.read();
 				int y = in.read();
 				int off = in.readUShort();
@@ -5018,11 +5018,11 @@ public class Game extends GameShell {
 					}
 					in.read(mapLandData[index], off, packetSize - 6);
 				}
-			} else if (packetType == 181) {
+			} else if (packetType == Packet.SET_WIDGET_MODEL_TO_NPC_HEAD) {
 				Widget.instances[in.readUShort()].modelDisabled = NPCInfo.get(in.readUShort()).getHeadModel();
-			} else if (packetType == 68) {
+			} else if (packetType == Packet.READ_WIDGET_INVENTORY) {
 				sidebarRedraw = true;
-				Widget i = Widget.instances[in.readUShort()];
+				Widget w = Widget.instances[in.readUShort()];
 
 				while (in.position < packetSize) {
 					int slot = in.read();
@@ -5033,24 +5033,24 @@ public class Game extends GameShell {
 						amount = in.readInt();
 					}
 
-					if (slot >= 0 && slot < i.inventoryIndices.length) {
-						i.inventoryIndices[slot] = index;
-						i.inventoryAmount[slot] = amount;
+					if (slot >= 0 && slot < w.inventoryIndices.length) {
+						w.inventoryIndices[slot] = index;
+						w.inventoryAmount[slot] = amount;
 					}
 				}
-			} else if (packetType == 153 || packetType == 90 || packetType == 59 || packetType == 60 || packetType == 250 || packetType == 127 || packetType == 175 || packetType == 35 || packetType == 22) {
+			} else if (packetType == Packet.ATTACH_TEMPORARY_LOCATION_TO_PLAYER || packetType == Packet.ADD_PRIVATE_OBJECT_STACK || packetType == Packet.ADD_SPOT_ANIMATION || packetType == Packet.ADD_PROJECTILE || packetType == Packet.REMOVE_OBJECT_STACK || packetType == Packet.ADD_OBJECT_STACK || packetType == Packet.ADD_ANIMATED_LOCATION || packetType == Packet.REMOVE_LOCATION || packetType == Packet.ADD_LOCATION) {
 				readSecondaryPacket(in, packetType);
-			} else if (packetType == 61) {
+			} else if (packetType == Packet.SET_WIDGET_VISIBILITY) {
 				Widget.instances[in.readUShort()].hidden = in.read() == 1;
-			} else if (packetType == 80) {
+			} else if (packetType == Packet.CLEAR_WIDGETS_AND_INPUTS) {
 				if (sidebarWidgetIndex != -1) {
 					sidebarWidgetIndex = -1;
 					sidebarRedraw = true;
 					sidebarRedrawIcons = true;
 				}
 
-				if (chatInterfaceIndex != -1) {
-					chatInterfaceIndex = -1;
+				if (chatWidgetIndex != -1) {
+					chatWidgetIndex = -1;
 					chatRedraw = true;
 				}
 
@@ -5061,7 +5061,7 @@ public class Game extends GameShell {
 
 				viewportWidgetIndex = -1;
 				chatContinuingDialogue = false;
-			} else if (packetType == 225) {
+			} else if (packetType == Packet.READ_LOCATION_MAPS) {
 				int x = in.read();
 				int y = in.read();
 				int off = in.readUShort();
@@ -5078,9 +5078,9 @@ public class Game extends GameShell {
 					if (mapLocData[index] == null || mapLocData[index].length != length) {
 						mapLocData[index] = new byte[length];
 					}
-					in.read((mapLocData[index]), off, packetSize - 6);
+					in.read(mapLocData[index], off, packetSize - 6);
 				}
-			} else if (packetType == 51) {
+			} else if (packetType == Packet.SAVE_LANDSCAPE_MAPS) {
 				int x = in.read();
 				int y = in.read();
 				int index = -1;
@@ -5094,22 +5094,22 @@ public class Game extends GameShell {
 					Signlink.saveFile("m" + x + "_" + y, mapLandData[index]);
 					sceneState = 1;
 				}
-			} else if (packetType == 100) {
+			} else if (packetType == Packet.UPDATE_NPCS) {
 				updateNPCs(in, packetSize);
-			} else if (packetType == 210) {
-				Widget i = Widget.instances[in.readUShort()];
+			} else if (packetType == Packet.CLEAR_WIDGET_INVENTORY) {
+				Widget w = Widget.instances[in.readUShort()];
 
-				for (int n = 0; n < i.inventoryIndices.length; n++) {
-					i.inventoryIndices[n] = -1;
-					i.inventoryIndices[n] = 0;
+				for (int n = 0; n < w.inventoryIndices.length; n++) {
+					w.inventoryIndices[n] = -1;
+					w.inventoryIndices[n] = 0;
 				}
-			} else if (packetType == 42) {
+			} else if (packetType == Packet.SET_DISABLED_WIDGET_MODEL) {
 				Widget.instances[in.readUShort()].modelDisabled = new Model(in.readUShort());
-			} else if (packetType == 254) {
+			} else if (packetType == Packet.SET_SELECTED_TAB) {
 				selectedTab = in.read();
 				sidebarRedraw = true;
 				sidebarRedrawIcons = true;
-			} else if (packetType == 114) {
+			} else if (packetType == Packet.NOTIFY_FRIEND_STATUS) {
 				long nameLong = in.readLong();
 				int world = in.read();
 				String name = StringUtil.getFormatted(StringUtil.fromBase37(nameLong));
@@ -5156,7 +5156,7 @@ public class Game extends GameShell {
 						}
 					}
 				}
-			} else if (packetType == 159) {
+			} else if (packetType == Packet.SET_MIDI) {
 				String s = in.readString();
 				if (!s.equals(midi)) {
 					midi = s;
@@ -5165,17 +5165,19 @@ public class Game extends GameShell {
 						Signlink.midi = s;
 					}
 				}
-			} else if (packetType == 119) {
+			} else if (packetType == Packet.SET_INTEGER_VARIABLE) {
 				sidebarRedraw = true;
-				int i = in.readUShort();
-				int v = in.readInt();
-				if (variables[i] != v) {
-					variables[i] = v;
-					updateVarp(i);
+
+				int key = in.readUShort();
+				int value = in.readInt();
+
+				if (variables[key] != value) {
+					variables[key] = value;
+					updateVarp(key);
 				}
-			} else if (packetType == 138) {
-				if (chatInterfaceIndex != -1) {
-					chatInterfaceIndex = -1;
+			} else if (packetType == Packet.SET_VIEWPORT_AND_SIDEBAR_WIDGETS) {
+				if (chatWidgetIndex != -1) {
+					chatWidgetIndex = -1;
 					chatRedraw = true;
 				}
 
@@ -5189,68 +5191,67 @@ public class Game extends GameShell {
 				sidebarRedraw = true;
 				sidebarRedrawIcons = true;
 				chatContinuingDialogue = false;
-			} else if (packetType == 48) {
+			} else if (packetType == Packet.READ_SECONDARY_PACKETS) {
 				netTileX = in.read();
 				netTileZ = in.read();
 
 				while (in.position < packetSize) {
-					int i_474_ = in.read();
-					readSecondaryPacket(in, i_474_);
+					readSecondaryPacket(in, in.read());
 				}
-			} else if (packetType == 27) {
+			} else if (packetType == Packet.SET_LOCAL_PLAYER_INDEX) {
 				localPlayerIndex = in.readUShort();
-			} else if (packetType == 85) {
+			} else if (packetType == Packet.SET_JINGLE) {
 				if (midiPlaying) {
 					Signlink.jingle = in.readString();
 					Signlink.jinglelen = in.readUShort();
 				}
-			} else if (packetType == 227) {
+			} else if (packetType == Packet.SET_WIDGET_INVENTORY) {
 				sidebarRedraw = true;
-				Widget i = Widget.instances[in.readUShort()];
+				Widget w = Widget.instances[in.readUShort()];
 				int length = in.read();
 
 				for (int n = 0; n < length; n++) {
-					i.inventoryIndices[n] = in.readUShort();
+					w.inventoryIndices[n] = in.readUShort();
 					int amount = in.read();
 
 					if (amount == 0xFF) {
 						amount = in.readInt();
 					}
 
-					i.inventoryAmount[n] = amount;
+					w.inventoryAmount[n] = amount;
 				}
 
-				for (int n = length; n < i.inventoryIndices.length; n++) {
-					i.inventoryIndices[n] = 0;
-					i.inventoryAmount[n] = 0;
+				for (int n = length; n < w.inventoryIndices.length; n++) {
+					w.inventoryIndices[n] = 0;
+					w.inventoryAmount[n] = 0;
 				}
-			} else if (packetType == 188) {
+			} else if (packetType == Packet.CLEAR_8X8_OBJECTS_LOCS) {
 				netTileX = in.read();
 				netTileZ = in.read();
 
-				for (int lx = netTileX; lx < netTileX + 8; lx++) {
-					for (int lz = netTileZ; lz < netTileZ + 8; lz++) {
-						if ((planeObjStacks[currentPlane][lx][lz]) != null) {
-							planeObjStacks[currentPlane][lx][lz] = null;
-							updateObjectStack(lx, lz);
+				for (int x = netTileX; x < netTileX + 8; x++) {
+					for (int z = netTileZ; z < netTileZ + 8; z++) {
+						if (planeObjectStacks[currentPlane][x][z] != null) {
+							planeObjectStacks[currentPlane][x][z] = null;
+							updateObjectStack(x, z);
 						}
 					}
 				}
 
 				for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
-					if (l.tileX >= netTileX && l.tileX < netTileX + 8 && l.tileZ >= netTileZ && l.tileZ < netTileZ + 8 && l.tileY == currentPlane) {
-						addLoc(l.lastLocIndex, l.tileY, l.tileX, l.tileZ, l.lastType, l.classtype, l.lastRotation);
+					if (l.tileX >= netTileX && l.tileX < netTileX + 8 && l.tileZ >= netTileZ && l.tileZ < netTileZ + 8 && l.plane == currentPlane) {
+						addLoc(l.lastLocIndex, l.plane, l.tileX, l.tileZ, l.lastType, l.classtype, l.lastRotation);
 						l.unlink();
 					}
 				}
-			} else if (packetType == 9) {
+			} else if (packetType == Packet.SET_DISABLED_WIDGET_MESSAGE) {
 				Widget.instances[in.readUShort()].messageDisabled = in.readString();
 			} else {
-				if (packetType == 126) {
+				if (packetType == Packet.PERSUADE_LOGOUT) {
 					logout();
 					return false;
 				}
-				if (packetType == 229) {
+				if (packetType == Packet.ADD_PRIVATE_MESSAGE) {
 					long name = in.readLong();
 					int uid = in.readInt();
 
@@ -5276,16 +5277,16 @@ public class Game extends GameShell {
 						s = Censor.getFiltered(s);
 						addMessage(3, StringUtil.getFormatted(StringUtil.fromBase37(name)), s);
 					}
-				} else if (packetType == 6) {
+				} else if (packetType == Packet.READ_IGNORE_LIST) {
 					ignoreCount = packetSize / 8;
 					for (int n = 0; n < ignoreCount; n++) {
 						ignoreNameLong[n] = in.readLong();
 					}
-				} else if (packetType == 53) {
+				} else if (packetType == Packet.START_SYSTEM_UPDATE_TIMER) {
 					gameSystemUpdate = in.readUShort() * 30;
-				} else if (packetType == 116) {
-					int i = in.readUShort();
-					resetWidgetAnimations(i);
+				} else if (packetType == Packet.SET_CHATBOX_WIDGET) {
+					int widgetIndex = in.readUShort();
+					resetWidgetAnimations(widgetIndex);
 
 					if (sidebarWidgetIndex != -1) {
 						sidebarWidgetIndex = -1;
@@ -5293,31 +5294,31 @@ public class Game extends GameShell {
 						sidebarRedrawIcons = true;
 					}
 
-					chatInterfaceIndex = i;
+					chatWidgetIndex = widgetIndex;
 					chatRedraw = true;
 					viewportWidgetIndex = -1;
 					chatContinuingDialogue = false;
-				} else if (packetType == 107) {
-					int index = in.readUShort();
-					int object = in.readUShort();
-					int zoomPercent = in.readUShort();
-					ObjectInfo o = ObjectInfo.get(object);
-					Widget.instances[index].modelDisabled = o.getModel();
-					Widget.instances[index].modelCameraPitch = o.iconCameraPitch;
-					Widget.instances[index].modelYaw = o.iconYaw;
-					Widget.instances[index].modelZoom = o.iconZoom * 100 / zoomPercent;
-				} else if (packetType == 75) {
+				} else if (packetType == Packet.SET_DISABLED_WIDGET_MODEL_TO_OBJECT) {
+					int widgetIndex = in.readUShort();
+					int objectIndex = in.readUShort();
+					int zoomModifier = in.readUShort();
+					ObjectInfo o = ObjectInfo.get(objectIndex);
+					Widget.instances[widgetIndex].modelDisabled = o.getModel();
+					Widget.instances[widgetIndex].modelCameraPitch = o.iconCameraPitch;
+					Widget.instances[widgetIndex].modelYaw = o.iconYaw;
+					Widget.instances[widgetIndex].modelZoom = (o.iconZoom * 100) / zoomModifier;
+				} else if (packetType == Packet.SHOW_TRANSFER_INPUT) {
 					chatShowDialogueInput = false;
 					chatShowTransferInput = true;
 					chatTransferInput = "";
 					chatRedraw = true;
-				} else if (packetType == 124) {
-					int i = in.readUShort();
+				} else if (packetType == Packet.SET_SIDEBAR_WIDGET) {
+					int widgetIndex = in.readUShort();
 
-					resetWidgetAnimations(i);
+					resetWidgetAnimations(widgetIndex);
 
-					if (chatInterfaceIndex != -1) {
-						chatInterfaceIndex = -1;
+					if (chatWidgetIndex != -1) {
+						chatWidgetIndex = -1;
 						chatRedraw = true;
 					}
 
@@ -5326,7 +5327,7 @@ public class Game extends GameShell {
 						chatRedraw = true;
 					}
 
-					sidebarWidgetIndex = i;
+					sidebarWidgetIndex = widgetIndex;
 					sidebarRedraw = true;
 					sidebarRedrawIcons = true;
 					viewportWidgetIndex = -1;
@@ -5400,7 +5401,7 @@ public class Game extends GameShell {
 					LocationInfo c = LocationInfo.get(lastIndex);
 
 					if (c.hasCollision) {
-						collisions[plane].removeLoc(tileX, tileZ, c.sizeX, c.sizeY, info >> 6, c.isSolid);
+						collisions[plane].removeLoc(tileX, tileZ, c.sizeX, c.sizeZ, info >> 6, c.isSolid);
 					}
 				}
 
@@ -5427,28 +5428,28 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void readSecondaryPacket(Buffer b, int opcode) {
-		if (opcode == 22 || opcode == 35) {
+	public final void readSecondaryPacket(Buffer b, int type) {
+		if (type == Packet.ADD_LOCATION || type == Packet.REMOVE_LOCATION) {
 			int tile = b.read();
-			int tileX = netTileX + (tile >> 4 & 0x7);
-			int tileY = netTileZ + (tile & 0x7);
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
 			int locClass = LocationInfo.TYPE_TO_CLASS[locType];
 			int locIndex;
 
-			if (opcode == 35) {
+			if (type == Packet.REMOVE_LOCATION) {
 				locIndex = -1;
 			} else {
 				locIndex = b.readUShort();
 			}
 
-			if (tileX >= 0 && tileY >= 0 && tileX < 104 && tileY < 104) {
+			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
 				SpawnedLocation loc = null;
 
 				for (SpawnedLocation l = (SpawnedLocation) spawntLocs.peekLast(); l != null; l = (SpawnedLocation) spawntLocs.getPrevious()) {
-					if (l.tileY == currentPlane && l.tileX == tileX && l.tileZ == tileY && l.classtype == locClass) {
+					if (l.plane == currentPlane && l.tileX == x && l.tileZ == z && l.classtype == locClass) {
 						loc = l;
 						break;
 					}
@@ -5463,34 +5464,34 @@ public class Game extends GameShell {
 					int lastRotation = 0;
 
 					if (locClass == 0) {
-						bitset = graph.getWallBitset(tileX, tileY, currentPlane);
+						bitset = graph.getWallBitset(x, z, currentPlane);
 					}
 
 					if (locClass == 1) {
-						bitset = graph.getWallDecorationBitset(tileX, tileY, currentPlane);
+						bitset = graph.getWallDecorationBitset(x, z, currentPlane);
 					}
 
 					if (locClass == 2) {
-						bitset = graph.getLocationBitset(tileX, tileY, currentPlane);
+						bitset = graph.getLocationBitset(x, z, currentPlane);
 					}
 
 					if (locClass == 3) {
-						bitset = graph.getGroundDecorationBitset(tileX, tileY, currentPlane);
+						bitset = graph.getGroundDecorationBitset(x, z, currentPlane);
 					}
 
 					if (bitset != 0) {
 						// save this information for later
-						int info = graph.getInfo(tileX, tileY, currentPlane, bitset);
+						int info = graph.getInfo(x, z, currentPlane, bitset);
 						lastIndex = bitset >> 14 & 0x7fff;
 						lastType = info & 0x1F;
 						lastRotation = info >> 6;
 					}
 
 					loc = new SpawnedLocation();
-					loc.tileY = currentPlane;
+					loc.plane = currentPlane;
 					loc.classtype = locClass;
-					loc.tileX = tileX;
-					loc.tileZ = tileY;
+					loc.tileX = x;
+					loc.tileZ = z;
 					loc.lastLocIndex = lastIndex;
 					loc.lastType = lastType;
 					loc.lastRotation = lastRotation;
@@ -5500,129 +5501,134 @@ public class Game extends GameShell {
 				loc.locIndex = locIndex;
 				loc.type = locType;
 				loc.rotation = locRotation;
-				addLoc(locIndex, currentPlane, tileX, tileY, locType, locClass, locRotation);
+				addLoc(locIndex, currentPlane, x, z, locType, locClass, locRotation);
 			}
-		} else if (opcode == 175) {
-			int xy = b.read();
-			int x = netTileX + (xy >> 4 & 0x7);
-			int z = netTileZ + (xy & 0x7);
-			int flags = b.read();
-			int type = flags >> 2;
-			int classtype = LocationInfo.TYPE_TO_CLASS[type];
-			int animIndex = b.readUShort();
+		} else if (type == Packet.ADD_ANIMATED_LOCATION) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int locInfo = b.read();
+			int locType = locInfo >> 2;
+			int locClassType = LocationInfo.TYPE_TO_CLASS[locType];
+			int animationIndex = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
 				int bitset = 0;
 
-				if (classtype == LocationInfo.CLASS_WALL_DECORATION) {
+				if (locClassType == LocationInfo.CLASS_WALL_DECORATION) {
 					bitset = graph.getWallDecorationBitset(x, z, currentPlane);
 				}
 
-				if (classtype == LocationInfo.CLASS_NORMAL) {
+				if (locClassType == LocationInfo.CLASS_NORMAL) {
 					bitset = graph.getLocationBitset(x, z, currentPlane);
 				}
 
 				if (bitset != 0) {
-					animatedLocations.push(new AnimatedLocation(Animation.instance[animIndex], bitset >> 14 & 0x7fff, classtype, x, z, currentPlane));
+					animatedLocations.push(new AnimatedLocation(Animation.instance[animationIndex], bitset >> 14 & 0x7fff, locClassType, x, z, currentPlane));
 				}
 			}
-		} else if (opcode == 127) {
-			int xy = b.read();
-			int x = netTileX + (xy >> 4 & 0x7);
-			int y = netTileZ + (xy & 0x7);
-			int index = b.readUShort();
-
-			if (x >= 0 && y >= 0 && x < 104 && y < 104) {
-				ObjectStack o = new ObjectStack();
-				o.index = index;
-
-				if (planeObjStacks[currentPlane][x][y] == null) {
-					planeObjStacks[currentPlane][x][y] = new Chain();
-				}
-
-				planeObjStacks[currentPlane][x][y].push(o);
-				updateObjectStack(x, y);
-			}
-		} else if (opcode == 250) {
-			int position = b.read();
-			int x = netTileX + (position >> 4 & 0x7);
-			int z = netTileZ + (position & 0x7);
-			int index = b.readUShort();
+		} else if (type == Packet.ADD_OBJECT_STACK) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int objectIndex = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
-				Chain stack = planeObjStacks[currentPlane][x][z];
+				ObjectStack o = new ObjectStack();
+				o.index = objectIndex;
+
+				if (planeObjectStacks[currentPlane][x][z] == null) {
+					planeObjectStacks[currentPlane][x][z] = new Chain();
+				}
+
+				planeObjectStacks[currentPlane][x][z].push(o);
+				updateObjectStack(x, z);
+			}
+		} else if (type == Packet.REMOVE_OBJECT_STACK) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int objectIndex = b.readUShort();
+
+			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
+				Chain stack = planeObjectStacks[currentPlane][x][z];
 
 				if (stack != null) {
 					for (ObjectStack s = (ObjectStack) stack.peekLast(); s != null; s = (ObjectStack) stack.getPrevious()) {
-						if (s.index == (index & 0x7fff)) {
+						if (s.index == (objectIndex & 0x7fff)) {
 							s.unlink();
 							break;
 						}
 					}
 
 					if (stack.peekLast() == null) {
-						planeObjStacks[currentPlane][x][z] = null;
+						planeObjectStacks[currentPlane][x][z] = null;
 					}
 					updateObjectStack(x, z);
 				}
 			}
-		} else if (opcode == 60) {
-			int xy = b.read();
-			int startX = netTileX + (xy >> 4 & 0x7);
-			int startY = netTileZ + (xy & 0x7);
-			int targetX = startX + b.readByte();
-			int targetY = startY + b.readByte();
-			int target = b.readShort();
-			int spotanim = b.readUShort();
-			int offsetZ = b.read();
-			int baseZ = b.read();
+		} else if (type == Packet.ADD_PROJECTILE) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int dstX = x + b.readByte();
+			int dstY = z + b.readByte();
+			int targetIndex = b.readShort();
+			int spotanimIndex = b.readUShort();
+			int offsetY = b.read();
+			int baseY = b.read();
 			int startCycle = b.readUShort();
 			int endCycle = b.readUShort();
 			int elevationPitch = b.read();
 			int arcScale = b.read();
 
-			if (startX >= 0 && startY >= 0 && startX < 104 && startY < 104 && targetX >= 0 && targetY >= 0 && targetX < 104 && targetY < 104) {
-				startX = startX * 128 + 64;
-				startY = startY * 128 + 64;
-				targetX = targetX * 128 + 64;
-				targetY = targetY * 128 + 64;
-				Projectile p = new Projectile(spotanim, target, startX, startY, getLandY(startX, startY, currentPlane) - offsetZ, currentPlane, startCycle + cycle, endCycle + cycle, arcScale, elevationPitch, baseZ);
-				p.setTarget(targetX, targetY, getLandY(targetX, targetY, currentPlane) - baseZ, startCycle + cycle);
+			if (x >= 0 && z >= 0 && x < 104 && z < 104 && dstX >= 0 && dstY >= 0 && dstX < 104 && dstY < 104) {
+				x = x * 128 + 64;
+				z = z * 128 + 64;
+				dstX = dstX * 128 + 64;
+				dstY = dstY * 128 + 64;
+				Projectile p = new Projectile(spotanimIndex, targetIndex, x, z, getLandY(x, z, currentPlane) - offsetY, currentPlane, startCycle + cycle, endCycle + cycle, arcScale, elevationPitch, baseY);
+				p.setTarget(dstX, dstY, getLandY(dstX, dstY, currentPlane) - baseY, startCycle + cycle);
 				projectiles.push(p);
 			}
-		} else if (opcode == 59) {
-			int xy = b.read();
-			int x = netTileX + (xy >> 4 & 0x7);
-			int y = netTileZ + (xy & 0x7);
-			int i_552_ = b.readUShort();
-			int i_553_ = b.read();
-			int i_554_ = b.readUShort();
-			if (x >= 0 && y >= 0 && x < 104 && y < 104) {
-				x = x * 128 + 64;
-				y = y * 128 + 64;
-				SpotAnimationEntity sa = new SpotAnimationEntity(getLandY(x, y, currentPlane) - i_553_, 0, i_554_, i_552_, currentPlane, x, y, cycle);
-				spotanims.push(sa);
-			}
-		} else if (opcode == 90) {
-			int i_555_ = b.read();
-			int x = netTileX + (i_555_ >> 4 & 0x7);
-			int y = netTileZ + (i_555_ & 0x7);
-			int i_558_ = b.readUShort();
-			int i_559_ = b.readUShort();
-
-			if (x >= 0 && y >= 0 && x < 104 && y < 104 && i_559_ != localPlayerIndex) {
-				ObjectStack gi = new ObjectStack();
-				gi.index = i_558_;
-				if (planeObjStacks[currentPlane][x][y] == null) {
-					planeObjStacks[currentPlane][x][y] = new Chain();
-				}
-				planeObjStacks[currentPlane][x][y].push(gi);
-				updateObjectStack(x, y);
-			}
-		} else if (opcode == 153) {
+		} else if (type == Packet.ADD_SPOT_ANIMATION) {
 			int tile = b.read();
-			int tileX = netTileX + (tile >> 4 & 0x7);
-			int tileY = netTileZ + (tile & 0x7);
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int spotanimIndex = b.readUShort();
+			int baseY = b.read();
+			int duration = b.readUShort();
+
+			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
+				x = x * 128 + 64;
+				z = z * 128 + 64;
+				SpotAnimationEntity e = new SpotAnimationEntity(x, getLandY(x, z, currentPlane) - baseY, z, currentPlane, spotanimIndex, cycle, duration);
+				spotanims.push(e);
+			}
+		} else if (type == Packet.ADD_PRIVATE_OBJECT_STACK) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
+			int objectIndex = b.readUShort();
+			int playerIndex = b.readUShort();
+
+			// this baffles me. why is the local player receiving this packet,
+			// but not allowed to see the item if it is theirs?
+			if (x >= 0 && z >= 0 && x < 104 && z < 104 && playerIndex != localPlayerIndex) {
+				ObjectStack stack = new ObjectStack();
+				stack.index = objectIndex;
+
+				if (planeObjectStacks[currentPlane][x][z] == null) {
+					planeObjectStacks[currentPlane][x][z] = new Chain();
+				}
+
+				planeObjectStacks[currentPlane][x][z].push(stack);
+				updateObjectStack(x, z);
+			}
+		} else if (type == Packet.ATTACH_TEMPORARY_LOCATION_TO_PLAYER) {
+			int tile = b.read();
+			int x = netTileX + (tile >> 4 & 0x7);
+			int z = netTileZ + (tile & 0x7);
 			int locInfo = b.read();
 			int locType = locInfo >> 2;
 			int locRotation = locInfo & 0x3;
@@ -5632,9 +5638,9 @@ public class Game extends GameShell {
 			int locEndCycle = b.readUShort();
 			int playerIndex = b.readUShort();
 			int minTileX = b.readByte();
-			int minTileY = b.readByte();
+			int minTileZ = b.readByte();
 			int maxTileX = b.readByte();
-			int maxTileY = b.readByte();
+			int maxTileZ = b.readByte();
 
 			Player p;
 
@@ -5645,13 +5651,13 @@ public class Game extends GameShell {
 			}
 
 			if (p != null) {
-				temporaryLocs.push(new TemporaryLocation(-1, tileX, tileY, currentPlane, locType, locRotation, locClass, locStartCycle + cycle));
-				temporaryLocs.push(new TemporaryLocation(locIndex, tileX, tileY, currentPlane, locType, locRotation, locClass, locEndCycle + cycle));
+				temporaryLocs.push(new TemporaryLocation(-1, x, z, currentPlane, locType, locRotation, locClass, locStartCycle + cycle));
+				temporaryLocs.push(new TemporaryLocation(locIndex, x, z, currentPlane, locType, locRotation, locClass, locEndCycle + cycle));
 
-				int southwestY = planeHeightmaps[currentPlane][tileX][tileY];
-				int southeastY = planeHeightmaps[currentPlane][tileX + 1][tileY];
-				int northeastY = planeHeightmaps[currentPlane][tileX + 1][tileY + 1];
-				int northwestY = planeHeightmaps[currentPlane][tileX][tileY + 1];
+				int southwestY = planeHeightmaps[currentPlane][x][z];
+				int southeastY = planeHeightmaps[currentPlane][x + 1][z];
+				int northeastY = planeHeightmaps[currentPlane][x + 1][z + 1];
+				int northwestY = planeHeightmaps[currentPlane][x][z + 1];
 
 				LocationInfo l = LocationInfo.get(locIndex);
 				p.locFirstCycle = locStartCycle + cycle;
@@ -5659,51 +5665,51 @@ public class Game extends GameShell {
 				p.locModel = l.getModel(locType, locRotation, southwestY, southeastY, northeastY, northwestY, -1);
 
 				int sizeX = l.sizeX;
-				int sizeY = l.sizeY;
+				int sizeZ = l.sizeZ;
 
 				if (locRotation == 1 || locRotation == 3) {
-					sizeX = l.sizeY;
-					sizeY = l.sizeX;
+					sizeX = l.sizeZ;
+					sizeZ = l.sizeX;
 				}
 
-				p.locSceneX = tileX * 128 + sizeX * 64;
-				p.locSceneZ = tileY * 128 + sizeY * 64;
+				p.locSceneX = x * 128 + sizeX * 64;
+				p.locSceneZ = z * 128 + sizeZ * 64;
 				p.locSceneY = getLandY(p.locSceneX, p.locSceneZ, currentPlane);
 
 				if (minTileX > maxTileX) {
-					int x = minTileX;
+					int tx = minTileX;
 					minTileX = maxTileX;
-					maxTileX = x;
+					maxTileX = tx;
 				}
 
-				if (minTileY > maxTileY) {
-					int y = minTileY;
-					minTileY = maxTileY;
-					maxTileY = y;
+				if (minTileZ > maxTileZ) {
+					int tz = minTileZ;
+					minTileZ = maxTileZ;
+					maxTileZ = tz;
 				}
 
-				p.locMinTileX = tileX + minTileX;
-				p.locMaxTileX = tileX + maxTileX;
-				p.locMinTileY = tileY + minTileY;
-				p.locMaxTileY = tileY + maxTileY;
+				p.locMinTileX = x + minTileX;
+				p.locMaxTileX = x + maxTileX;
+				p.locMinTileZ = z + minTileZ;
+				p.locMaxTileZ = z + maxTileZ;
 			}
 		}
 	}
 
 	public final void updateObjectStack(int x, int y) {
-		Chain stack = planeObjStacks[currentPlane][x][y];
+		Chain stacks = planeObjectStacks[currentPlane][x][y];
 
-		if (stack == null) {
+		if (stacks == null) {
 			graph.removeObject(x, y, currentPlane);
 		} else {
 			int maxPriority = -99999999;
 			ObjectInfo topObject = null;
 
-			for (ObjectStack i = (ObjectStack) stack.peekLast(); i != null; i = (ObjectStack) stack.getPrevious()) {
-				ObjectInfo o = ObjectInfo.get(i.index);
-				if (o.priority > maxPriority) {
-					maxPriority = o.priority;
-					topObject = o;
+			for (ObjectStack stack = (ObjectStack) stacks.peekLast(); stack != null; stack = (ObjectStack) stacks.getPrevious()) {
+				ObjectInfo object = ObjectInfo.get(stack.index);
+				if (object.priority > maxPriority) {
+					maxPriority = object.priority;
+					topObject = object;
 				}
 			}
 
@@ -5720,13 +5726,13 @@ public class Game extends GameShell {
 		b.startBitAccess(0);
 		currentPlane = b.readBits(2);
 		int tileX = b.readBits(7);
-		int tileY = b.readBits(7);
+		int tileZ = b.readBits(7);
 
 		if (b.readBits(1) == 1) {
 			entityUpdateIndices[updateCount++] = LOCALPLAYER_INDEX;
 		}
 
-		localPlayer.setPosition(tileX, tileY);
+		localPlayer.setPosition(tileX, tileZ);
 		deadEntityCount = 0;
 
 		int count = b.readBits(8);
@@ -6629,7 +6635,7 @@ public class Game extends GameShell {
 					if (Widget.instances[c].parent == viewportWidgetIndex) {
 						selectedArea = 1;
 					}
-					if (Widget.instances[c].parent == chatInterfaceIndex) {
+					if (Widget.instances[c].parent == chatWidgetIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6661,7 +6667,7 @@ public class Game extends GameShell {
 						selectedArea = 1;
 					}
 
-					if (Widget.instances[c].parent == chatInterfaceIndex) {
+					if (Widget.instances[c].parent == chatWidgetIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6680,8 +6686,8 @@ public class Game extends GameShell {
 						sidebarRedrawIcons = true;
 					}
 
-					if (chatInterfaceIndex != -1) {
-						chatInterfaceIndex = -1;
+					if (chatWidgetIndex != -1) {
+						chatWidgetIndex = -1;
 						chatRedraw = true;
 						chatContinuingDialogue = false;
 					}
@@ -6747,7 +6753,7 @@ public class Game extends GameShell {
 						selectedArea = 1;
 					}
 
-					if (Widget.instances[c].parent == chatInterfaceIndex) {
+					if (Widget.instances[c].parent == chatWidgetIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6794,7 +6800,7 @@ public class Game extends GameShell {
 						selectedArea = 1;
 					}
 
-					if (Widget.instances[c].parent == chatInterfaceIndex) {
+					if (Widget.instances[c].parent == chatWidgetIndex) {
 						selectedArea = 3;
 					}
 				}
@@ -6864,11 +6870,11 @@ public class Game extends GameShell {
 
 		hoveredInterfaceIndex = 0;
 
-		if (mouseX > 22 && mouseY > 375 && mouseX < 501 && mouseY < 471 && chatInterfaceIndex != -1) {
-			Game.this.updateWidget(Widget.instances[chatInterfaceIndex], 22, 375, mouseX, mouseY, 0);
+		if (mouseX > 22 && mouseY > 375 && mouseX < 501 && mouseY < 471 && chatWidgetIndex != -1) {
+			Game.this.updateWidget(Widget.instances[chatWidgetIndex], 22, 375, mouseX, mouseY, 0);
 		}
 
-		if (chatInterfaceIndex != -1 && hoveredInterfaceIndex != chatHoveredInterfaceIndex) {
+		if (chatWidgetIndex != -1 && hoveredInterfaceIndex != chatHoveredInterfaceIndex) {
 			chatRedraw = true;
 			chatHoveredInterfaceIndex = hoveredInterfaceIndex;
 		}
@@ -6918,28 +6924,28 @@ public class Game extends GameShell {
 
 		for (int i = 0; i < Model.hoverCount; i++) {
 			int bitset = Model.hoveredBitsets[i];
-			int tileX = bitset & 0x7F;
-			int tileY = (bitset >> 7) & 0x7F;
+			int x = bitset & 0x7F;
+			int z = (bitset >> 7) & 0x7F;
 			int index = (bitset >> 14) & 0x7FFF;
-			int hovertype = (bitset >> 29) & 0x3;
+			int type = (bitset >> 29) & 0x3;
 
-			if (hovertype == 2 && graph.getInfo(tileX, tileY, currentPlane, bitset) >= 0) {
+			if (type == 2 && graph.getInfo(x, z, currentPlane, bitset) >= 0) {
 				LocationInfo l = LocationInfo.get(index);
 
 				if (selectedObj) {
 					options[optionCount] = "Use " + selectedObjName + " with @cya@" + l.name;
 					optionType[optionCount] = 237;
 					optionParamA[optionCount] = bitset;
-					optionParamB[optionCount] = tileX;
-					optionParamC[optionCount] = tileY;
+					optionParamB[optionCount] = x;
+					optionParamC[optionCount] = z;
 					optionCount++;
 				} else if (selectedSpell) {
 					if ((selectedFlags & 0x4) == 4) {
 						options[optionCount] = selectedSpellPrefix + " @cya@" + l.name;
 						optionType[optionCount] = 243;
 						optionParamA[optionCount] = bitset;
-						optionParamB[optionCount] = tileX;
-						optionParamC[optionCount] = tileY;
+						optionParamB[optionCount] = x;
+						optionParamC[optionCount] = z;
 						optionCount++;
 					}
 				} else {
@@ -6959,8 +6965,8 @@ public class Game extends GameShell {
 									optionType[optionCount] = 754;
 								}
 								optionParamA[optionCount] = bitset;
-								optionParamB[optionCount] = tileX;
-								optionParamC[optionCount] = tileY;
+								optionParamB[optionCount] = x;
+								optionParamC[optionCount] = z;
 								optionCount++;
 							}
 						}
@@ -6968,13 +6974,13 @@ public class Game extends GameShell {
 					options[optionCount] = "Examine @cya@" + l.name;
 					optionType[optionCount] = 1294;
 					optionParamA[optionCount] = bitset;
-					optionParamB[optionCount] = tileX;
-					optionParamC[optionCount] = tileY;
+					optionParamB[optionCount] = x;
+					optionParamC[optionCount] = z;
 					optionCount++;
 				}
 			}
 
-			if (hovertype == 1) {
+			if (type == 1) {
 				NPC npc = npcs[index];
 
 				// if npc is standing in the very center of its tile
@@ -6982,22 +6988,22 @@ public class Game extends GameShell {
 					for (int n = 0; n < npcCount; n++) {
 						NPC npc1 = npcs[npcIndices[n]];
 						if (npc1 != null && (npc1 != npc) && (npc1.config.size) == 1 && (npc1.sceneX == npc.sceneX) && (npc1.sceneZ == npc.sceneZ)) {
-							parseNPCOptions(npc1.config, tileX, tileY, npcIndices[n]);
+							parseNPCOptions(npc1.config, x, z, npcIndices[n]);
 						}
 					}
 				}
 
-				parseNPCOptions(npc.config, tileX, tileY, index);
+				parseNPCOptions(npc.config, x, z, index);
 			}
 
-			if (hovertype == 0) {
+			if (type == 0) {
 				Player p = players[index];
 
 				if ((p.sceneX & 0x7f) == 64 && (p.sceneZ & 0x7f) == 64) {
 					for (int n = 0; n < npcCount; n++) {
 						NPC npc = npcs[npcIndices[n]];
 						if (npc != null && (npc.config.size == 1) && (npc.sceneX == p.sceneX) && (npc.sceneZ == p.sceneZ)) {
-							parseNPCOptions(npc.config, tileX, tileY, npcIndices[n]);
+							parseNPCOptions(npc.config, x, z, npcIndices[n]);
 						}
 					}
 
@@ -7005,15 +7011,15 @@ public class Game extends GameShell {
 						Player p1 = players[playerIndices[n]];
 
 						if (p1 != null && (p1 != p) && (p1.sceneX == p.sceneX) && (p1.sceneZ == p.sceneZ)) {
-							parsePlayerOptions(p1, tileX, tileY, playerIndices[n]);
+							parsePlayerOptions(p1, x, z, playerIndices[n]);
 						}
 					}
 				}
-				parsePlayerOptions(p, tileX, tileY, index);
+				parsePlayerOptions(p, x, z, index);
 			}
 
-			if (hovertype == 3) {
-				Chain stack = planeObjStacks[currentPlane][tileX][tileY];
+			if (type == 3) {
+				Chain stack = planeObjectStacks[currentPlane][x][z];
 
 				if (stack != null) {
 					for (ObjectStack o = (ObjectStack) stack.peekFirst(); o != null; o = (ObjectStack) stack.getNext()) {
@@ -7023,16 +7029,16 @@ public class Game extends GameShell {
 							options[optionCount] = ("Use " + selectedObjName + " with @lre@" + c.name);
 							optionType[optionCount] = 160;
 							optionParamA[optionCount] = o.index;
-							optionParamB[optionCount] = tileX;
-							optionParamC[optionCount] = tileY;
+							optionParamB[optionCount] = x;
+							optionParamC[optionCount] = z;
 							optionCount++;
 						} else if (selectedSpell) {
 							if ((selectedFlags & 0x1) == 1) {
 								options[optionCount] = (selectedSpellPrefix + " @lre@" + c.name);
 								optionType[optionCount] = 504;
 								optionParamA[optionCount] = o.index;
-								optionParamB[optionCount] = tileX;
-								optionParamC[optionCount] = tileY;
+								optionParamB[optionCount] = x;
+								optionParamC[optionCount] = z;
 								optionCount++;
 							}
 						} else {
@@ -7053,23 +7059,23 @@ public class Game extends GameShell {
 									}
 
 									optionParamA[optionCount] = o.index;
-									optionParamB[optionCount] = tileX;
-									optionParamC[optionCount] = tileY;
+									optionParamB[optionCount] = x;
+									optionParamC[optionCount] = z;
 									optionCount++;
 								} else if (n == 2) {
 									options[optionCount] = "Take @lre@" + c.name;
 									optionType[optionCount] = 401;
 									optionParamA[optionCount] = o.index;
-									optionParamB[optionCount] = tileX;
-									optionParamC[optionCount] = tileY;
+									optionParamB[optionCount] = x;
+									optionParamC[optionCount] = z;
 									optionCount++;
 								}
 							}
 							options[optionCount] = "Examine @lre@" + c.name;
 							optionType[optionCount] = 1971;
 							optionParamA[optionCount] = o.index;
-							optionParamB[optionCount] = tileX;
-							optionParamC[optionCount] = tileY;
+							optionParamB[optionCount] = x;
+							optionParamC[optionCount] = z;
 							optionCount++;
 						}
 					}
@@ -7078,35 +7084,35 @@ public class Game extends GameShell {
 		}
 	}
 
-	public final void parseNPCOptions(NPCInfo c, int tileX, int tileY, int info) {
+	public final void parseNPCOptions(NPCInfo npc, int x, int z, int info) {
 		if (optionCount < 400) {
-			String name = c.name;
+			String name = npc.name;
 
-			if (c.level != 0) {
-				name += getLevelColorTag(localPlayer.level, c.level) + " (level-" + c.level + ")";
+			if (npc.level != 0) {
+				name += getLevelColorTag(localPlayer.level, npc.level) + " (level-" + npc.level + ")";
 			}
 
 			if (selectedObj) {
 				options[optionCount] = "Use " + selectedObjName + " with @yel@" + name;
 				optionType[optionCount] = 806;
 				optionParamA[optionCount] = info;
-				optionParamB[optionCount] = tileX;
-				optionParamC[optionCount] = tileY;
+				optionParamB[optionCount] = x;
+				optionParamC[optionCount] = z;
 				optionCount++;
 			} else if (selectedSpell) {
 				if ((selectedFlags & 0x2) == 2) {
 					options[optionCount] = selectedSpellPrefix + " @yel@" + name;
 					optionType[optionCount] = 130;
 					optionParamA[optionCount] = info;
-					optionParamB[optionCount] = tileX;
-					optionParamC[optionCount] = tileY;
+					optionParamB[optionCount] = x;
+					optionParamC[optionCount] = z;
 					optionCount++;
 				}
 			} else {
-				if (c.actions != null) {
+				if (npc.actions != null) {
 					for (int n = 4; n >= 0; n--) {
-						if (c.actions[n] != null) {
-							options[optionCount] = c.actions[n] + " @yel@" + name;
+						if (npc.actions[n] != null) {
+							options[optionCount] = npc.actions[n] + " @yel@" + name;
 							if (n == 0) {
 								optionType[optionCount] = 710;
 							} else if (n == 1) {
@@ -7119,8 +7125,8 @@ public class Game extends GameShell {
 								optionType[optionCount] = 74;
 							}
 							optionParamA[optionCount] = info;
-							optionParamB[optionCount] = tileX;
-							optionParamC[optionCount] = tileY;
+							optionParamB[optionCount] = x;
+							optionParamC[optionCount] = z;
 							optionCount++;
 						}
 					}
@@ -7128,14 +7134,14 @@ public class Game extends GameShell {
 				options[optionCount] = "Examine @yel@" + name;
 				optionType[optionCount] = 1725;
 				optionParamA[optionCount] = info;
-				optionParamB[optionCount] = tileX;
-				optionParamC[optionCount] = tileY;
+				optionParamB[optionCount] = x;
+				optionParamC[optionCount] = z;
 				optionCount++;
 			}
 		}
 	}
 
-	public void parsePlayerOptions(Player p, int tileX, int tileY, int index) {
+	public void parsePlayerOptions(Player p, int x, int z, int index) {
 		if (p != localPlayer && optionCount < 400) {
 			String string = p.name + getLevelColorTag(localPlayer.level, p.level) + " (level-" + p.level + ")";
 
@@ -7143,39 +7149,39 @@ public class Game extends GameShell {
 				options[optionCount] = "Use " + selectedObjName + " with @whi@" + string;
 				optionType[optionCount] = 636;
 				optionParamA[optionCount] = index;
-				optionParamB[optionCount] = tileX;
-				optionParamC[optionCount] = tileY;
+				optionParamB[optionCount] = x;
+				optionParamC[optionCount] = z;
 				optionCount++;
 			} else if (selectedSpell) {
 				if ((selectedFlags & 0x8) == 8) {
 					options[optionCount] = selectedSpellPrefix + " @whi@" + string;
 					optionType[optionCount] = 730;
 					optionParamA[optionCount] = index;
-					optionParamB[optionCount] = tileX;
-					optionParamC[optionCount] = tileY;
+					optionParamB[optionCount] = x;
+					optionParamC[optionCount] = z;
 					optionCount++;
 				}
 			} else {
 				options[optionCount] = "Trade with @whi@" + string;
 				optionType[optionCount] = 1682;
 				optionParamA[optionCount] = index;
-				optionParamB[optionCount] = tileX;
-				optionParamC[optionCount] = tileY;
+				optionParamB[optionCount] = x;
+				optionParamC[optionCount] = z;
 				optionCount++;
 
 				options[optionCount] = "Follow @whi@" + string;
 				optionType[optionCount] = 1930;
 				optionParamA[optionCount] = index;
-				optionParamB[optionCount] = tileX;
-				optionParamC[optionCount] = tileY;
+				optionParamB[optionCount] = x;
+				optionParamC[optionCount] = z;
 				optionCount++;
 
 				if (gameWildernessLevel > 0) {
 					options[optionCount] = "Attack @whi@" + string;
 					optionType[optionCount] = 1754;
 					optionParamA[optionCount] = index;
-					optionParamB[optionCount] = tileX;
-					optionParamC[optionCount] = tileY;
+					optionParamB[optionCount] = x;
+					optionParamC[optionCount] = z;
 					optionCount++;
 				}
 			}
@@ -8216,11 +8222,11 @@ public class Game extends GameShell {
 		}
 
 		for (int tileX = 0; tileX < 104; tileX++) {
-			for (int tileY = 0; tileY < 104; tileY++) {
-				Chain c = planeObjStacks[currentPlane][tileX][tileY];
+			for (int tileZ = 0; tileZ < 104; tileZ++) {
+				Chain c = planeObjectStacks[currentPlane][tileX][tileZ];
 				if (c != null) {
 					x = (((tileX * 4) + 2) - playerX);
-					y = (((tileY * 4) + 2) - playerY);
+					y = (((tileZ * 4) + 2) - playerY);
 					drawOntoMinimap(mapdot1, x, y);
 				}
 			}
@@ -8273,7 +8279,7 @@ public class Game extends GameShell {
 	}
 
 	public final void addMessage(int type, String prefix, String suffix) {
-		if (chatInterfaceIndex == -1) {
+		if (chatWidgetIndex == -1) {
 			chatRedraw = true;
 		}
 
@@ -8299,8 +8305,8 @@ public class Game extends GameShell {
 		} else if (chatShowTransferInput) {
 			fontBold.drawCentered("Enter amount to transfer:", 239, 40, 0);
 			fontBold.drawCentered(chatTransferInput + "*", 239, 60, 128);
-		} else if (chatInterfaceIndex != -1) {
-			drawWidget(Widget.instances[chatInterfaceIndex], 0, 0, 0);
+		} else if (chatWidgetIndex != -1) {
+			drawWidget(Widget.instances[chatWidgetIndex], 0, 0, 0);
 		} else {
 			int messageCount = 0;
 			Graphics2D.setBounds(0, 0, 463, 77);

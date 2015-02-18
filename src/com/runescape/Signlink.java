@@ -1,25 +1,12 @@
 package com.runescape;
 
-import java.applet.Applet;
-import java.awt.Component;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.Socket;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
-
-import javax.swing.JFileChooser;
+import java.applet.*;
+import java.awt.*;
+import java.io.*;
+import java.net.*;
+import java.util.logging.*;
+import java.util.zip.*;
+import javax.swing.*;
 
 public final class Signlink implements Runnable {
 
@@ -238,6 +225,15 @@ public final class Signlink implements Runnable {
 			}
 			return baos.toByteArray();
 		}
+	}
+
+	public static final boolean filesExist(String... s) {
+		for (String path : s) {
+			if (!getFile(path).exists()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static final byte[] loadFile(String s) {

@@ -5,7 +5,7 @@ public final class AnimatedLocation extends Link {
 	public int plane;
 	public int classtype;
 	public int tileX;
-	public int tileY;
+	public int tileZ;
 	public int locIndex;
 	public Animation animation;
 	public int animFrame;
@@ -15,7 +15,7 @@ public final class AnimatedLocation extends Link {
 		this.plane = plane;
 		this.classtype = type;
 		this.tileX = tileX;
-		this.tileY = tileY;
+		this.tileZ = tileY;
 		this.locIndex = locIndex;
 		this.animation = animation;
 		this.animFrame = -1;

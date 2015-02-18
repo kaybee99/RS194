@@ -54,7 +54,7 @@ public class LocationInfo {
 	private int[] oldColors;
 	private int[] newColors;
 	public int sizeX;
-	public int sizeY;
+	public int sizeZ;
 	public boolean hasCollision;
 	public boolean isSolid;
 	public boolean interactable;
@@ -142,7 +142,7 @@ public class LocationInfo {
 		oldColors = null;
 		newColors = null;
 		sizeX = 1;
-		sizeY = 1;
+		sizeZ = 1;
 		hasCollision = true;
 		isSolid = true;
 		interactable = false;
@@ -197,7 +197,7 @@ public class LocationInfo {
 			} else if (opcode == 14) {
 				sizeX = b.read();
 			} else if (opcode == 15) {
-				sizeY = b.read();
+				sizeZ = b.read();
 			} else if (opcode == 17) {
 				hasCollision = false;
 			} else if (opcode == 18) {
