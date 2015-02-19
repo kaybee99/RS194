@@ -25,7 +25,7 @@ public final class Scene {
 	 * disabled does not affect the visual part of the game, but it does affect performance. Occluders are invisible
 	 * walls or boxes which determine whether things behind it should be rendered or not.
 	 */
-	public static boolean occlusionEnabled = false;
+	public static boolean occlusionEnabled = true;
 	public static boolean checkClick;
 
 	public static int clickX;

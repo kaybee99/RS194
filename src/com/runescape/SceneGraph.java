@@ -62,15 +62,39 @@ public final class SceneGraph {
 	//
 	// @formatter:off
 	public static final int[] TILE_WALL_DRAW_FLAGS_0 = {
-		19, 55, 38, 155, 255, 110, 137, 205, 76
+		0x10 | 0x2 | 0x1,
+		0x20 | 0x10 | 0x4 | 0x2 | 0x1,
+		0x20 | 0x4 | 0x2,
+		0x80 | 0x10 | 0x8 | 0x2 | 0x1,
+		0x80 | 0x40 | 0x20 | 0x10 | 0x8 | 0x4 | 0x2 | 0x1,
+		0x40 | 0x20 | 0x8 | 0x4 | 0x2,
+		0x80 | 0x8 | 0x1,
+		0x80 | 0x40 | 0x8 | 0x4 | 0x1,
+		0x40 | 0x8 | 0x4
 	};
 
 	public static final int[] WALL_DRAW_FLAGS = {
-		160, 192, 80, 96, 0, 144, 80, 48, 160
+		0x80 | 0x20,
+		0x80 | 0x40,
+		0x40 | 0x10,
+		0x40 | 0x20,
+		0x0,
+		0x80 | 0x10,
+		0x40 | 0x10,
+		0x20 | 0x10,
+		0x80 | 0x20
 	};
 
 	public static final int[] TILE_WALL_DRAW_FLAGS_1 = {
-		76, 8, 137, 4, 0, 1, 38, 2, 19
+		0x40 | 0x8 | 0x4,
+		0x8,
+		0x80 | 0x8 | 0x1,
+		0x4,
+		0x0,
+		0x1,
+		0x20 | 0x4 | 0x2,
+		0x2,
+		0x10 | 0x2 | 0x1
 	};
 
 	public static final int[] WALL_UNCULL_FLAGS_0 = {0, 0, 2, 0, 0, 2, 1, 1, 0};
@@ -1475,28 +1499,28 @@ public final class SceneGraph {
 
 						if (wall.type1 == 16) {
 							// the direction the wall can cull
-							tile.wallCullDirection = 3; // x > minX && z < maxZ
+							tile.wallCullDirection = 0b0011; // x > minX && z < maxZ
 
 							// the directions the wall can't cull relative to the camera
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_0[direction];
 
 							// the direction the wall is culling
-							tile.relativeWallCullDirection = 3 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 0b0011 - tile.wallUncullDirection;
 						} else if (wall.type1 == 32) {
-							tile.wallCullDirection = 6; // x < maxX && z < maxZ
+							tile.wallCullDirection = 0b0110; // x < maxX && z < maxZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_1[direction];
-							tile.relativeWallCullDirection = 6 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 0b0110 - tile.wallUncullDirection;
 						} else if (wall.type1 == 64) {
-							tile.wallCullDirection = 12; // x < maxX && z > minZ
+							tile.wallCullDirection = 0b1100; // x < maxX && z > minZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_2[direction];
-							tile.relativeWallCullDirection = 12 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 0b1100 - tile.wallUncullDirection;
 						} else {
-							tile.wallCullDirection = 9; // x > minX && z > minZ
+							tile.wallCullDirection = 0b1001; // x > minX && z > minZ
 							tile.wallUncullDirection = WALL_UNCULL_FLAGS_3[direction];
-							tile.relativeWallCullDirection = 9 - tile.wallUncullDirection;
+							tile.relativeWallCullDirection = 0b1001 - tile.wallUncullDirection;
 						}
 					} else {
-						tile.wallCullDirection = 0;
+						tile.wallCullDirection = 0b0000;
 					}
 
 					if ((wall.type1 & tileWallDrawFlags) != 0 && !isWallOccluded(tileRenderPlane, tileX, tileZ, wall.type1)) {
@@ -1649,19 +1673,19 @@ public final class SceneGraph {
 									int flags = 0;
 
 									if (x > l.minTileX) {
-										flags += 1;
+										flags += 0b0001;
 									}
 
 									if (x < l.maxTileX) {
-										flags += 4;
+										flags += 0b0100;
 									}
 
 									if (z > l.minTileZ) {
-										flags += 8;
+										flags += 0b1000;
 									}
 
 									if (z < l.maxTileZ) {
-										flags += 2;
+										flags += 0b0010;
 									}
 
 									// 0001 = x > minX
@@ -2140,73 +2164,77 @@ public final class SceneGraph {
 
 		activeOccluderCount = 0;
 
+		if (!Scene.occlusionEnabled) {
+			return;
+		}
+
 		for (int n = 0; n < count; n++) {
 			Occluder o = occluders[n];
 
 			if (o.type == 1) {
-				int minTileX = o.minTileX - cameraTileX + 25;
+				int tileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
 
-				if (minTileX >= 0 && minTileX <= 50) {
-					int minTileZ = o.minTileZ - cameraTileZ + 25;
+				if (tileX >= 0 && tileX <= Scene.VIEW_DIAMETER) {
+					int minTileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
 
 					if (minTileZ < 0) {
 						minTileZ = 0;
 					}
 
-					int maxTileZ = o.maxTileZ - cameraTileZ + 25;
+					int maxTileZ = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
 
-					if (maxTileZ > 50) {
-						maxTileZ = 50;
+					if (maxTileZ > Scene.VIEW_DIAMETER) {
+						maxTileZ = Scene.VIEW_DIAMETER;
 					}
 
 					boolean visible = false;
 
 					while (minTileZ <= maxTileZ) {
-						if (visibilityMap[minTileX][minTileZ++]) {
+						if (visibilityMap[tileX][minTileZ++]) {
 							visible = true;
 							break;
 						}
 					}
 
 					if (visible) {
-						int x = cameraX - o.minX;
+						int dx = cameraX - o.minX;
 
-						if (x > 32) {
+						if (dx > 32) {
 							o.testDirection = 1;
 						} else {
-							if (x >= -32) {
+							if (dx >= -32) {
 								continue;
 							}
 							o.testDirection = 2;
-							x = -x;
+							dx = -dx;
 						}
 
-						o.minNormalZ = (o.minZ - cameraZ << 8) / x;
-						o.maxNormalZ = (o.maxZ - cameraZ << 8) / x;
-						o.minNormalY = (o.minY - cameraY << 8) / x;
-						o.maxNormalY = (o.maxY - cameraY << 8) / x;
+						o.minNormalZ = (o.minZ - cameraZ << 8) / dx;
+						o.maxNormalZ = (o.maxZ - cameraZ << 8) / dx;
+						o.minNormalY = (o.minY - cameraY << 8) / dx;
+						o.maxNormalY = (o.maxY - cameraY << 8) / dx;
 						activeOcludders[activeOccluderCount++] = o;
 					}
 				}
 			} else if (o.type == 2) {
-				int minTileZ = o.minTileZ - cameraTileZ + 25;
+				int tileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
 
-				if (minTileZ >= 0 && minTileZ <= 50) {
-					int minTileX = o.minTileX - cameraTileX + 25;
+				if (tileZ >= 0 && tileZ <= Scene.VIEW_DIAMETER) {
+					int minTileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
 
 					if (minTileX < 0) {
 						minTileX = 0;
 					}
 
-					int maxTileX = o.maxTileX - cameraTileX + 25;
+					int maxTileX = o.maxTileX - cameraTileX + Scene.VIEW_RADIUS;
 
-					if (maxTileX > 50) {
-						maxTileX = 50;
+					if (maxTileX > Scene.VIEW_DIAMETER) {
+						maxTileX = Scene.VIEW_DIAMETER;
 					}
 
 					boolean visible = false;
 					while (minTileX <= maxTileX) {
-						if (visibilityMap[minTileX++][minTileZ]) {
+						if (visibilityMap[minTileX++][tileZ]) {
 							visible = true;
 							break;
 						}
@@ -2233,32 +2261,32 @@ public final class SceneGraph {
 					}
 				}
 			} else if (o.type == 4) {
-				int minY = o.minY - cameraY;
+				int y = o.minY - cameraY;
 
-				if (minY > 128) {
-					int minTileZ = o.minTileZ - cameraTileZ + 25;
+				if (y > 128) {
+					int minTileZ = o.minTileZ - cameraTileZ + Scene.VIEW_RADIUS;
 
 					if (minTileZ < 0) {
 						minTileZ = 0;
 					}
 
-					int maxTileZ = o.maxTileZ - cameraTileZ + 25;
+					int maxTileZ = o.maxTileZ - cameraTileZ + Scene.VIEW_RADIUS;
 
-					if (maxTileZ > 50) {
-						maxTileZ = 50;
+					if (maxTileZ > Scene.VIEW_DIAMETER) {
+						maxTileZ = Scene.VIEW_DIAMETER;
 					}
 
 					if (minTileZ <= maxTileZ) {
-						int minTileX = o.minTileX - cameraTileX + 25;
+						int minTileX = o.minTileX - cameraTileX + Scene.VIEW_RADIUS;
 
 						if (minTileX < 0) {
 							minTileX = 0;
 						}
 
-						int maxTileX = o.maxTileX - cameraTileX + 25;
+						int maxTileX = o.maxTileX - cameraTileX + Scene.VIEW_RADIUS;
 
-						if (maxTileX > 50) {
-							maxTileX = 50;
+						if (maxTileX > Scene.VIEW_DIAMETER) {
+							maxTileX = Scene.VIEW_DIAMETER;
 						}
 
 						boolean visible = false;
@@ -2275,10 +2303,10 @@ public final class SceneGraph {
 
 						if (visible) {
 							o.testDirection = 5;
-							o.minNormalX = (o.minX - cameraX << 8) / minY;
-							o.maxNormalX = (o.maxX - cameraX << 8) / minY;
-							o.minNormalZ = (o.minZ - cameraZ << 8) / minY;
-							o.maxNormalZ = (o.maxZ - cameraZ << 8) / minY;
+							o.minNormalX = (o.minX - cameraX << 8) / y;
+							o.maxNormalX = (o.maxX - cameraX << 8) / y;
+							o.minNormalZ = (o.minZ - cameraZ << 8) / y;
+							o.maxNormalZ = (o.maxZ - cameraZ << 8) / y;
 							activeOcludders[activeOccluderCount++] = o;
 						}
 					}
