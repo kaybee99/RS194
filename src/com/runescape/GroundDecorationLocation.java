@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class GroundDecorationLoc {
+public final class GroundDecorationLocation {
 
 	int sceneY;
 	int sceneX;

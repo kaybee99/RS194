@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 
-public class Stream implements Runnable {
+public class BufferedStream implements Runnable {
 
 	private final InputStream in;
 	private final OutputStream out;
@@ -17,7 +17,7 @@ public class Stream implements Runnable {
 	private boolean writing = false;
 	private boolean exception = false;
 
-	public Stream(Socket s) throws IOException {
+	public BufferedStream(Socket s) throws IOException {
 		socket = s;
 		socket.setSoTimeout(30000);
 		socket.setTcpNoDelay(true);

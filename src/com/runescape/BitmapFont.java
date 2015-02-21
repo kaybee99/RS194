@@ -4,7 +4,7 @@ public final class BitmapFont extends Graphics2D {
 
 	public static int[] CHAR_LOOKUP = new int[256];
 
-	public byte[][] pixels = new byte[94][];
+	public byte[][] data = new byte[94][];
 	public int[] charWidth = new int[94];
 	public int[] charHeight = new int[94];
 	public int[] charOffsetX = new int[94];
@@ -33,16 +33,16 @@ public final class BitmapFont extends Graphics2D {
 
 			int type = idx.read();
 			int len = w * h;
-			pixels[n] = new byte[len];
+			data[n] = new byte[len];
 
 			if (type == 0) {
 				for (int i = 0; i < len; i++) {
-					pixels[n][i] = dat.readByte();
+					data[n][i] = dat.readByte();
 				}
 			} else if (type == 1) {
 				for (int x = 0; x < w; x++) {
 					for (int y = 0; y < h; y++) {
-						pixels[n][x + y * w] = dat.readByte();
+						data[n][x + y * w] = dat.readByte();
 					}
 				}
 			}
@@ -57,7 +57,7 @@ public final class BitmapFont extends Graphics2D {
 			int i = 0;
 
 			for (int y = h / 7; y < h; y++) {
-				i += pixels[n][y * w];
+				i += data[n][y * w];
 			}
 
 			if (i <= h / 7) {
@@ -68,7 +68,7 @@ public final class BitmapFont extends Graphics2D {
 			i = 0;
 
 			for (int y = h / 7; y < h; y++) {
-				i += pixels[n][w - 1 + y * w];
+				i += data[n][w - 1 + y * w];
 			}
 
 			if (i <= h / 7) {
@@ -111,7 +111,7 @@ public final class BitmapFont extends Graphics2D {
 		for (int i = 0; i < string.length(); i++) {
 			int c = CHAR_LOOKUP[string.charAt(i)];
 			if (c != 94) {
-				drawChar(pixels[c], x + charOffsetX[c], y + charOffsetY[c], charWidth[c], charHeight[c], rgb);
+				drawChar(data[c], x + charOffsetX[c], y + charOffsetY[c], charWidth[c], charHeight[c], rgb);
 			}
 			x += charSpace[c];
 		}
@@ -123,7 +123,7 @@ public final class BitmapFont extends Graphics2D {
 		for (int i = 0; i < s.length(); i++) {
 			int c = CHAR_LOOKUP[s.charAt(i)];
 			if (c != 94) {
-				drawChar(pixels[c], x + charOffsetX[c], (y + charOffsetY[c] + (int) (Math.sin((double) i / 2.0 + (double) amplitude / 5.0) * 5.0)), charWidth[c], charHeight[c], rgb);
+				drawChar(data[c], x + charOffsetX[c], (y + charOffsetY[c] + (int) (Math.sin((double) i / 2.0 + (double) amplitude / 5.0) * 5.0)), charWidth[c], charHeight[c], rgb);
 			}
 			x += charSpace[c];
 		}
@@ -194,9 +194,9 @@ public final class BitmapFont extends Graphics2D {
 				int c = CHAR_LOOKUP[s.charAt(i)];
 				if (c != 94) {
 					if (shadow) {
-						drawChar(pixels[c], x + charOffsetX[c] + 1, y + charOffsetY[c] + 1, charWidth[c], charHeight[c], 1);
+						drawChar(data[c], x + charOffsetX[c] + 1, y + charOffsetY[c] + 1, charWidth[c], charHeight[c], 1);
 					}
-					drawChar(pixels[c], x + charOffsetX[c], y + charOffsetY[c], charWidth[c], charHeight[c], rgb);
+					drawChar(data[c], x + charOffsetX[c], y + charOffsetY[c], charWidth[c], charHeight[c], rgb);
 				}
 				x += charSpace[c];
 			}

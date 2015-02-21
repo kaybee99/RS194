@@ -10,7 +10,7 @@ public final class Tile extends Link {
 	public TileOverlay overlay;
 	public WallLocation wall;
 	public WallDecorationLocation wallDecoration;
-	public GroundDecorationLoc groundDecoration;
+	public GroundDecorationLocation groundDecoration;
 	public ObjectLocation object;
 	public int locationCount;
 	public Location[] locs = new Location[5];

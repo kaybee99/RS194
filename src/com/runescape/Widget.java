@@ -18,20 +18,20 @@ public class Widget {
 
 	public static Widget[] instances;
 
-	private static LinkedList bitmapCache;
+	private static LinkedList spriteCache;
 	private static LinkedList modelCache;
 
-	private static Bitmap getBitmap(String name, Archive media, int index) {
-		long l = (StringUtil.getHash(name) << 4) + (long) index;
-		Bitmap b = (Bitmap) bitmapCache.get(l);
+	private static Sprite getSprite(String name, Archive media, int index) {
+		long uid = (StringUtil.getHash(name) << 4) + (long) index;
+		Sprite s = (Sprite) spriteCache.get(uid);
 
-		if (b != null) {
-			return b;
+		if (s != null) {
+			return s;
 		}
 
-		b = new Bitmap(media, name, index);
-		bitmapCache.put(b, l);
-		return b;
+		s = new Sprite(media, name, index);
+		spriteCache.put(s, uid);
+		return s;
 	}
 
 	private static Model getModel(int index) {
@@ -47,7 +47,7 @@ public class Widget {
 	}
 
 	public static void load(BitmapFont[] fonts, Archive media, Archive interfaces) {
-		bitmapCache = new LinkedList(50000);
+		spriteCache = new LinkedList(50000);
 		modelCache = new LinkedList(50000);
 
 		Buffer b = new Buffer(interfaces.get("data", null));
@@ -137,7 +137,7 @@ public class Widget {
 				w.inventoryMarginY = b.read();
 				w.inventoryOffsetX = new int[20];
 				w.inventoryOffsetY = new int[20];
-				w.inventoryBitmap = new Bitmap[20];
+				w.inventorySprite = new Sprite[20];
 
 				for (int n = 0; n < 20; n++) {
 					if (b.read() == 1) {
@@ -148,7 +148,7 @@ public class Widget {
 
 						if (media != null && s.length() > 0) {
 							int j = s.lastIndexOf(",");
-							w.inventoryBitmap[n] = getBitmap(s.substring(0, j), media, (Integer.parseInt(s.substring(j + 1))));
+							w.inventorySprite[n] = getSprite(s.substring(0, j), media, (Integer.parseInt(s.substring(j + 1))));
 						}
 					}
 				}
@@ -193,14 +193,14 @@ public class Widget {
 
 				if (media != null && s.length() > 0) {
 					int j = s.lastIndexOf(",");
-					w.bitmapDisabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
+					w.spriteDisabled = getSprite(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
 				}
 
 				s = b.readString();
 
 				if (media != null && s.length() > 0) {
 					int j = s.lastIndexOf(",");
-					w.bitmapEnabled = getBitmap(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
+					w.spriteEnabled = getSprite(s.substring(0, j), media, Integer.parseInt(s.substring(j + 1)));
 				}
 			}
 
@@ -266,7 +266,7 @@ public class Widget {
 			}
 
 			if (w.optionType == 2 || w.type == TYPE_INVENTORY) {
-				w.optionPrefix = b.readString();
+				w.optionCircumfix = b.readString();
 				w.optionSuffix = b.readString();
 				w.optionFlags = b.readUShort();
 			}
@@ -289,7 +289,7 @@ public class Widget {
 				}
 			}
 		}
-		bitmapCache = null;
+		spriteCache = null;
 	}
 
 	public int[] inventoryIndices;
@@ -320,7 +320,7 @@ public class Widget {
 	public boolean inventoryIsUsable;
 	public int inventoryMarginX;
 	public int inventoryMarginY;
-	public Bitmap[] inventoryBitmap;
+	public Sprite[] inventorySprite;
 	public int[] inventoryOffsetX;
 	public int[] inventoryOffsetY;
 	public String[] inventoryActions;
@@ -333,8 +333,8 @@ public class Widget {
 	public int colorDisabled;
 	public int colorEnabled;
 	public int hoverColor;
-	public Bitmap bitmapDisabled;
-	public Bitmap bitmapEnabled;
+	public Sprite spriteDisabled;
+	public Sprite spriteEnabled;
 	public Model modelDisabled;
 	public Model modelEnabled;
 	public int animIndexDisabled;
@@ -342,7 +342,7 @@ public class Widget {
 	public int modelZoom;
 	public int modelCameraPitch;
 	public int modelYaw;
-	public String optionPrefix;
+	public String optionCircumfix;
 	public String optionSuffix;
 	public int optionFlags;
 	public String option;

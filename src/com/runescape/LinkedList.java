@@ -4,7 +4,7 @@ public final class LinkedList {
 
 	private final int size;
 	private int available;
-	private final Array array = new Array(1024);
+	private final HashTable table = new HashTable(1024);
 	private final Deque deque = new Deque();
 
 	public LinkedList(int length) {
@@ -13,7 +13,7 @@ public final class LinkedList {
 	}
 
 	public QueueLink get(long id) {
-		QueueLink l = (QueueLink) array.get(id);
+		QueueLink l = (QueueLink) table.get(id);
 		if (l != null) {
 			deque.push(l);
 		}
@@ -28,7 +28,7 @@ public final class LinkedList {
 		} else {
 			available--;
 		}
-		array.put(id, l);
+		table.put(id, l);
 		deque.push(l);
 	}
 

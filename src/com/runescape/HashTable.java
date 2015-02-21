@@ -1,11 +1,11 @@
 package com.runescape;
 
-public final class Array {
+public final class HashTable {
 
 	private final int length;
 	private final Link[] array;
 
-	public Array(int size) {
+	public HashTable(int size) {
 		length = size;
 		array = new Link[size];
 

@@ -8,7 +8,7 @@ public class ObjectInfo {
 	private static ObjectInfo[] cache;
 	private static int cachepos;
 	public static LinkedList uniqueModelCache = new LinkedList(50);
-	static LinkedList uniqueBitmapCache = new LinkedList(200);
+	static LinkedList spriteCache = new LinkedList(200);
 
 	public int index = -1;
 	public int modelIndex;
@@ -63,7 +63,7 @@ public class ObjectInfo {
 
 	public static final void unload() {
 		uniqueModelCache = null;
-		uniqueBitmapCache = null;
+		spriteCache = null;
 		pointers = null;
 		cache = null;
 		buffer = null;
@@ -214,15 +214,15 @@ public class ObjectInfo {
 		return m;
 	}
 
-	public static final Bitmap getBitmap(int index) {
-		Bitmap b = (Bitmap) uniqueBitmapCache.get((long) index);
+	public static final Sprite getSprite(int index) {
+		Sprite s = (Sprite) spriteCache.get((long) index);
 
-		if (b != null) {
-			return b;
+		if (s != null) {
+			return s;
 		}
 
-		ObjectInfo c = get(index);
-		b = new Bitmap(32, 32);
+		ObjectInfo i = get(index);
+		s = new Sprite(32, 32);
 
 		int centerX = Graphics3D.centerX;
 		int centerY = Graphics3D.centerY;
@@ -232,28 +232,28 @@ public class ObjectInfo {
 		int height = Graphics2D.targetHeight;
 
 		Graphics3D.texturedShading = false;
-		Graphics2D.prepare(b.pixels, 32, 32);
+		Graphics2D.prepare(s.pixels, 32, 32);
 		Graphics2D.fillRect(0, 0, 32, 32, 0);
 		Graphics3D.prepareOffsets();
 
-		Model m = c.getModel();
+		Model m = i.getModel();
 
-		int cameraY = (Graphics3D.sin[c.iconCameraPitch] * c.iconZoom) >> 16;
-		int cameraZ = (Graphics3D.cos[c.iconCameraPitch] * c.iconZoom) >> 16;
+		int cameraY = (Graphics3D.sin[i.iconCameraPitch] * i.iconZoom) >> 16;
+		int cameraZ = (Graphics3D.cos[i.iconCameraPitch] * i.iconZoom) >> 16;
 
-		m.draw(0, c.iconYaw, c.iconRoll, c.iconX, (cameraY + (m.maxBoundY / 2) + c.iconY), cameraZ + c.iconY, c.iconCameraPitch);
+		m.draw(0, i.iconYaw, i.iconRoll, i.iconX, (cameraY + (m.maxBoundY / 2) + i.iconY), cameraZ + i.iconY, i.iconCameraPitch);
 
 		for (int x = 31; x >= 0; x--) {
 			for (int y = 31; y >= 0; y--) {
-				if (b.pixels[x + y * 32] == 0) {
-					if (x > 0 && (b.pixels[x - 1 + y * 32]) > 1) {
-						b.pixels[(x + y * 32)] = 1;
-					} else if (y > 0 && (b.pixels[x + (y - 1) * 32]) > 1) {
-						b.pixels[(x + y * 32)] = 1;
-					} else if (x < 31 && (b.pixels[x + 1 + y * 32]) > 1) {
-						b.pixels[(x + y * 32)] = 1;
-					} else if (y < 31 && (b.pixels[x + (y + 1) * 32]) > 1) {
-						b.pixels[(x + y * 32)] = 1;
+				if (s.pixels[x + y * 32] == 0) {
+					if (x > 0 && (s.pixels[x - 1 + y * 32]) > 1) {
+						s.pixels[(x + y * 32)] = 1;
+					} else if (y > 0 && (s.pixels[x + (y - 1) * 32]) > 1) {
+						s.pixels[(x + y * 32)] = 1;
+					} else if (x < 31 && (s.pixels[x + 1 + y * 32]) > 1) {
+						s.pixels[(x + y * 32)] = 1;
+					} else if (y < 31 && (s.pixels[x + (y + 1) * 32]) > 1) {
+						s.pixels[(x + y * 32)] = 1;
 					}
 				}
 			}
@@ -261,13 +261,13 @@ public class ObjectInfo {
 
 		for (int x = 31; x >= 0; x--) {
 			for (int y = 31; y >= 0; y--) {
-				if (b.pixels[x + y * 32] == 0 && x > 0 && y > 0 && (b.pixels[x - 1 + (y - 1) * 32]) > 0) {
-					b.pixels[x + y * 32] = 0x302020;
+				if (s.pixels[x + y * 32] == 0 && x > 0 && y > 0 && (s.pixels[x - 1 + (y - 1) * 32]) > 0) {
+					s.pixels[x + y * 32] = 0x302020;
 				}
 			}
 		}
 
-		uniqueBitmapCache.put(b, (long) index);
+		spriteCache.put(s, (long) index);
 
 		Graphics2D.prepare(data, width, height);
 		Graphics3D.centerX = centerX;
@@ -275,13 +275,13 @@ public class ObjectInfo {
 		Graphics3D.offsets = offsets;
 		Graphics3D.texturedShading = true;
 
-		if (c.stackable) {
-			b.clipWidth = 33;
+		if (i.stackable) {
+			s.clipWidth = 33;
 		} else {
-			b.clipWidth = 32;
+			s.clipWidth = 32;
 		}
 
-		return b;
+		return s;
 	}
 
 	public final Model getWornModel(int gender) {

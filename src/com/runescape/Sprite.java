@@ -7,18 +7,18 @@ import java.io.*;
 import java.util.logging.*;
 import javax.imageio.*;
 
-public class Bitmap extends Graphics2D {
+public class Sprite extends Graphics2D {
 
-	private static final Logger logger = Logger.getLogger(Bitmap.class.toString());
+	private static final Logger logger = Logger.getLogger(Sprite.class.toString());
 
-	public static final Bitmap load(File f) throws IOException {
+	public static final Sprite load(File f) throws IOException {
 		BufferedImage image = ImageIO.read(f);
-		Bitmap b = new Bitmap(image.getWidth(), image.getHeight());
-		image.getRGB(0, 0, b.width, b.height, b.pixels, 0, b.width);
-		for (int i = 0; i < b.pixels.length; i++) {
-			b.pixels[i] &= ~(0xFF000000);
+		Sprite s = new Sprite(image.getWidth(), image.getHeight());
+		image.getRGB(0, 0, s.width, s.height, s.pixels, 0, s.width);
+		for (int i = 0; i < s.pixels.length; i++) {
+			s.pixels[i] &= ~(0xFF000000);
 		}
-		return b;
+		return s;
 	}
 
 	public int[] pixels;
@@ -29,14 +29,14 @@ public class Bitmap extends Graphics2D {
 	public int clipWidth;
 	public int clipHeight;
 
-	public Bitmap(int w, int h) {
+	public Sprite(int w, int h) {
 		pixels = new int[w * h];
 		width = clipWidth = w;
 		height = clipHeight = h;
 		clipX = clipY = 0;
 	}
 
-	public Bitmap(byte[] src, Component c) {
+	public Sprite(byte[] src, Component c) {
 		try {
 			Image i = Toolkit.getDefaultToolkit().createImage(src);
 			MediaTracker mt = new MediaTracker(c);
@@ -56,7 +56,7 @@ public class Bitmap extends Graphics2D {
 		}
 	}
 
-	public Bitmap(Archive archive, String name, int index) {
+	public Sprite(Archive archive, String name, int index) {
 		Buffer dat = new Buffer(archive.get(name + ".dat", null));
 		Buffer idx = new Buffer(archive.get("index.dat", null));
 		idx.position = dat.readUShort();
@@ -404,7 +404,7 @@ public class Bitmap extends Graphics2D {
 		}
 	}
 
-	public void draw(IndexedBitmap mask, int x, int y) {
+	public void draw(IndexedSprite mask, int x, int y) {
 		x += clipX;
 		y += clipY;
 

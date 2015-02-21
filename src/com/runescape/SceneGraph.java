@@ -42,7 +42,7 @@ public final class SceneGraph {
 	public static Occluder[][] planeOccluders = new Occluder[MAX_OCCLUDER_PLANES][500];
 	public static int activeOccluderCount;
 	public static Occluder[] activeOcludders = new Occluder[500];
-	public static Chain tileQueue = new Chain();
+	public static LinkedQueue tileQueue = new LinkedQueue();
 
 	// EAST NORTH WEST SOUTH
 	//
@@ -345,7 +345,7 @@ public final class SceneGraph {
 			return;
 		}
 
-		GroundDecorationLoc l = new GroundDecorationLoc();
+		GroundDecorationLocation l = new GroundDecorationLocation();
 		l.model = m;
 		l.sceneX = tileX * 128 + 64;
 		l.sceneZ = tileZ * 128 + 64;
@@ -790,7 +790,7 @@ public final class SceneGraph {
 							}
 						}
 
-						GroundDecorationLoc d = t.groundDecoration;
+						GroundDecorationLocation d = t.groundDecoration;
 
 						if (d != null && d.model.normals != null) {
 							mergeGroundDecorationNormals(d.model, tileX, tileZ, plane);
@@ -1572,7 +1572,7 @@ public final class SceneGraph {
 				}
 
 				if (tileVisible) {
-					GroundDecorationLoc d = tile.groundDecoration;
+					GroundDecorationLocation d = tile.groundDecoration;
 
 					if (d != null) {
 						d.model.draw(0, pitchSin, pitchCos, yawSin, yawCos, d.sceneX - cameraX, d.sceneY - cameraY, d.sceneZ - cameraZ, d.bitset);

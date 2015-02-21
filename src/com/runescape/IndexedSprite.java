@@ -1,6 +1,6 @@
 package com.runescape;
 
-public final class IndexedBitmap extends Graphics2D {
+public final class IndexedSprite extends Graphics2D {
 
 	public byte[] data;
 	public int[] palette;
@@ -11,7 +11,7 @@ public final class IndexedBitmap extends Graphics2D {
 	public int clipWidth;
 	public int clipHeight;
 
-	public IndexedBitmap(Archive archive, String name, int index) {
+	public IndexedSprite(Archive archive, String name, int index) {
 		Buffer dat = new Buffer(archive.get(name + ".dat", null));
 		Buffer idx = new Buffer(archive.get("index.dat", null));
 

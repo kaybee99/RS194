@@ -163,7 +163,7 @@ public final class Scene {
 		}
 	}
 
-	public final void readLocs(byte[] src, int mapBaseX, int mapBaseY, SceneGraph graph, CollisionMap[] planeCollisions, Chain sequencedLocs) {
+	public final void readLocs(byte[] src, int mapBaseX, int mapBaseY, SceneGraph graph, CollisionMap[] planeCollisions, LinkedQueue sequencedLocs) {
 		Buffer b = new Buffer(src);
 		int locIndex = -1;
 
@@ -204,7 +204,7 @@ public final class Scene {
 		}
 	}
 
-	public final void addLoc(int locIndex, int type, SceneGraph graph, CollisionMap collision, Chain animatedLocations, int tileX, int tileY, int plane, int rotation) {
+	public final void addLoc(int locIndex, int type, SceneGraph graph, CollisionMap collision, LinkedQueue animatedLocations, int tileX, int tileY, int plane, int rotation) {
 		if (lowmemory) {
 			int p = plane;
 
@@ -1015,7 +1015,7 @@ public final class Scene {
 		return (hue / 4 << 10) + (saturation / 32 << 7) + lightness / 2;
 	}
 
-	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, SceneGraph graph, CollisionMap collision, Chain animatedLocations) {
+	public static final void addLoc(int type, int index, int tileX, int tileY, int plane, int groundPlane, int rotation, int[][][] planeHeightmaps, SceneGraph graph, CollisionMap collision, LinkedQueue animatedLocations) {
 		int southwestY = planeHeightmaps[groundPlane][tileX][tileY];
 		int southeastY = planeHeightmaps[groundPlane][tileX + 1][tileY];
 		int northeastY = planeHeightmaps[groundPlane][tileX + 1][tileY + 1];

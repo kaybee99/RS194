@@ -1,11 +1,11 @@
 package com.runescape;
 
-public final class Chain {
+public final class LinkedQueue {
 
 	Link head = new Link();
 	Link selected;
 
-	public Chain() {
+	public LinkedQueue() {
 		head.previous = head;
 		head.next = head;
 	}

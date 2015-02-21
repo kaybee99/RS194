@@ -27,8 +27,8 @@ public class Game extends GameShell {
 	public static final int[] SPOKEN_COLORS = {0xFFFF00, 0xFF0000, 0xFF00, 0xFFFF, 0xFF00FF, 0xFFFFFF};
 
 	/**
-	 * Appearance colors for each part of your Identity. Their format is in HSL
-	 * and are used with <code>Canvas3D.palette</code>.
+	 * Appearance colors for each part of your Identity. Their format is in HSL and are used with
+	 * <code>Canvas3D.palette</code>.
 	 */
 	public static final int[][] APPEARANCE_COLORS = new int[][]{
 		{6798, 107, 10283, 16, 4797, 7744, 5799},
@@ -171,12 +171,12 @@ public class Game extends GameShell {
 	public int[] deadEntityIndices = new int[1000];
 
 	/* Linked Entites */
-	public Chain[][][] planeObjectStacks = new Chain[4][104][104];
-	public Chain projectiles = new Chain();
-	public Chain animatedLocations = new Chain();
-	public Chain spawntLocs = new Chain();
-	public Chain spotanims = new Chain();
-	public Chain temporaryLocs = new Chain();
+	public LinkedQueue[][][] planeObjectStacks = new LinkedQueue[4][104][104];
+	public LinkedQueue projectiles = new LinkedQueue();
+	public LinkedQueue animatedLocations = new LinkedQueue();
+	public LinkedQueue spawntLocs = new LinkedQueue();
+	public LinkedQueue spotanims = new LinkedQueue();
+	public LinkedQueue temporaryLocs = new LinkedQueue();
 
 	/* Networking */
 	public int netHeartbeatCycle;
@@ -192,7 +192,7 @@ public class Game extends GameShell {
 	public Buffer in = Buffer.get(1);
 	public Buffer out = Buffer.get(1);
 	public Buffer login = Buffer.get(1);
-	public Stream stream;
+	public BufferedStream stream;
 
 	/* Fonts */
 	public BitmapFont fontSmall;
@@ -201,33 +201,33 @@ public class Game extends GameShell {
 	public BitmapFont fontFancy;
 
 	/* Bitmaps */
-	public Bitmap buttonDisabled;
-	public Bitmap buttonEnabled;
-	public Bitmap[] headicons = new Bitmap[20];
-	public Bitmap[] hitmarks = new Bitmap[20];
+	public Sprite buttonDisabled;
+	public Sprite buttonEnabled;
+	public Sprite[] headicons = new Sprite[20];
+	public Sprite[] hitmarks = new Sprite[20];
 
 	/* Indexed Bitmaps */
-	public IndexedBitmap backbase1;
-	public IndexedBitmap backbase2;
-	public IndexedBitmap backhmid1;
-	public IndexedBitmap invback;
-	public IndexedBitmap mapback;
-	public IndexedBitmap[] mapscenes = new IndexedBitmap[50];
-	public IndexedBitmap redstone1;
-	public IndexedBitmap redstone1h;
-	public IndexedBitmap redstone1hv;
-	public IndexedBitmap redstone1v;
-	public IndexedBitmap redstone2;
-	public IndexedBitmap redstone2h;
-	public IndexedBitmap redstone2hv;
-	public IndexedBitmap redstone2v;
-	public IndexedBitmap redstone3;
-	public IndexedBitmap redstone3v;
-	public IndexedBitmap[] runes;
-	public IndexedBitmap scrollbar1;
-	public IndexedBitmap scrollbar2;
-	public IndexedBitmap sideicons1;
-	public IndexedBitmap sideicons2;
+	public IndexedSprite backbase1;
+	public IndexedSprite backbase2;
+	public IndexedSprite backhmid1;
+	public IndexedSprite invback;
+	public IndexedSprite mapback;
+	public IndexedSprite[] mapscenes = new IndexedSprite[50];
+	public IndexedSprite redstone1;
+	public IndexedSprite redstone1h;
+	public IndexedSprite redstone1hv;
+	public IndexedSprite redstone1v;
+	public IndexedSprite redstone2;
+	public IndexedSprite redstone2h;
+	public IndexedSprite redstone2hv;
+	public IndexedSprite redstone2v;
+	public IndexedSprite redstone3;
+	public IndexedSprite redstone3v;
+	public IndexedSprite[] runes;
+	public IndexedSprite scrollbar1;
+	public IndexedSprite scrollbar2;
+	public IndexedSprite sideicons1;
+	public IndexedSprite sideicons2;
 
 	/* Image Producers */
 	// gameframe
@@ -256,18 +256,18 @@ public class Game extends GameShell {
 	/* Minimap Area */
 	public ImageProducer maparea;
 
-	public Bitmap compass;
+	public Sprite compass;
 	public int[] compassLeft = new int[33];
 	public int[] compassLineWidth = new int[33];
 
-	public Bitmap mapdot1;
-	public Bitmap mapdot2;
-	public Bitmap mapdot3;
-	public Bitmap[] mapfunctions = new Bitmap[50];
-	public Bitmap minimap;
+	public Sprite mapdot1;
+	public Sprite mapdot2;
+	public Sprite mapdot3;
+	public Sprite[] mapfunctions = new Sprite[50];
+	public Sprite minimap;
 	public int minimapDrawPhase;
 	public int minimapFunctionCount;
-	public Bitmap[] minimapFunctions = new Bitmap[1000];
+	public Sprite[] minimapFunctions = new Sprite[1000];
 	public int[] minimapFunctionX = new int[1000];
 	public int[] minimapFunctionY = new int[1000];
 	public int minimapLastUpdateCycle;
@@ -323,7 +323,7 @@ public class Game extends GameShell {
 
 	/* Chat */
 	public ImageProducer chatarea;
-	public IndexedBitmap chatback;
+	public IndexedSprite chatback;
 	public Widget chatbox = new Widget();
 	public int chatHeight = 78;
 	public int chatScrollAmount;
@@ -362,8 +362,8 @@ public class Game extends GameShell {
 	public String loginUsername = "";
 
 	public Archive titleArchive;
-	public IndexedBitmap titlebox;
-	public IndexedBitmap titlebutton;
+	public IndexedSprite titlebox;
+	public IndexedSprite titlebutton;
 	public int titleState;
 
 	/* Option Menu */
@@ -391,9 +391,9 @@ public class Game extends GameShell {
 	public int[] flameGradientViolet;
 	public int[] flameIntensity;
 	public int[] flameIntensityBuffer;
-	public Bitmap flameLeft;
+	public Sprite flameLeft;
 	public int flameOffset;
-	public Bitmap flameRight;
+	public Sprite flameRight;
 	public int[] flameShiftX = new int[256];
 	public boolean flameStartThread = false;
 	public boolean flameThreadActive = false;
@@ -423,7 +423,7 @@ public class Game extends GameShell {
 
 	/* Mouse Cross */
 	public int crossCycle;
-	public Bitmap[] crosses = new Bitmap[8];
+	public Sprite[] crosses = new Sprite[8];
 	public int crossType;
 	public int crossX;
 	public int crossY;
@@ -565,118 +565,118 @@ public class Game extends GameShell {
 
 	public void loadMedia(Archive media) {
 		drawProgress("Unpacking media", 80);
-		invback = new IndexedBitmap(media, "invback", 0);
-		chatback = new IndexedBitmap(media, "chatback", 0);
-		mapback = new IndexedBitmap(media, "mapback", 0);
-		backbase1 = new IndexedBitmap(media, "backbase1", 0);
-		backbase2 = new IndexedBitmap(media, "backbase2", 0);
-		backhmid1 = new IndexedBitmap(media, "backhmid1", 0);
-		sideicons1 = new IndexedBitmap(media, "sideicons1", 0);
-		sideicons2 = new IndexedBitmap(media, "sideicons2", 0);
-		compass = new Bitmap(media, "compass", 0);
+		invback = new IndexedSprite(media, "invback", 0);
+		chatback = new IndexedSprite(media, "chatback", 0);
+		mapback = new IndexedSprite(media, "mapback", 0);
+		backbase1 = new IndexedSprite(media, "backbase1", 0);
+		backbase2 = new IndexedSprite(media, "backbase2", 0);
+		backhmid1 = new IndexedSprite(media, "backhmid1", 0);
+		sideicons1 = new IndexedSprite(media, "sideicons1", 0);
+		sideicons2 = new IndexedSprite(media, "sideicons2", 0);
+		compass = new Sprite(media, "compass", 0);
 
 		try {
 			for (int i = 0; i < 50; i++) {
-				mapscenes[i] = new IndexedBitmap(media, "mapscene", i);
+				mapscenes[i] = new IndexedSprite(media, "mapscene", i);
 			}
 		} catch (Exception e) {
 			/* empty */
 		}
 		try {
 			for (int i = 0; i < 50; i++) {
-				mapfunctions[i] = new Bitmap(media, "mapfunction", i);
+				mapfunctions[i] = new Sprite(media, "mapfunction", i);
 			}
 		} catch (Exception exception) {
 			/* empty */
 		}
 		try {
 			for (int i = 0; i < 20; i++) {
-				hitmarks[i] = new Bitmap(media, "hitmarks", i);
+				hitmarks[i] = new Sprite(media, "hitmarks", i);
 			}
 		} catch (Exception exception) {
 			/* empty */
 		}
 		try {
 			for (int i = 0; i < 20; i++) {
-				headicons[i] = new Bitmap(media, "headicons", i);
+				headicons[i] = new Sprite(media, "headicons", i);
 			}
 		} catch (Exception exception) {
 			/* empty */
 		}
 
 		for (int i = 0; i < 8; i++) {
-			crosses[i] = new Bitmap(media, "cross", i);
+			crosses[i] = new Sprite(media, "cross", i);
 		}
 
-		mapdot1 = new Bitmap(media, "mapdots", 0);
-		mapdot2 = new Bitmap(media, "mapdots", 1);
-		mapdot3 = new Bitmap(media, "mapdots", 2);
+		mapdot1 = new Sprite(media, "mapdots", 0);
+		mapdot2 = new Sprite(media, "mapdots", 1);
+		mapdot3 = new Sprite(media, "mapdots", 2);
 
-		scrollbar1 = new IndexedBitmap(media, "scrollbar", 0);
-		scrollbar2 = new IndexedBitmap(media, "scrollbar", 1);
+		scrollbar1 = new IndexedSprite(media, "scrollbar", 0);
+		scrollbar2 = new IndexedSprite(media, "scrollbar", 1);
 
-		redstone1 = new IndexedBitmap(media, "redstone1", 0);
-		redstone2 = new IndexedBitmap(media, "redstone2", 0);
-		redstone3 = new IndexedBitmap(media, "redstone3", 0);
+		redstone1 = new IndexedSprite(media, "redstone1", 0);
+		redstone2 = new IndexedSprite(media, "redstone2", 0);
+		redstone3 = new IndexedSprite(media, "redstone3", 0);
 
-		redstone1h = new IndexedBitmap(media, "redstone1", 0);
+		redstone1h = new IndexedSprite(media, "redstone1", 0);
 		redstone1h.flipHorizontally();
-		redstone2h = new IndexedBitmap(media, "redstone2", 0);
+		redstone2h = new IndexedSprite(media, "redstone2", 0);
 		redstone2h.flipHorizontally();
 
-		redstone1v = new IndexedBitmap(media, "redstone1", 0);
+		redstone1v = new IndexedSprite(media, "redstone1", 0);
 		redstone1v.flipVertically();
-		redstone2v = new IndexedBitmap(media, "redstone2", 0);
+		redstone2v = new IndexedSprite(media, "redstone2", 0);
 		redstone2v.flipVertically();
-		redstone3v = new IndexedBitmap(media, "redstone3", 0);
+		redstone3v = new IndexedSprite(media, "redstone3", 0);
 		redstone3v.flipVertically();
 
-		redstone1hv = new IndexedBitmap(media, "redstone1", 0);
+		redstone1hv = new IndexedSprite(media, "redstone1", 0);
 		redstone1hv.flipHorizontally();
 		redstone1hv.flipVertically();
-		redstone2hv = new IndexedBitmap(media, "redstone2", 0);
+		redstone2hv = new IndexedSprite(media, "redstone2", 0);
 		redstone2hv.flipHorizontally();
 		redstone2hv.flipVertically();
 
-		Bitmap b = new Bitmap(media, "backleft1", 0);
-		backleft1 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		Sprite s = new Sprite(media, "backleft1", 0);
+		backleft1 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backleft2", 0);
-		backleft2 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backleft2", 0);
+		backleft2 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backright1", 0);
-		backright1 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backright1", 0);
+		backright1 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backright2", 0);
-		backright2 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backright2", 0);
+		backright2 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backtop1", 0);
-		backtop1 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backtop1", 0);
+		backtop1 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backtop2", 0);
-		backtop2 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backtop2", 0);
+		backtop2 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backvmid1", 0);
-		backvmid1 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backvmid1", 0);
+		backvmid1 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backvmid2", 0);
-		backvmid2 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backvmid2", 0);
+		backvmid2 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backvmid3", 0);
-		backvmid3 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backvmid3", 0);
+		backvmid3 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 
-		b = new Bitmap(media, "backhmid2", 0);
-		backhmid2 = new ImageProducer(b.width, b.height);
-		b.drawOpaque(0, 0);
+		s = new Sprite(media, "backhmid2", 0);
+		backhmid2 = new ImageProducer(s.width, s.height);
+		s.drawOpaque(0, 0);
 	}
 
 	public void loadTextures(Archive textures) {
@@ -781,7 +781,7 @@ public class Game extends GameShell {
 
 			initSceneComponents();
 
-			minimap = new Bitmap(512, 512);
+			minimap = new Sprite(512, 512);
 
 			loadMedia(media);
 			loadTextures(textures);
@@ -811,9 +811,8 @@ public class Game extends GameShell {
 	}
 
 	/**
-	 * Attempts to load the archive data locally. If there is no local data
-	 * stored, it will open a connection to the URL of the archive and download
-	 * it.
+	 * Attempts to load the archive data locally. If there is no local data stored, it will open a connection to the URL
+	 * of the archive and download it.
 	 *
 	 * @param archiveName the archive name.
 	 * @param archiveFile the archive file.
@@ -903,72 +902,72 @@ public class Game extends GameShell {
 	}
 
 	public final void loadTitleBackground() {
-		Bitmap b = new Bitmap(titleArchive.get("title.dat"), this);
+		Sprite s = new Sprite(titleArchive.get("title.dat"), this);
 		titleLeft.prepare();
-		b.drawOpaque(0, 0);
+		s.drawOpaque(0, 0);
 
 		titleRight.prepare();
-		b.drawOpaque(-661, 0);
+		s.drawOpaque(-661, 0);
 
 		titleTop.prepare();
-		b.drawOpaque(-128, 0);
+		s.drawOpaque(-128, 0);
 
 		titleBottom.prepare();
-		b.drawOpaque(-214, -386);
+		s.drawOpaque(-214, -386);
 
 		titleCenter.prepare();
-		b.drawOpaque(-214, -186);
+		s.drawOpaque(-214, -186);
 
 		titleBottomLeft.prepare();
-		b.drawOpaque(0, -265);
+		s.drawOpaque(0, -265);
 
 		titleBottomRight.prepare();
-		b.drawOpaque(-574, -265);
+		s.drawOpaque(-574, -265);
 
 		titleLeftSpace.prepare();
-		b.drawOpaque(-128, -186);
+		s.drawOpaque(-128, -186);
 
 		titleRightSpace.prepare();
-		b.drawOpaque(-574, -186);
+		s.drawOpaque(-574, -186);
 
-		int[] line = new int[b.width];
-		for (int y = 0; y < b.height; y++) {
-			for (int x = 0; x < b.width; x++) {
-				line[x] = (b.pixels[(b.width - x - 1 + b.width * y)]);
+		int[] line = new int[s.width];
+		for (int y = 0; y < s.height; y++) {
+			for (int x = 0; x < s.width; x++) {
+				line[x] = (s.pixels[(s.width - x - 1 + s.width * y)]);
 			}
-			System.arraycopy(line, 0, b.pixels, b.width * y, b.width);
+			System.arraycopy(line, 0, s.pixels, s.width * y, s.width);
 		}
 
 		titleLeft.prepare();
-		b.drawOpaque(394, 0);
+		s.drawOpaque(394, 0);
 
 		titleRight.prepare();
-		b.drawOpaque(-267, 0);
+		s.drawOpaque(-267, 0);
 
 		titleTop.prepare();
-		b.drawOpaque(266, 0);
+		s.drawOpaque(266, 0);
 
 		titleBottom.prepare();
-		b.drawOpaque(180, -386);
+		s.drawOpaque(180, -386);
 
 		titleCenter.prepare();
-		b.drawOpaque(180, -186);
+		s.drawOpaque(180, -186);
 
 		titleBottomLeft.prepare();
-		b.drawOpaque(394, -265);
+		s.drawOpaque(394, -265);
 
 		titleBottomRight.prepare();
-		b.drawOpaque(-180, -265);
+		s.drawOpaque(-180, -265);
 
 		titleLeftSpace.prepare();
-		b.drawOpaque(212, -186);
+		s.drawOpaque(212, -186);
 
 		titleRightSpace.prepare();
-		b.drawOpaque(-180, -186);
+		s.drawOpaque(-180, -186);
 
-		b = new Bitmap(titleArchive, "logo", 0);
+		s = new Sprite(titleArchive, "logo", 0);
 		titleTop.prepare();
-		b.draw((width / 2) - (b.width / 2) - 128, 18);
+		s.draw((width / 2) - (s.width / 2) - 128, 18);
 		System.gc();
 	}
 
@@ -1301,16 +1300,16 @@ public class Game extends GameShell {
 	}
 
 	public final void loadTitleForeground() {
-		titlebox = new IndexedBitmap(titleArchive, "titlebox", 0);
-		titlebutton = new IndexedBitmap(titleArchive, "titlebutton", 0);
-		runes = new IndexedBitmap[12];
+		titlebox = new IndexedSprite(titleArchive, "titlebox", 0);
+		titlebutton = new IndexedSprite(titleArchive, "titlebutton", 0);
+		runes = new IndexedSprite[12];
 
 		for (int i = 0; i < 12; i++) {
-			runes[i] = new IndexedBitmap(titleArchive, "runes", i);
+			runes[i] = new IndexedSprite(titleArchive, "runes", i);
 		}
 
-		flameLeft = new Bitmap(128, 265);
-		flameRight = new Bitmap(128, 265);
+		flameLeft = new Sprite(128, 265);
+		flameRight = new Sprite(128, 265);
 
 		System.arraycopy(titleLeft.pixels, 0, flameLeft.pixels, 0, 33920);
 		System.arraycopy(titleRight.pixels, 0, flameRight.pixels, 0, 33920);
@@ -1454,7 +1453,7 @@ public class Game extends GameShell {
 		flameRight = null;
 	}
 
-	public final void updateFlameDissolve(IndexedBitmap image) {
+	public final void updateFlameDissolve(IndexedSprite image) {
 		int flameHeight = 256;
 
 		for (int n = 0; n < flameBuffer1.length; n++) {
@@ -1762,7 +1761,7 @@ public class Game extends GameShell {
 				drawTitle();
 			}
 
-			stream = new Stream(openSocket(portoff + 43594));
+			stream = new BufferedStream(openSocket(portoff + 43594));
 			stream.read(in.data, 0, 8);
 			in.position = 0;
 			gameSessionKey = in.readLong();
@@ -1856,7 +1855,7 @@ public class Game extends GameShell {
 						}
 					}
 
-					spawntLocs = new Chain();
+					spawntLocs = new LinkedQueue();
 					friendCount = 0;
 					chatWidgetIndex = -1;
 					viewportWidgetIndex = -1;
@@ -1924,7 +1923,7 @@ public class Game extends GameShell {
 
 			drawTitle();
 
-			stream = new Stream(openSocket(portoff + 43594));
+			stream = new BufferedStream(openSocket(portoff + 43594));
 			stream.read(in.data, 0, 8);
 
 			in.position = 0;
@@ -2099,7 +2098,7 @@ public class Game extends GameShell {
 		LocationInfo.uniqueModelCache.clear();
 		NPCInfo.uniqueModelCache.clear();
 		ObjectInfo.uniqueModelCache.clear();
-		ObjectInfo.uniqueBitmapCache.clear();
+		ObjectInfo.spriteCache.clear();
 		Player.uniqueModelCache.clear();
 		SpotAnimation.uniqueModelCache.clear();
 	}
@@ -3582,7 +3581,7 @@ public class Game extends GameShell {
 		}
 
 		if (Graphics3D.textureCycles[17] >= cycle) {
-			IndexedBitmap i = (Graphics3D.textures[17]);
+			IndexedSprite i = (Graphics3D.textures[17]);
 			int len = ((i.width * i.height) - 1);
 			int shift = i.width * (sceneDelta * 2);
 			byte[] pixels = i.data;
@@ -3907,12 +3906,12 @@ public class Game extends GameShell {
 			LocationInfo c = LocationInfo.get(locIndex);
 
 			if (c.mapfunction != -1) {
-				Bitmap b = minimapFunctions[c.mapfunction];
+				Sprite s = minimapFunctions[c.mapfunction];
 
-				if (b != null) {
-					int x0 = ((c.sizeX * 4) - b.width) / 2;
-					int y0 = ((c.sizeZ * 4) - b.height) / 2;
-					b.draw(48 + (x * 4) + x0, 48 + (104 - y - c.sizeZ) * 4 + y0);
+				if (s != null) {
+					int x0 = ((c.sizeX * 4) - s.width) / 2;
+					int y0 = ((c.sizeZ * 4) - s.height) / 2;
+					s.draw(48 + (x * 4) + x0, 48 + (104 - y - c.sizeZ) * 4 + y0);
 				}
 			} else {
 				if (type == 0 || type == 2) {
@@ -4012,7 +4011,7 @@ public class Game extends GameShell {
 				LocationInfo c = LocationInfo.get(locIndex);
 
 				if (c.mapscene != -1) {
-					IndexedBitmap mapscene = mapscenes[c.mapscene];
+					IndexedSprite mapscene = mapscenes[c.mapscene];
 
 					if (mapscene != null) {
 						int dx = ((c.sizeX * 4 - mapscene.width) / 2);
@@ -5349,8 +5348,8 @@ public class Game extends GameShell {
 	}
 
 	/**
-	 * Appends a Location to the landscape. This does not change the shadow map.
-	 * Using a locIndex of <b>-1</b> removes any location of the same
+	 * Appends a Location to the landscape. This does not change the shadow map. Using a locIndex of <b>-1</b> removes
+	 * any location of the same
 	 * <b>type</b>.
 	 *
 	 * @param index the location index.
@@ -5541,7 +5540,7 @@ public class Game extends GameShell {
 				o.index = objectIndex;
 
 				if (planeObjectStacks[currentPlane][x][z] == null) {
-					planeObjectStacks[currentPlane][x][z] = new Chain();
+					planeObjectStacks[currentPlane][x][z] = new LinkedQueue();
 				}
 
 				planeObjectStacks[currentPlane][x][z].push(o);
@@ -5554,7 +5553,7 @@ public class Game extends GameShell {
 			int objectIndex = b.readUShort();
 
 			if (x >= 0 && z >= 0 && x < 104 && z < 104) {
-				Chain stack = planeObjectStacks[currentPlane][x][z];
+				LinkedQueue stack = planeObjectStacks[currentPlane][x][z];
 
 				if (stack != null) {
 					for (ObjectStack s = (ObjectStack) stack.peekLast(); s != null; s = (ObjectStack) stack.getPrevious()) {
@@ -5622,7 +5621,7 @@ public class Game extends GameShell {
 				stack.index = objectIndex;
 
 				if (planeObjectStacks[currentPlane][x][z] == null) {
-					planeObjectStacks[currentPlane][x][z] = new Chain();
+					planeObjectStacks[currentPlane][x][z] = new LinkedQueue();
 				}
 
 				planeObjectStacks[currentPlane][x][z].push(stack);
@@ -5700,7 +5699,7 @@ public class Game extends GameShell {
 	}
 
 	public final void updateObjectStack(int x, int y) {
-		Chain stacks = planeObjectStacks[currentPlane][x][y];
+		LinkedQueue stacks = planeObjectStacks[currentPlane][x][y];
 
 		if (stacks == null) {
 			graph.removeObject(x, y, currentPlane);
@@ -6447,13 +6446,13 @@ public class Game extends GameShell {
 			selectedFlags = w.optionFlags;
 			selectedObj = false;
 
-			String prefix = w.optionPrefix;
+			String prefix = w.optionCircumfix;
 
 			if (prefix.contains(" ")) {
 				prefix = prefix.substring(0, prefix.indexOf(" "));
 			}
 
-			String suffix = w.optionPrefix;
+			String suffix = w.optionCircumfix;
 
 			if (suffix.contains(" ")) {
 				suffix = suffix.substring(suffix.indexOf(" ") + 1);
@@ -7022,7 +7021,7 @@ public class Game extends GameShell {
 			}
 
 			if (type == 3) {
-				Chain stack = planeObjectStacks[currentPlane][x][z];
+				LinkedQueue stack = planeObjectStacks[currentPlane][x][z];
 
 				if (stack != null) {
 					for (ObjectStack o = (ObjectStack) stack.peekFirst(); o != null; o = (ObjectStack) stack.getNext()) {
@@ -7259,24 +7258,24 @@ public class Game extends GameShell {
 
 							if (w.inventoryIndices[slot] > 0) {
 								int index = w.inventoryIndices[slot] - 1;
-								Bitmap b = ObjectInfo.getBitmap(index);
+								Sprite s = ObjectInfo.getSprite(index);
 
 								if (selectedArea != 0 && selectedInterfaceSlot == slot && selectedInterfaceIndex == w.index) {
-									b.draw(drawX, drawY, 128);
+									s.draw(drawX, drawY, 128);
 								} else {
-									b.draw(drawX, drawY);
+									s.draw(drawX, drawY);
 								}
 
-								if (b.clipWidth == 33 || w.inventoryAmount[slot] != 1) {
+								if (s.clipWidth == 33 || w.inventoryAmount[slot] != 1) {
 									int amount = w.inventoryAmount[slot];
 									fontSmall.draw(String.valueOf(amount), drawX + 1, drawY + 10, 0);
 									fontSmall.draw(String.valueOf(amount), drawX, drawY + 9, 0xFFFF00);
 								}
-							} else if (w.inventoryBitmap != null && slot < 20) {
-								Bitmap b = w.inventoryBitmap[slot];
+							} else if (w.inventorySprite != null && slot < 20) {
+								Sprite s = w.inventorySprite[slot];
 
-								if (b != null) {
-									b.draw(drawX, drawY);
+								if (s != null) {
+									s.draw(drawX, drawY);
 								}
 							}
 							slot++;
@@ -7380,16 +7379,16 @@ public class Game extends GameShell {
 						dy += f.height;
 					}
 				} else if (w.type == 5) {
-					Bitmap b;
+					Sprite s;
 
 					if (isWidgetEnabled(w)) {
-						b = w.bitmapEnabled;
+						s = w.spriteEnabled;
 					} else {
-						b = w.bitmapDisabled;
+						s = w.spriteDisabled;
 					}
 
-					if (b != null) {
-						b.draw(x, y);
+					if (s != null) {
+						s.draw(x, y);
 					}
 				} else if (w.type == 6) {
 					int centerX = Graphics3D.centerX;
@@ -7650,7 +7649,7 @@ public class Game extends GameShell {
 			optionCount++;
 		} else if (w.optionType == 2) {
 			if (!selectedSpell) {
-				String s = w.optionPrefix;
+				String s = w.optionCircumfix;
 
 				if (s.contains(" ")) {
 					s = s.substring(0, s.indexOf(" "));
@@ -7919,7 +7918,7 @@ public class Game extends GameShell {
 				} else if (v == 4) {
 					Graphics3D.generatePalette(0.6);
 				}
-				ObjectInfo.uniqueBitmapCache.clear();
+				ObjectInfo.spriteCache.clear();
 				redraw = true;
 			}
 
@@ -8036,25 +8035,25 @@ public class Game extends GameShell {
 			}
 		} else if (action == 324) {
 			if (buttonDisabled == null) {
-				buttonDisabled = w.bitmapDisabled;
-				buttonEnabled = w.bitmapEnabled;
+				buttonDisabled = w.spriteDisabled;
+				buttonEnabled = w.spriteEnabled;
 			}
 
 			if (characterDesignIsMale) {
-				w.bitmapDisabled = buttonEnabled;
+				w.spriteDisabled = buttonEnabled;
 			} else {
-				w.bitmapDisabled = buttonDisabled;
+				w.spriteDisabled = buttonDisabled;
 			}
 		} else if (action == 325) {
 			if (buttonDisabled == null) {
-				buttonDisabled = w.bitmapDisabled;
-				buttonEnabled = w.bitmapEnabled;
+				buttonDisabled = w.spriteDisabled;
+				buttonEnabled = w.spriteEnabled;
 			}
 
 			if (characterDesignIsMale) {
-				w.bitmapDisabled = buttonDisabled;
+				w.spriteDisabled = buttonDisabled;
 			} else {
-				w.bitmapDisabled = buttonEnabled;
+				w.spriteDisabled = buttonEnabled;
 			}
 		}
 	}
@@ -8226,7 +8225,7 @@ public class Game extends GameShell {
 
 		for (int tileX = 0; tileX < 104; tileX++) {
 			for (int tileY = 0; tileY < 104; tileY++) {
-				Chain c = planeObjectStacks[currentPlane][tileX][tileY];
+				LinkedQueue c = planeObjectStacks[currentPlane][tileX][tileY];
 				if (c != null) {
 					x = (((tileX * 4) + 2) - playerX);
 					y = (((tileY * 4) + 2) - playerY);
@@ -8257,8 +8256,8 @@ public class Game extends GameShell {
 		viewport.prepare();
 	}
 
-	public final void drawOntoMinimap(Bitmap b, int x, int y) {
-		if (b == null) {
+	public final void drawOntoMinimap(Sprite s, int x, int y) {
+		if (s == null) {
 			return;
 		}
 
@@ -8274,13 +8273,13 @@ public class Game extends GameShell {
 		int drawX = y * sin + x * cos >> 16;
 		int drawY = y * cos - x * sin >> 16;
 
-		drawX -= b.width / 2;
-		drawY += (b.height / 2);
+		drawX -= s.width / 2;
+		drawY += (s.height / 2);
 
 		if (length > 2500) {
-			b.draw(mapback, drawX + 94, 83 - drawY);
+			s.draw(mapback, drawX + 94, 83 - drawY);
 		} else {
-			b.draw(drawX + 94, 83 - drawY);
+			s.draw(drawX + 94, 83 - drawY);
 		}
 	}
 

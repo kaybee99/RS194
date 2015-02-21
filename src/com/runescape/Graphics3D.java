@@ -75,7 +75,7 @@ public class Graphics3D extends Graphics2D {
 	/**
 	 * Unmodified textures. These should never be written to.
 	 */
-	public static IndexedBitmap[] textures;
+	public static IndexedSprite[] textures;
 
 	/**
 	 * Will be true if a texture contains a pixel with the value 0x00000000.
@@ -188,7 +188,7 @@ public class Graphics3D extends Graphics2D {
 	}
 
 	/**
-	 * Unpacks the textures as {@link IndexedBitmap}'s and stores them.
+	 * Unpacks the textures as {@link IndexedSprite}'s and stores them.
 	 *
 	 * @param archive the archive containing the textures.
 	 */
@@ -197,7 +197,7 @@ public class Graphics3D extends Graphics2D {
 
 		for (int n = 0; n < 50; n++) {
 			try {
-				textures[n] = new IndexedBitmap(archive, String.valueOf(n), 0);
+				textures[n] = new IndexedSprite(archive, String.valueOf(n), 0);
 
 				if (lowmemory && textures[n].clipWidth == 128) {
 					textures[n].shrink();
@@ -294,7 +294,7 @@ public class Graphics3D extends Graphics2D {
 
 		texelBuffer1[textureIndex] = buffer;
 
-		IndexedBitmap texture = textures[textureIndex];
+		IndexedSprite texture = textures[textureIndex];
 		int[] texturePalette = texturePalettes[textureIndex];
 
 		// low memory uses 64x64 textures instead of 128x128.
@@ -2780,7 +2780,7 @@ public class Graphics3D extends Graphics2D {
 			cos[i] = (int) (65536.0 * Math.cos((double) i * 0.0030679615));
 		}
 
-		textures = new IndexedBitmap[50];
+		textures = new IndexedSprite[50];
 		textureHasTransparency = new boolean[50];
 		textureColors = new int[50];
 		texelBuffer1 = new int[50][];
