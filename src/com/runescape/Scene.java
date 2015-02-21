@@ -629,7 +629,7 @@ public final class Scene {
 
 								if (underlayFloorIndex > 0) {
 									if (hueDivisor != 0 && directionTracker != 0) {
-										color = getColor((hue * 256) / hueDivisor, saturation / directionTracker, lightness / directionTracker);
+										color = hsl24To16((hue * 256) / hueDivisor, saturation / directionTracker, lightness / directionTracker);
 									}
 								}
 
@@ -658,11 +658,11 @@ public final class Scene {
 								int minimapColor = 0;
 
 								if (color != -1) {
-									minimapColor = Graphics3D.palette[adjustColorLightness(color, 96)];
+									minimapColor = Graphics3D.palette[adjustHSLLightness1(color, 96)];
 								}
 
 								if (overlayFloorIndex == 0) {
-									graph.addTile(plane, x, y, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
+									graph.addTile(plane, x, y, 0, 0, -1, southwestY, southeastY, northeastY, northwestY, adjustHSLLightness1(color, southwestLightness), adjustHSLLightness1(color, southeastLightness), adjustHSLLightness1(color, northeastLightness), adjustHSLLightness1(color, northwestLightness), 0, 0, 0, 0, minimapColor, 0);
 								} else {
 									int type = planeOverlayTypes[plane][x][y] + 1;
 									byte rotation = planeOverlayRotations[plane][x][y];
@@ -686,11 +686,11 @@ public final class Scene {
 										hsl = -2;
 										textureIndex = -1;
 									} else {
-										hsl = getColor(f.hue, f.saturation, f.lightness);
+										hsl = hsl24To16(f.hue, f.saturation, f.lightness);
 										rgb = Graphics3D.palette[adjustHSLLightness0(hsl, 96)];
 									}
 
-									graph.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustColorLightness(color, southwestLightness), adjustColorLightness(color, southeastLightness), adjustColorLightness(color, northeastLightness), adjustColorLightness(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
+									graph.addTile(plane, x, y, type, rotation, textureIndex, southwestY, southeastY, northeastY, northwestY, adjustHSLLightness1(color, southwestLightness), adjustHSLLightness1(color, southeastLightness), adjustHSLLightness1(color, northeastLightness), adjustHSLLightness1(color, northwestLightness), adjustHSLLightness0(hsl, southwestLightness), adjustHSLLightness0(hsl, southeastLightness), adjustHSLLightness0(hsl, northeastLightness), adjustHSLLightness0(hsl, northwestLightness), minimapColor, rgb);
 								}
 							}
 						}
@@ -958,7 +958,7 @@ public final class Scene {
 		return (v >> 19) & 0xFF;
 	}
 
-	private static int adjustColorLightness(int hsl, int lightness) {
+	private static int adjustHSLLightness1(int hsl, int lightness) {
 		if (hsl == -1) {
 			return 12345678;
 		}
@@ -999,7 +999,7 @@ public final class Scene {
 		return (hsl & 0xff80) + lightness;
 	}
 
-	private int getColor(int hue, int saturation, int lightness) {
+	private int hsl24To16(int hue, int saturation, int lightness) {
 		if (lightness > 179) {
 			saturation /= 2;
 		}

@@ -1,7 +1,6 @@
 package com.runescape;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * Contains information on how a tile should appear on the scene, and minimap.
@@ -105,51 +104,34 @@ public class FloorType {
 	/**
 	 * Sets the color of the floor.
 	 *
-	 * @param color the color. (INT24_RGB format)
+	 * @param rgb the color. (INT24_RGB format)
 	 */
-	private void setColor(int color) {
-		double r = (double) (color >> 16 & 0xff) / 256.0;
-		double g = (double) (color >> 8 & 0xff) / 256.0;
-		double b = (double) (color & 0xff) / 256.0;
+	private void setColor(int rgb) {
+		double r = (double) (rgb >> 16 & 0xff) / 256.0;
+		double g = (double) (rgb >> 8 & 0xff) / 256.0;
+		double b = (double) (rgb & 0xff) / 256.0;
 
-		double u = r;
-
-		if (g < u) {
-			u = g;
-		}
-
-		if (b < u) {
-			u = b;
-		}
-
-		double v = r;
-
-		if (g > v) {
-			v = g;
-		}
-
-		if (b > v) {
-			v = b;
-		}
+		double min = Math.min(Math.min(r, g), b);
+		double max = Math.max(Math.max(r, g), b);
 
 		double hue = 0.0;
 		double saturation = 0.0;
-		double lightness = (u + v) / 2.0;
+		double lightness = (min + max) / 2.0;
 
-		if (u != v) {
+		if (min != max) {
 			if (lightness < 0.5) {
-				saturation = (v - u) / (v + u);
+				saturation = (max - min) / (max + min);
 			}
 			if (lightness >= 0.5) {
-				saturation = (v - u) / (2.0 - v - u);
+				saturation = (max - min) / (2.0 - max - min);
 			}
 
-			if (r == v) {
-				hue = (g - b) / (v - u);
-			} else if (g == v) {
-				hue = 2.0 + (b - r) / (v - u);
-			} else if (b == v) {
-				hue = 4.0 + (r - g) / (v - u);
+			if (r == max) {
+				hue = (g - b) / (max - min);
+			} else if (g == max) {
+				hue = 2.0 + (b - r) / (max - min);
+			} else if (b == max) {
+				hue = 4.0 + (r - g) / (max - min);
 			}
 		}
 
